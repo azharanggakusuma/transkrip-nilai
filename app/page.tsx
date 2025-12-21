@@ -7,16 +7,16 @@ import Footer from "../components/Footer";
 
 export default function TranskripPage() {
   return (
-    <div className="min-h-screen bg-gray-100 p-8 font-sans text-black flex justify-center print:p-0 print:bg-white">
+    // Menggunakan font-['Cambria'] agar spesifik
+    <div className="min-h-screen bg-gray-100 p-8 font-['Cambria'] text-black flex justify-center print:p-0 print:bg-white">
+      
       {/* Container A4 Style */}
       <div className="w-[210mm] min-h-[297mm] bg-white p-8 shadow-lg relative print:shadow-none print:w-full print:m-0">
         
+        {/* Components */}
         <Header />
-        
         <StudentInfo />
-        
         <GradeTable data={transcriptData} />
-        
         <Footer />
 
       </div>

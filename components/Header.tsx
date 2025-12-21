@@ -1,7 +1,7 @@
 import React from "react";
 
 export default function Header() {
-  // Style khusus untuk meniru efek 3D/Emboss pada teks utama
+  // Style khusus untuk efek 3D/Emboss
   const embossedTextStyle = {
     fontFamily: "Arial Black, Arial, sans-serif",
     textShadow:
@@ -16,13 +16,12 @@ export default function Header() {
   };
 
   return (
-    <div className="mb-0 font-sans bg-white">
-      {/* STRUKTUR CSS GRID UTAMA */}
+    <div className="mb-0 bg-white">
+      {/* Container Grid Kop Surat -> Tetap font-sans (Arial) */}
       <div className="grid grid-cols-[1fr_auto] gap-x-0 relative font-sans">
         
         {/* === KOLOM 1 BARIS 1: LOGO & JUDUL KAMPUS === */}
         <div className="flex items-center gap-3 pb-1 pt-1 pr-2">
-          {/* Logo Shield - Ukuran 80px */}
           <div className="w-[80px] h-[80px] flex-shrink-0 relative ml-1">
             <img
               src="/img/logo-ikmi.png"
@@ -31,13 +30,11 @@ export default function Header() {
             />
           </div>
 
-          {/* Teks Judul Kampus */}
           <div className="flex flex-col justify-center mt-[-4px]">
             <h2 className="text-[11px] font-bold text-gray-800 tracking-wide leading-tight mb-0 uppercase font-sans">
               SEKOLAH TINGGI MANAJEMEN INFORMATIKA DAN KOMPUTER
             </h2>
 
-            {/* Container Teks Besar 3D */}
             <div className="flex items-end leading-none mt-[-2px]">
               <span
                 className="text-[4rem] text-[#EE3A43] tracking-tighter"
@@ -52,8 +49,8 @@ export default function Header() {
                   style={{ 
                     ...embossedTextStyle, 
                     lineHeight: "0.8",
-                    letterSpacing: "0.35em", // Lebih renggang
-                    marginRight: "-0.35em"   // Kompensasi spasi kanan
+                    letterSpacing: "0.35em",
+                    marginRight: "-0.35em"
                   }}
                 >
                   IKMI
@@ -69,7 +66,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* === KOLOM 2 BARIS 1: ALAMAT DENGAN GARIS MERAH === */}
+        {/* === KOLOM 2 BARIS 1: ALAMAT === */}
         <div className="border-l-2 border-[#EE3A43] pl-4 py-1 h-[78px] flex flex-col justify-center min-w-[250px]">
           <div className="text-[10px] text-gray-800 leading-[1.25] font-sans">
             <p className="font-bold text-[11px] mb-[2px] text-black">
@@ -86,23 +83,24 @@ export default function Header() {
           </div>
         </div>
 
-        {/* === KOLOM 1 BARIS 2: BAR ORANGE (SK) === */}
+        {/* === KOLOM 1 BARIS 2: BAR ORANGE === */}
         <div className="bg-[#F7941D] h-[26px] flex items-center justify-center px-1 mt-[2px] overflow-hidden">
           <span className="text-white text-[12px] font-bold tracking-[0.3em] leading-none whitespace-nowrap ml-[0.3em]">
             SK. MENRISTEKDIKTI NO. 1/KPT/I/2015
           </span>
         </div>
 
-        {/* === KOLOM 2 BARIS 2: BAR HIJAU (AKREDITASI) === */}
+        {/* === KOLOM 2 BARIS 2: BAR HIJAU === */}
         <div className="bg-[#009444] h-[26px] flex items-center justify-center px-1 mt-[2px] overflow-hidden">
           <span className="text-white text-[12px] font-bold uppercase tracking-[0.15em] leading-none whitespace-nowrap ml-[0.15em]">
             TERAKREDITASI BAN-PT
           </span>
         </div>
 
-        {/* === BARIS 3 (COL-SPAN-2): JUDUL HALAMAN TRANSKRIP === */}
+        {/* === BARIS 3: JUDUL TRANSKRIP === */}
+        {/* Override font menjadi Cambria */}
         <div className="col-span-2 text-center mt-4 mb-2">
-          <h2 className="font-bold underline text-[14px] uppercase tracking-wide font-serif">
+          <h2 className="font-bold underline text-[14px] uppercase tracking-wide font-['Cambria'] text-black">
             TRANSKRIP NILAI
           </h2>
         </div>
