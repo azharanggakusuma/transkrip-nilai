@@ -1,66 +1,68 @@
 import React from "react";
 
 export default function Header() {
+  // Style khusus untuk meniru efek 3D/Emboss pada teks utama di gambar referensi
+  const embossedTextStyle = {
+    fontFamily: "Arial Black, Arial, sans-serif",
+    // Shadow kompleks untuk efek timbul: highlight putih di kiri-atas, bayangan gelap di kanan-bawah
+    textShadow:
+      "-1px -1px 1px rgba(255,255,255,0.9), 1px 1px 1px rgba(0,0,0,0.4), 2px 2px 3px rgba(0,0,0,0.2)",
+  };
+
+  const cirebonStyle = {
+    fontFamily: "Arial, sans-serif",
+    fontWeight: 800, // Extra bold
+    // Efek shadow yang sedikit lebih halus untuk teks hijau
+    textShadow:
+      "-0.5px -0.5px 0.5px rgba(255,255,255,0.8), 1px 1px 1px rgba(0,0,0,0.3)",
+  };
+
   return (
-    <div className="mb-0 font-sans">
-      {/* Container Utama */}
-      <div className="flex items-center justify-between pb-2 relative">
+    <div className="mb-0 font-sans bg-white">
+      {/* === BAGIAN ATAS: LOGO, JUDUL, ALAMAT === */}
+      <div className="flex items-start justify-between pb-1 pt-1 relative">
         
-        {/* === BAGIAN KIRI: LOGO & NAMA KAMPUS === */}
-        <div className="flex items-center gap-4">
-          
-          {/* Logo */}
-          <div className="w-24 h-24 flex-shrink-0 relative">
+        {/* KIRI: Container Logo & Teks Judul */}
+        <div className="flex items-center gap-3">
+          {/* Logo Shield */}
+          <div className="w-[88px] h-[88px] flex-shrink-0 relative ml-1">
             <img
               src="/img/logo-ikmi.png"
               alt="Logo STMIK IKMI"
               className="object-contain w-full h-full"
             />
-            {/* Fallback visual jika gambar tidak ada */}
-            <div className="absolute inset-0 -z-10 flex items-center justify-center border-2 border-blue-900 rounded-full bg-gray-100 text-[10px] font-bold text-blue-900 opacity-20">
-              LOGO
-            </div>
           </div>
 
-          {/* Teks STMIK IKMI CIREBON */}
-          <div className="flex flex-col justify-center mt-1">
-            {/* Teks Kecil di Atas */}
-            <h2 className="text-[10px] font-bold text-gray-800 tracking-wide leading-tight mb-[-4px]">
+          {/* Teks Judul Kampus */}
+          <div className="flex flex-col justify-center mt-[-4px]">
+            {/* Teks Kecil Atas - Warna abu tua solid */}
+            <h2 className="text-[11px] font-bold text-gray-800 tracking-wide leading-tight mb-0 uppercase font-sans">
               SEKOLAH TINGGI MANAJEMEN INFORMATIKA DAN KOMPUTER
             </h2>
-            
-            {/* Container Teks Besar */}
-            <div className="flex items-end">
-              {/* STMIK - Merah Besar */}
+
+            {/* Container Teks Besar 3D */}
+            <div className="flex items-end leading-none mt-[-2px]">
+              {/* STMIK - Merah 3D */}
               <span
-                className="text-[3.8rem] font-extrabold text-[#E93635] tracking-tighter leading-[0.85]"
-                style={{ 
-                  fontFamily: "Arial Black, sans-serif",
-                  textShadow: "1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 2px rgba(0,0,0,0.1)" 
-                }}
+                className="text-[4rem] text-[#EE3A43] tracking-tighter"
+                style={{ ...embossedTextStyle, lineHeight: "0.8" }}
               >
                 STMIK
               </span>
 
-              {/* IKMI & CIREBON - Stack di sebelah kanan STMIK */}
-              <div className="flex flex-col ml-1.5 mb-[2px]">
-                {/* IKMI - Biru (Hapus italic) */}
+              {/* Container IKMI & CIREBON */}
+              <div className="flex flex-col ml-2 mb-1">
+                {/* IKMI - Biru Tua 3D, Tegak */}
                 <span
-                  className="text-[2.1rem] font-extrabold text-[#193583] tracking-tighter leading-[0.85]"
-                  style={{ 
-                    fontFamily: "Arial Black, sans-serif",
-                    textShadow: "1px 1px 0 #fff, -1px -1px 0 #fff"
-                  }}
+                  className="text-[2.3rem] text-[#1B3F95] tracking-tight"
+                  style={{ ...embossedTextStyle, lineHeight: "0.8" }}
                 >
                   IKMI
                 </span>
-                {/* CIREBON - Hijau */}
+                {/* CIREBON - Hijau Cerah 3D */}
                 <span
-                  className="text-[1.25rem] font-extrabold text-[#008940] tracking-[0.22em] leading-none mt-0"
-                  style={{ 
-                    fontFamily: "Arial, sans-serif",
-                    textShadow: "0.5px 0.5px 0 #fff"
-                  }}
+                  className="text-[1.35rem] text-[#00A651] tracking-[0.18em] mt-[3px]"
+                  style={{ ...cirebonStyle, lineHeight: "0.8" }}
                 >
                   CIREBON
                 </span>
@@ -69,41 +71,46 @@ export default function Header() {
           </div>
         </div>
 
-        {/* === BAGIAN KANAN: ALAMAT KAMPUS === */}
-        {/* Dibatasi garis merah di kiri */}
-        <div className="text-[9px] text-left text-gray-800 mt-2 min-w-[220px] leading-snug pl-3 border-l-[3px] border-[#E93635] h-[65px] flex flex-col justify-center">
-          <p className="font-bold">Alamat Kampus :</p>
-          <p>Jl. Perjuangan No. 10 B Majasem</p>
-          <p>Kec. Kesambi Kota Cirebon</p>
-          <p>Tlp. 0231) 490480 - 490481</p>
-          <p>
-            Website :{" "}
-            <span className="text-[#00ADEE] underline">https://ikmi.ac.id</span> Email :{" "}
-            <span className="text-[#00ADEE] underline">info@ikmi.ac.id</span>
-          </p>
+        {/* KANAN: ALAMAT */}
+        {/* Garis Merah Vertikal (lebih tipis sesuai gambar: border-l-2) */}
+        <div className="border-l-2 border-[#EE3A43] pl-4 py-1 ml-4 h-[78px] flex flex-col justify-center min-w-[250px]">
+          <div className="text-[10px] text-gray-800 leading-[1.25] font-sans">
+            <p className="font-bold text-[11px] mb-[2px] text-black">
+              Alamat Kampus :
+            </p>
+            <p>Jl. Perjuangan No. 10 B Majasem</p>
+            <p>Kec. Kesambi Kota Cirebon</p>
+            <p>Tlp. 0231) 490480 - 490481</p>
+            <p className="mt-[1px]">
+              Website :{" "}
+              <span className="text-[#00ADEE]">https://ikmi.ac.id</span> Email :{" "}
+              <span className="text-[#00ADEE]">info@ikmi.ac.id</span>
+            </p>
+          </div>
         </div>
       </div>
 
       {/* === BAR BAWAH: ORANGE & HIJAU === */}
-      <div className="w-full flex mt-1">
-        {/* Bagian Orange (SK) */}
-        <div className="bg-[#F7931E] flex-grow py-[3px] px-4 flex items-center">
-           <span className="text-white text-[10px] font-bold tracking-wide">
-             SK. MENRISTEKDIKTI NO. 1/KPT/I/2015
-           </span>
+      {/* Tinggi bar diset h-7 (approx 28px) agar terlihat tebal seperti di gambar */}
+      <div className="w-full flex mt-[2px] h-7 font-sans">
+        {/* Bagian Orange (SK) - Flex grow untuk memenuhi ruang kiri */}
+        <div className="bg-[#F7941D] flex-[1.4] flex items-center px-4 relative">
+          <span className="text-white text-[12px] font-bold tracking-[0.05em]">
+            SK. MENRISTEKDIKTI NO. 1/KPT/I/2015
+          </span>
         </div>
-        
-        {/* Bagian Hijau (Akreditasi) */}
-        <div className="bg-[#009444] py-[3px] px-6 flex items-center justify-center ml-[2px]">
-           <span className="text-white text-[10px] font-bold uppercase italic tracking-wide">
-             TERAKREDITASI BAN-PT
-           </span>
+
+        {/* Bagian Hijau (Akreditasi) - Flex basis diatur agar proporsinya pas di bawah alamat */}
+        <div className="bg-[#009444] flex-1 flex items-center justify-center px-2 relative border-l-2 border-white">
+          <span className="text-white text-[13px] font-bold uppercase tracking-wide text-shadow-sm">
+            TERAKREDITASI BAN-PT
+          </span>
         </div>
       </div>
 
-      {/* Judul Halaman */}
-      <div className="text-center mt-5 mb-4">
-        <h2 className="font-bold underline text-[14px] uppercase tracking-wide">
+      {/* Judul Halaman Transkrip */}
+      <div className="text-center mt-6 mb-4">
+        <h2 className="font-bold underline text-[14px] uppercase tracking-wide font-serif">
           TRANSKRIP NILAI
         </h2>
       </div>
