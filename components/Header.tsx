@@ -52,8 +52,8 @@ export default function Header() {
                   style={{ 
                     ...embossedTextStyle, 
                     lineHeight: "0.8",
-                    letterSpacing: "0.22em",
-                    marginRight: "-0.22em"
+                    letterSpacing: "0.35em", // Lebih renggang
+                    marginRight: "-0.35em"   // Kompensasi spasi kanan
                   }}
                 >
                   IKMI
