@@ -87,23 +87,21 @@ export default function Header() {
         </div>
       </div>
 
-      {/* === BAR BAWAH: ORANGE & HIJAU === */}
-      {/* Container flex menyatu tanpa gap */}
-      <div className="w-full flex mt-[2px] h-7 font-sans">
+      {/* === BAR BAWAH: ORANGE & HIJAU (FULL STRETCH) === */}
+      <div className="w-full flex mt-[2px] h-[26px] font-sans overflow-hidden">
         
-        {/* Bagian Orange */}
-        <div className="bg-[#F7941D] flex-[1.4] flex items-center justify-center px-2">
-          {/* Font diperbesar (text-[13px]) agar penuh, line-height none agar center */}
-          <span className="text-white text-[13px] font-bold tracking-[0.05em] leading-none whitespace-nowrap">
+        {/* Bagian Orange (Lebar sekitar 72%) */}
+        <div className="bg-[#F7941D] w-[72%] flex items-center justify-center px-1">
+          {/* Tracking sangat lebar (0.3em) untuk efek merenggang penuh */}
+          <span className="text-white text-[12px] font-bold tracking-[0.3em] leading-none whitespace-nowrap ml-[0.3em]">
             SK. MENRISTEKDIKTI NO. 1/KPT/I/2015
           </span>
         </div>
 
-        {/* Bagian Hijau */}
-        {/* Tidak ada margin-left (ml) dan tidak ada border putih */}
-        <div className="bg-[#009444] flex-1 flex items-center justify-center px-2">
-          {/* Font diperbesar (text-[14px]) */}
-          <span className="text-white text-[14px] font-bold uppercase tracking-wide leading-none whitespace-nowrap">
+        {/* Bagian Hijau (Lebar sekitar 28%) */}
+        <div className="bg-[#009444] w-[28%] flex items-center justify-center px-1">
+          {/* Tracking lebar (0.15em) */}
+          <span className="text-white text-[12px] font-bold uppercase tracking-[0.15em] leading-none whitespace-nowrap ml-[0.15em]">
             TERAKREDITASI BAN-PT
           </span>
         </div>
