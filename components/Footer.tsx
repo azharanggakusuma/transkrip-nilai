@@ -2,7 +2,7 @@ import React from "react";
 
 export default function Footer() {
   return (
-    <div className="flex justify-between items-start mt-6 text-[10px] w-full">
+    <div className="flex justify-between items-start mt-6 text-[10px] w-full font-['Cambria']">
       {/* Keterangan Kiri */}
       <div className="mt-0 pl-1">
         <p className="font-bold underline mb-1">Keterangan</p>
@@ -32,7 +32,7 @@ export default function Footer() {
           />
         </div>
 
-        {/* NAMA - Diangkat ke atas (negative margin) agar nempel gambar */}
+        {/* NAMA */}
         <div className="text-center z-20 mt-[-35px] relative">
           <p className="font-bold underline text-[11px] leading-none">
             YUDHISTIRA ARIE WIJAYA, M.Kom

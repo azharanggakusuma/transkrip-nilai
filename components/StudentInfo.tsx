@@ -2,7 +2,7 @@ import React from "react";
 
 export default function StudentInfo() {
   return (
-    <div className="mb-4 text-[11px] font-bold grid grid-cols-[120px_10px_1fr] gap-y-1">
+    <div className="mb-4 text-[11px] font-bold grid grid-cols-[120px_10px_1fr] gap-y-1 font-['Cambria']">
       <div className="font-bold">Nama Mahasiswa</div>
       <div className="font-bold">:</div>
       <div className="font-bold uppercase">AZHARANGGA KUSUMA</div>
