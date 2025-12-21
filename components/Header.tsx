@@ -17,13 +17,15 @@ export default function Header() {
 
   return (
     <div className="mb-0 font-sans bg-white">
-      {/* === BAGIAN ATAS: LOGO, JUDUL, ALAMAT === */}
-      <div className="flex items-start justify-between pb-1 pt-1 relative">
+      {/* STRUKTUR CSS GRID UTAMA
+        Semua elemen header sekarang berada di dalam satu grid container ini.
+      */}
+      <div className="grid grid-cols-[1fr_auto] gap-x-0 relative font-sans">
         
-        {/* KIRI: Container Logo & Teks Judul */}
-        <div className="flex items-center gap-3">
-          {/* Logo Shield */}
-          <div className="w-[88px] h-[88px] flex-shrink-0 relative ml-1">
+        {/* === KOLOM 1 BARIS 1: LOGO & JUDUL KAMPUS === */}
+        <div className="flex items-center gap-3 pb-1 pt-1 pr-2">
+          {/* Logo Shield - Ukuran 80px */}
+          <div className="w-[80px] h-[80px] flex-shrink-0 relative ml-1">
             <img
               src="/img/logo-ikmi.png"
               alt="Logo STMIK IKMI"
@@ -69,8 +71,8 @@ export default function Header() {
           </div>
         </div>
 
-        {/* KANAN: ALAMAT */}
-        <div className="border-l-2 border-[#EE3A43] pl-4 py-1 ml-4 h-[78px] flex flex-col justify-center min-w-[250px]">
+        {/* === KOLOM 2 BARIS 1: ALAMAT DENGAN GARIS MERAH === */}
+        <div className="border-l-2 border-[#EE3A43] pl-4 py-1 h-[78px] flex flex-col justify-center min-w-[250px]">
           <div className="text-[10px] text-gray-800 leading-[1.25] font-sans">
             <p className="font-bold text-[11px] mb-[2px] text-black">
               Alamat Kampus :
@@ -85,33 +87,32 @@ export default function Header() {
             </p>
           </div>
         </div>
-      </div>
 
-      {/* === BAR BAWAH: ORANGE & HIJAU (FULL STRETCH) === */}
-      <div className="w-full flex mt-[2px] h-[26px] font-sans overflow-hidden">
-        
-        {/* Bagian Orange (Lebar sekitar 72%) */}
-        <div className="bg-[#F7941D] w-[72%] flex items-center justify-center px-1">
-          {/* Tracking sangat lebar (0.3em) untuk efek merenggang penuh */}
+        {/* === KOLOM 1 BARIS 2: BAR ORANGE (SK) === */}
+        <div className="bg-[#F7941D] h-[26px] flex items-center justify-center px-1 mt-[2px] overflow-hidden">
           <span className="text-white text-[12px] font-bold tracking-[0.3em] leading-none whitespace-nowrap ml-[0.3em]">
             SK. MENRISTEKDIKTI NO. 1/KPT/I/2015
           </span>
         </div>
 
-        {/* Bagian Hijau (Lebar sekitar 28%) */}
-        <div className="bg-[#009444] w-[28%] flex items-center justify-center px-1">
-          {/* Tracking lebar (0.15em) */}
+        {/* === KOLOM 2 BARIS 2: BAR HIJAU (AKREDITASI) === */}
+        <div className="bg-[#009444] h-[26px] flex items-center justify-center px-1 mt-[2px] overflow-hidden">
           <span className="text-white text-[12px] font-bold uppercase tracking-[0.15em] leading-none whitespace-nowrap ml-[0.15em]">
             TERAKREDITASI BAN-PT
           </span>
         </div>
-      </div>
 
-      {/* Judul Halaman Transkrip */}
-      <div className="text-center mt-6 mb-4">
-        <h2 className="font-bold underline text-[14px] uppercase tracking-wide font-serif">
-          TRANSKRIP NILAI
-        </h2>
+        {/* === BARIS 3 (COL-SPAN-2): JUDUL HALAMAN TRANSKRIP === */}
+        {/* Posisi dipindahkan ke dalam grid, membentang 2 kolom.
+            Margin atas (mt-4) disesuaikan agar lebih rapat ke bar di atasnya.
+            Style teks (h2) TETAP SAMA PERSIS.
+        */}
+        <div className="col-span-2 text-center mt-4 mb-2">
+          <h2 className="font-bold underline text-[14px] uppercase tracking-wide font-serif">
+            TRANSKRIP NILAI
+          </h2>
+        </div>
+
       </div>
     </div>
   );
