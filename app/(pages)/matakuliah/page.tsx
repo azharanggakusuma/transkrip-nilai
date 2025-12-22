@@ -8,10 +8,10 @@ export default function MataKuliahPage() {
       <div className="flex-1 flex flex-col h-screen overflow-y-auto">
         <Navbar />
         <main className="p-8">
-           {/* Area Kosong */}
-           <div className="border-2 border-dashed border-gray-300 rounded-xl h-96 flex items-center justify-center text-gray-400">
-             Halaman Mata Kuliah (Segera Hadir)
-           </div>
+          {/* Area Kosong */}
+          <div className="border-2 border-dashed border-gray-300 rounded-xl h-96 flex items-center justify-center text-gray-400">
+            Halaman Mata Kuliah (Segera Hadir)
+          </div>
         </main>
       </div>
     </div>

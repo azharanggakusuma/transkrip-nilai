@@ -1,5 +1,5 @@
 import React from "react";
-import Sidebar from "../../components/Sidebar"; // Sesuaikan path import
+import Sidebar from "../../components/Sidebar";
 
 export default function PagesLayout({
   children,
