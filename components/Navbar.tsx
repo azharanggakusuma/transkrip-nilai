@@ -1,57 +1,137 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { usePathname } from "next/navigation";
 
+type PageInfo = {
+  title: string;
+  breadcrumb: string[];
+};
+
+const ROUTES: Record<string, PageInfo> = {
+  "/": { title: "Dashboard", breadcrumb: ["SIAKAD"] },
+  "/transkrip": { title: "Transkrip Nilai", breadcrumb: ["SIAKAD", "Transkrip"] },
+  "/mahasiswa": { title: "Data Mahasiswa", breadcrumb: ["SIAKAD", "Mahasiswa"] },
+  "/matakuliah": { title: "Mata Kuliah", breadcrumb: ["SIAKAD", "Mata Kuliah"] },
+  "/pengaturan": { title: "Pengaturan", breadcrumb: ["SIAKAD", "Pengaturan"] },
+};
+
+const DEFAULT_PAGE: PageInfo = {
+  title: "Halaman",
+  breadcrumb: ["SIAKAD"],
+};
+
 export default function Navbar() {
-  const pathname = usePathname();
+  const pathname = usePathname() || "/";
 
-  const getPageInfo = (path: string) => {
-    switch (path) {
-      case "/": return { title: "", breadcrumb: "" };
-      case "/transkrip": return { title: "Transkrip Nilai", breadcrumb: "SIAKAD / Transkrip" };
-      case "/mahasiswa": return { title: "Data Mahasiswa", breadcrumb: "SIAKAD / Mahasiswa" };
-      case "/matakuliah": return { title: "Mata Kuliah", breadcrumb: "SIAKAD / Mata Kuliah" };
-      case "/pengaturan": return { title: "Pengaturan", breadcrumb: "SIAKAD / Pengaturan" };
-      default: return { title: "Halaman", breadcrumb: "SIAKAD" };
-    }
-  };
-
-  const { title, breadcrumb } = getPageInfo(pathname || "/");
+  const page = useMemo<PageInfo>(() => {
+    return ROUTES[pathname] ?? DEFAULT_PAGE;
+  }, [pathname]);
 
   return (
-    <nav className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 print:hidden font-sans">
+    <nav className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 print:hidden">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex flex-col animate-in fade-in slide-in-from-left-4 duration-500">
-          <h1 className="text-lg font-bold text-slate-800 leading-none tracking-tight">{title}</h1>
-          <span className="text-[10px] font-medium text-slate-400 mt-1.5 uppercase tracking-widest">{breadcrumb}</span>
+        {/* LEFT */}
+        <div className="flex flex-col">
+          <h1 className="text-lg font-bold tracking-tight text-slate-800 leading-none">
+            {page.title}
+          </h1>
+
+          <div className="mt-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            {page.breadcrumb.map((item, idx) => (
+              <React.Fragment key={item}>
+                <span>{item}</span>
+                {idx < page.breadcrumb.length - 1 && (
+                  <span className="text-slate-300">/</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
 
+        {/* RIGHT */}
         <div className="flex items-center h-full">
-          <div className="flex items-center px-6 h-full">
-            <div className="relative group hidden md:block">
-              <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          {/* Search */}
+          <div className="px-5 hidden md:block">
+            <div className="relative group">
+              <span className="absolute inset-y-0 left-3 flex items-center text-slate-400
+                               transition-colors duration-200
+                               group-focus-within:text-slate-500">
+                <SearchIcon />
               </span>
-              <input type="text" placeholder="Cari data..." className="w-48 lg:w-56 bg-slate-100 border border-transparent rounded-full py-1.5 pl-9 pr-4 text-xs focus:bg-white focus:border-blue-200 transition-all outline-none text-slate-700 shadow-inner" />
+
+              <input
+                type="text"
+                placeholder="Cari data..."
+                className="w-52 lg:w-60 rounded-full bg-slate-100
+                           py-2 pl-9 pr-4 text-xs text-slate-700
+                           border border-transparent
+                           outline-none transition-all duration-200
+                           hover:bg-slate-100/70
+                           focus:bg-white focus:border-slate-200 focus:ring-1 focus:ring-slate-200"
+              />
             </div>
           </div>
 
-          <div className="h-7 w-[1px] bg-slate-200 self-center"></div>
+          {/* Divider */}
+          <div className="h-7 w-px bg-slate-200 self-center" />
 
-          <div className="flex items-center pl-6 h-full">
-            <div className="flex items-center gap-3 hover:bg-slate-50 p-1.5 pl-2 pr-3 rounded-full cursor-pointer transition-all group">
-              <div className="flex flex-col text-right leading-tight hidden sm:flex">
-                <span className="text-xs font-bold text-slate-700 group-hover:text-blue-600 transition-colors">Azharangga Kusuma</span>
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Administrator</span>
+          {/* User */}
+          <div className="pl-5">
+            <button
+              type="button"
+              className="flex items-center gap-3 rounded-full p-1.5 pl-2 pr-3
+                         transition-colors duration-200
+                         hover:bg-slate-100/60
+                         focus:outline-none focus:ring-1 focus:ring-slate-200 group"
+            >
+              <div className="hidden sm:flex flex-col text-right leading-tight">
+                <span className="text-xs font-bold text-slate-700
+                                 transition-colors duration-200
+                                 group-hover:text-slate-800">
+                  Azharangga Kusuma
+                </span>
+                <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">
+                  Administrator
+                </span>
               </div>
-              <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 overflow-hidden shrink-0 border border-slate-200 shadow-sm transition-all">
-                <svg className="w-6 h-6 text-slate-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
+
+              <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200
+                              flex items-center justify-center
+                              transition-colors duration-200
+                              group-hover:bg-white">
+                <UserIcon />
               </div>
-            </div>
+            </button>
           </div>
         </div>
       </div>
     </nav>
+  );
+}
+
+/* ================= ICONS ================= */
+
+function SearchIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg className="h-5 w-5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+      <path
+        fillRule="evenodd"
+        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+        clipRule="evenodd"
+      />
+    </svg>
   );
 }
