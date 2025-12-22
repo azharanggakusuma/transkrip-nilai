@@ -64,13 +64,6 @@ export default function TranskripPage() {
           onSignatureChange={setSignatureType}
           onPrint={handlePrint}
         />
-        
-        {/* Info Tambahan (Opsional) */}
-        <div className="mt-4 text-center">
-          <p className="text-[10px] text-gray-400">
-            Pastikan pengaturan kertas cetak adalah <b>A4</b> dan margin <b>None</b>.
-          </p>
-        </div>
       </div>
 
     </div>
