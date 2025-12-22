@@ -66,7 +66,7 @@ export default function GradeTable({
           // === FOOTER MODE KHS ===
           <>
              <tr className="font-bold bg-white h-4 border-t border-black">
-              <td colSpan={3} className="border border-black px-2 text-left">Jumlah (Semester Ini)</td>
+              <td colSpan={3} className="border border-black px-2 text-left">Jumlah</td>
               <td className="border border-black text-center">{totalSKS}</td>
               <td className="border border-black bg-gray-100"></td>
               <td className="border border-black bg-gray-100"></td>
