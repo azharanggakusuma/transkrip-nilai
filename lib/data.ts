@@ -11,7 +11,6 @@ export interface TranscriptItem {
   nm: number;
 }
 
-// Interface baru untuk Profil Mahasiswa
 export interface StudentProfile {
   nama: string;
   nim: string;
@@ -19,14 +18,13 @@ export interface StudentProfile {
   semester: number;
 }
 
-// Interface gabungan (Profil + Transkrip)
 export interface StudentData {
   id: string;
   profile: StudentProfile;
   transcript: TranscriptItem[];
 }
 
-// --- DATA 1: AZHARANGGA KUSUMA (Lengkap Smt 1-7) ---
+// --- DATA 1: AZHARANGGA KUSUMA ---
 const transcriptAzhar: TranscriptItem[] = [
   { no: 1, kode: "MKWI-21012", matkul: "Bahasa Inggris Dasar", smt: 1, sks: 2, hm: "A", am: 4, nm: 8 },
   { no: 2, kode: "MKWI-21013", matkul: "Pengenalan Budaya Cirebon", smt: 1, sks: 2, hm: "A", am: 4, nm: 8 },
@@ -34,12 +32,12 @@ const transcriptAzhar: TranscriptItem[] = [
   { no: 4, kode: "MKWI-21014", matkul: "Kalkulus", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
   { no: 5, kode: "MKWI-21001", matkul: "Algoritma dan Pemrograman Dasar", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
   { no: 6, kode: "MKWN-21003", matkul: "Pendidikan Agama", smt: 1, sks: 2, hm: "B", am: 3, nm: 6 },
-  { no: 7, kode: "MKWI-21007", matkul: "Dasar Dasar Artificial Intelligence", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
+  { no: 7, kode: "MKWI-21007", matkul: "Dasar-Dasar Artificial Intelligence", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
   { no: 8, kode: "MKWN-21001", matkul: "Pancasila", smt: 1, sks: 2, hm: "B", am: 3, nm: 6 },
   { no: 9, kode: "MKWN-004", matkul: "Pendidikan Kewarganegaraan", smt: 2, sks: 2, hm: "B", am: 3, nm: 6 },
   { no: 10, kode: "SIW-2121", matkul: "Jaringan Komputer", smt: 2, sks: 3, hm: "A", am: 4, nm: 12 },
   { no: 11, kode: "MKD-0105", matkul: "Struktur Data", smt: 2, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 12, kode: "MKWI-21002", matkul: "Algoritma Dan Pemrograman Lanjut", smt: 2, sks: 4, hm: "B", am: 3, nm: 12 },
+  { no: 12, kode: "MKWI-21002", matkul: "Algoritma dan Pemrograman Lanjut", smt: 2, sks: 4, hm: "B", am: 3, nm: 12 },
   { no: 13, kode: "SIW-2123", matkul: "Statistika", smt: 2, sks: 3, hm: "B", am: 3, nm: 9 },
   { no: 14, kode: "MKWI-21005", matkul: "Aljabar Linear", smt: 2, sks: 3, hm: "B", am: 3, nm: 9 },
   { no: 15, kode: "MKWN-002", matkul: "Bahasa Indonesia", smt: 2, sks: 2, hm: "A", am: 4, nm: 8 },
@@ -66,14 +64,14 @@ const transcriptAzhar: TranscriptItem[] = [
   { no: 36, kode: "TKK-0603", matkul: "Big Data Analytic", smt: 6, sks: 4, hm: "B", am: 3, nm: 12 },
   { no: 37, kode: "TKK-0604", matkul: "Computer Vision", smt: 6, sks: 4, hm: "A", am: 4, nm: 16 },
   { no: 38, kode: "TKK-0605", matkul: "Robotic", smt: 6, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 39, kode: "MKK-0705", matkul: "IT Enterpreuneur", smt: 7, sks: 2, hm: "B", am: 3, nm: 6 },
+  { no: 39, kode: "MKK-0705", matkul: "IT Entrepreneur", smt: 7, sks: 2, hm: "B", am: 3, nm: 6 },
   { no: 40, kode: "MKK-0704", matkul: "Etika Profesi", smt: 7, sks: 2, hm: "B", am: 3, nm: 6 },
   { no: 41, kode: "MKK-0703", matkul: "Proposal Skripsi", smt: 7, sks: 2, hm: "C", am: 2, nm: 4 },
   { no: 42, kode: "MKK-0702", matkul: "Literature Review", smt: 7, sks: 4, hm: "A", am: 4, nm: 16 },
   { no: 43, kode: "MKK-0701", matkul: "Metode Penelitian", smt: 7, sks: 4, hm: "B", am: 3, nm: 12 },
 ];
 
-// --- DATA 2: BUDI SANTOSO (Lengkap Smt 1-4) ---
+// --- DATA 2: BUDI SANTOSO ---
 const transcriptBudi: TranscriptItem[] = [
   // Semester 1
   { no: 1, kode: "MKWI-21012", matkul: "Bahasa Inggris Dasar", smt: 1, sks: 2, hm: "A", am: 4, nm: 8 },
@@ -82,14 +80,14 @@ const transcriptBudi: TranscriptItem[] = [
   { no: 4, kode: "MKWI-21014", matkul: "Kalkulus", smt: 1, sks: 3, hm: "C", am: 2, nm: 6 },
   { no: 5, kode: "MKWI-21001", matkul: "Algoritma dan Pemrograman Dasar", smt: 1, sks: 3, hm: "A", am: 4, nm: 12 },
   { no: 6, kode: "MKWN-21003", matkul: "Pendidikan Agama", smt: 1, sks: 2, hm: "A", am: 4, nm: 8 },
-  { no: 7, kode: "MKWI-21007", matkul: "Dasar Dasar Artificial Intelligence", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
+  { no: 7, kode: "MKWI-21007", matkul: "Dasar-Dasar Artificial Intelligence", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
   { no: 8, kode: "MKWN-21001", matkul: "Pancasila", smt: 1, sks: 2, hm: "A", am: 4, nm: 8 },
   
   // Semester 2
   { no: 9, kode: "MKWN-004", matkul: "Pendidikan Kewarganegaraan", smt: 2, sks: 2, hm: "B", am: 3, nm: 6 },
   { no: 10, kode: "SIW-2121", matkul: "Jaringan Komputer", smt: 2, sks: 3, hm: "B", am: 3, nm: 9 },
   { no: 11, kode: "MKD-0105", matkul: "Struktur Data", smt: 2, sks: 3, hm: "C", am: 2, nm: 6 },
-  { no: 12, kode: "MKWI-21002", matkul: "Algoritma Dan Pemrograman Lanjut", smt: 2, sks: 4, hm: "B", am: 3, nm: 12 },
+  { no: 12, kode: "MKWI-21002", matkul: "Algoritma dan Pemrograman Lanjut", smt: 2, sks: 4, hm: "B", am: 3, nm: 12 },
   { no: 13, kode: "SIW-2123", matkul: "Statistika", smt: 2, sks: 3, hm: "C", am: 2, nm: 6 },
   { no: 14, kode: "MKWI-21005", matkul: "Aljabar Linear", smt: 2, sks: 3, hm: "C", am: 2, nm: 6 },
   { no: 15, kode: "MKWN-002", matkul: "Bahasa Indonesia", smt: 2, sks: 2, hm: "A", am: 4, nm: 8 },
@@ -110,7 +108,6 @@ const transcriptBudi: TranscriptItem[] = [
   { no: 26, kode: "MBKM-TI-04017", matkul: "Etika Bisnis Profesi", smt: 4, sks: 3, hm: "B", am: 3, nm: 9 },
 ];
 
-// Export Array Mahasiswa (Kumpulan Data)
 export const students: StudentData[] = [
   {
     id: "azhar",

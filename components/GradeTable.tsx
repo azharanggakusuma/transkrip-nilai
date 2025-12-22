@@ -1,36 +1,42 @@
+// components/GradeTable.tsx
 import React from "react";
-import { TranscriptItem } from "../lib/data";
+import { TranscriptItem } from "@/lib/data";
 
 interface GradeTableProps {
   data: TranscriptItem[];
+  ipk?: string; // Optional, bisa dihitung otomatis atau di-pass (utk KHS)
+  ips?: string; // Optional, hanya untuk KHS
+  mode?: "transkrip" | "khs"; // Default: "transkrip"
 }
 
-export default function GradeTable({ data }: GradeTableProps) {
-  // --- LOGIKA PERHITUNGAN OTOMATIS ---
+export default function GradeTable({ 
+  data, 
+  ipk, 
+  ips, 
+  mode = "transkrip" 
+}: GradeTableProps) {
   
-  // 1. Hitung Jumlah Beban SKS
+  // 1. Hitung Total SKS & NM (Dari data yang ditampilkan)
   const totalSKS = data.reduce((acc, row) => acc + row.sks, 0);
-
-  // 2. Hitung Jumlah Nilai Mutu (NM)
   const totalNM = data.reduce((acc, row) => acc + row.nm, 0);
 
-  // 3. Hitung IPK
-  // Rumus: Total NM / Total SKS
-  // toFixed(2) untuk ambil 2 angka belakang koma
-  // replace('.', ',') untuk mengubah format titik menjadi koma (Indonesia)
-  const ipk = totalSKS > 0 
-    ? (totalNM / totalSKS).toFixed(2).replace('.', ',') 
-    : "0,00";
+  // 2. Hitung IPK jika tidak diberikan sebagai props
+  // (Biasanya di Transkrip, IPK dihitung dari semua data ini)
+  const displayedIPK = ipk 
+    ? ipk 
+    : (totalSKS > 0 
+        ? (totalNM / totalSKS).toFixed(2).replace('.', ',') 
+        : "0,00");
 
   return (
-    // Tetap menggunakan font Cambria dan ukuran text 9px
     <table className="w-full text-[9px] border-collapse border border-black mb-2 font-['Cambria']">
       <thead>
         <tr className="bg-[#D9EAF7] text-center font-bold h-5 border-b border-black">
           <th className="border border-black w-6">No</th>
           <th className="border border-black w-34">Kode MK</th>
           <th className="border border-black text-left pl-2">Mata Kuliah</th>
-          <th className="border border-black w-10">SMT</th>
+          {/* Kolom SMT disembunyikan di mode KHS agar lebih bersih, tampil di mode Transkrip */}
+          {mode === "transkrip" && <th className="border border-black w-10">SMT</th>}
           <th className="border border-black w-10">SKS</th>
           <th className="border border-black w-10">HM</th>
           <th className="border border-black w-10">AM</th>
@@ -39,14 +45,15 @@ export default function GradeTable({ data }: GradeTableProps) {
       </thead>
 
       <tbody className="font-normal">
-        {data.map((row) => (
-          <tr key={row.no} className="text-center leading-none h-[13px]">
-            <td className="border border-black">{row.no}</td>
+        {data.map((row, index) => (
+          <tr key={index} className="text-center leading-none h-[13px]">
+            {/* Nomor urut: di KHS reset per tampilan, di Transkrip biasanya pakai row.no atau index+1 */}
+            <td className="border border-black">{mode === 'khs' ? index + 1 : row.no}</td>
             <td className="border border-black">{row.kode}</td>
-            <td className="border border-black text-left pl-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] pl-2">
+            <td className="border border-black text-left pl-2 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">
               {row.matkul}
             </td>
-            <td className="border border-black">{row.smt}</td>
+            {mode === "transkrip" && <td className="border border-black">{row.smt}</td>}
             <td className="border border-black">{row.sks}</td>
             <td className="border border-black">{row.hm}</td>
             <td className="border border-black">{row.am}</td>
@@ -54,31 +61,43 @@ export default function GradeTable({ data }: GradeTableProps) {
           </tr>
         ))}
 
-        {/* --- BARIS TOTAL (MENGGUNAKAN VARIABEL) --- */}
-        <tr className="font-bold bg-white h-4 border-t border-black">
-          <td colSpan={3} className="border border-black px-2 text-left">
-            Jumlah Beban SKS
-          </td>
-          <td colSpan={5} className="border border-black px-2 text-left">
-            {totalSKS}
-          </td>
-        </tr>
-        <tr className="font-bold bg-white h-4">
-          <td colSpan={3} className="border border-black px-2 text-left">
-            Jumlah Nilai Mutu
-          </td>
-          <td colSpan={5} className="border border-black px-2 text-left">
-            {totalNM}
-          </td>
-        </tr>
-        <tr className="font-bold bg-white h-4">
-          <td colSpan={3} className="border border-black px-2 text-left">
-            Indeks Prestasi Kumulatif (IPK)
-          </td>
-          <td colSpan={5} className="border border-black px-2 text-left">
-            {ipk}
-          </td>
-        </tr>
+        {/* --- FOOTER SECTION --- */}
+        {mode === "khs" ? (
+          // === FOOTER MODE KHS ===
+          <>
+             <tr className="font-bold bg-white h-4 border-t border-black">
+              <td colSpan={3} className="border border-black px-2 text-left">Jumlah (Semester Ini)</td>
+              <td className="border border-black text-center">{totalSKS}</td>
+              <td className="border border-black bg-gray-100"></td>
+              <td className="border border-black bg-gray-100"></td>
+              <td className="border border-black text-center">{totalNM}</td>
+            </tr>
+            <tr className="font-bold bg-white h-4">
+              <td colSpan={3} className="border border-black px-2 text-left">Indeks Prestasi Semester (IPS)</td>
+              <td colSpan={4} className="border border-black px-2 text-left">{ips}</td>
+            </tr>
+            <tr className="font-bold bg-white h-4">
+              <td colSpan={3} className="border border-black px-2 text-left">Indeks Prestasi Kumulatif (IPK)</td>
+              <td colSpan={4} className="border border-black px-2 text-left">{displayedIPK}</td>
+            </tr>
+          </>
+        ) : (
+          // === FOOTER MODE TRANSKRIP ===
+          <>
+            <tr className="font-bold bg-white h-4 border-t border-black">
+              <td colSpan={3} className="border border-black px-2 text-left">Jumlah Beban SKS</td>
+              <td colSpan={5} className="border border-black px-2 text-left">{totalSKS}</td>
+            </tr>
+            <tr className="font-bold bg-white h-4">
+              <td colSpan={3} className="border border-black px-2 text-left">Jumlah Nilai Mutu</td>
+              <td colSpan={5} className="border border-black px-2 text-left">{totalNM}</td>
+            </tr>
+            <tr className="font-bold bg-white h-4">
+              <td colSpan={3} className="border border-black px-2 text-left">Indeks Prestasi Kumulatif (IPK)</td>
+              <td colSpan={5} className="border border-black px-2 text-left">{displayedIPK}</td>
+            </tr>
+          </>
+        )}
       </tbody>
     </table>
   );

@@ -1,3 +1,4 @@
+// app/(pages)/khs/page.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -6,14 +7,15 @@ import Header from "@/components/Header";
 import StudentInfo from "@/components/StudentInfo";
 import Footer from "@/components/Footer";
 import ControlPanel from "@/components/ControlPanel";
-import KhsTable from "@/components/KhsTable"; 
-import { getSignatureBase64 } from "@/app/actions/getSignature";
+import GradeTable from "@/components/GradeTable";
+import { useSignature } from "@/hooks/useSignature";
 
 export default function KhsPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedSemester, setSelectedSemester] = useState<number>(1);
-  const [signatureType, setSignatureType] = useState<"basah" | "digital" | "none">("none");
-  const [secureImage, setSecureImage] = useState<string | null>(null);
+  
+  // Gunakan Custom Hook
+  const { signatureType, setSignatureType, secureImage } = useSignature("none");
 
   const currentStudent = students[selectedIndex];
 
@@ -30,27 +32,14 @@ export default function KhsPage() {
     }
   }, [selectedIndex, availableSemesters]);
 
-  // Load Signature
-  useEffect(() => {
-    const fetchSignature = async () => {
-      if (signatureType === "none") {
-        setSecureImage(null);
-        return;
-      }
-      const base64Data = await getSignatureBase64(signatureType);
-      setSecureImage(base64Data);
-    };
-    fetchSignature();
-  }, [signatureType]);
-
   // --- HITUNG IPS & IPK ---
   
-  // Data Semester Ini
+  // Data Semester Ini (untuk ditampilkan di tabel)
   const semesterData = useMemo(() => {
     return currentStudent.transcript.filter((t) => t.smt === selectedSemester);
   }, [currentStudent, selectedSemester]);
 
-  // Data Kumulatif
+  // Data Kumulatif (untuk hitung IPK)
   const cumulativeData = useMemo(() => {
     return currentStudent.transcript.filter((t) => t.smt <= selectedSemester);
   }, [currentStudent, selectedSemester]);
@@ -80,12 +69,13 @@ export default function KhsPage() {
       <div className="flex-1 flex justify-center w-full lg:w-auto overflow-x-auto lg:overflow-visible">
         <div className="bg-white p-12 shadow-2xl border border-gray-300 print:shadow-none print:border-none print:p-0 print:m-0 w-[210mm] min-h-[297mm] origin-top scale-[0.9] lg:scale-100 transition-transform duration-300">
           
-          {/* JUDUL DINAMIS UNTUK KHS */}
           <Header title={`KARTU HASIL STUDI`} />
           
           <StudentInfo profile={currentStudent.profile} displaySemester={selectedSemester} />
           
-          <KhsTable 
+          {/* Menggunakan GradeTable dengan mode 'khs' */}
+          <GradeTable 
+            mode="khs"
             data={semesterData} 
             ips={ips} 
             ipk={ipk} 
