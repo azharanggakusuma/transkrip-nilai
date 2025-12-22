@@ -13,7 +13,7 @@ type PageInfo = {
 };
 
 const ROUTES: Record<string, PageInfo> = {
-  "/": { title: "Dashboard", breadcrumb: ["SIAKAD"] },
+  "/": { title: "", breadcrumb: [""] },
   "/transkrip": { title: "Transkrip Nilai", breadcrumb: ["SIAKAD", "Transkrip"] },
   "/mahasiswa": { title: "Data Mahasiswa", breadcrumb: ["SIAKAD", "Mahasiswa"] },
   "/matakuliah": { title: "Mata Kuliah", breadcrumb: ["SIAKAD", "Mata Kuliah"] },
