@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function Sidebar() {
+type SidebarProps = {
+  open: boolean;
+  setOpen: (v: boolean) => void;
+};
+
+export default function Sidebar({ open, setOpen }: SidebarProps) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
 
   const isActive = (path: string) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path);
@@ -18,17 +22,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* MOBILE TOGGLE */}
-      <button
-        onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-[60]
-                   h-11 w-11 rounded-xl
-                   bg-white border border-slate-200 shadow-sm
-                   flex items-center justify-center"
-      >
-        <MenuIcon />
-      </button>
-
       {/* OVERLAY */}
       {open && (
         <div
@@ -46,6 +39,7 @@ export default function Sidebar() {
           transform transition-transform duration-300
           ${open ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0 lg:static lg:h-screen
+          print:hidden
         `}
       >
         {/* BRAND */}
@@ -54,9 +48,7 @@ export default function Sidebar() {
             <Image src="/img/logo-ikmi.png" alt="Logo" fill className="object-contain" />
           </div>
           <div>
-            <p className="font-bold text-slate-800 text-lg leading-none">
-              SIAKAD
-            </p>
+            <p className="font-bold text-slate-800 text-lg leading-none">SIAKAD</p>
             <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mt-1">
               STMIK IKMI Cirebon
             </p>
@@ -67,44 +59,14 @@ export default function Sidebar() {
         <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
           <SectionLabel label="Menu Utama" />
 
-          <NavItem
-            href="/"
-            label="Dashboard"
-            icon={<DashboardIcon />}
-            active={isActive("/")}
-            onClick={() => setOpen(false)}
-          />
-          <NavItem
-            href="/transkrip"
-            label="Transkrip Nilai"
-            icon={<DocIcon />}
-            active={isActive("/transkrip")}
-            onClick={() => setOpen(false)}
-          />
-          <NavItem
-            href="/mahasiswa"
-            label="Data Mahasiswa"
-            icon={<UserIcon />}
-            active={isActive("/mahasiswa")}
-            onClick={() => setOpen(false)}
-          />
-          <NavItem
-            href="/matakuliah"
-            label="Mata Kuliah"
-            icon={<BookIcon />}
-            active={isActive("/matakuliah")}
-            onClick={() => setOpen(false)}
-          />
+          <NavItem href="/" label="Dashboard" icon={<DashboardIcon />} active={isActive("/")} onClick={() => setOpen(false)} />
+          <NavItem href="/transkrip" label="Transkrip Nilai" icon={<DocIcon />} active={isActive("/transkrip")} onClick={() => setOpen(false)} />
+          <NavItem href="/mahasiswa" label="Data Mahasiswa" icon={<UserIcon />} active={isActive("/mahasiswa")} onClick={() => setOpen(false)} />
+          <NavItem href="/matakuliah" label="Mata Kuliah" icon={<BookIcon />} active={isActive("/matakuliah")} onClick={() => setOpen(false)} />
 
           <div className="my-4 border-t border-slate-100" />
 
-          <NavItem
-            href="/pengaturan"
-            label="Pengaturan"
-            icon={<SettingsIcon />}
-            active={isActive("/pengaturan")}
-            onClick={() => setOpen(false)}
-          />
+          <NavItem href="/pengaturan" label="Pengaturan" icon={<SettingsIcon />} active={isActive("/pengaturan")} onClick={() => setOpen(false)} />
         </nav>
 
         {/* FOOTER */}
@@ -149,22 +111,12 @@ function NavItem({
         className={`
           group relative flex items-center gap-3 px-4 py-2.5 rounded-lg
           text-sm font-medium transition-all duration-200
-          ${
-            active
-              ? "bg-blue-50 text-[#1B3F95]"
-              : "text-slate-600 hover:bg-slate-100"
-          }
+          ${active ? "bg-blue-50 text-[#1B3F95]" : "text-slate-600 hover:bg-slate-100"}
         `}
       >
-        {active && (
-          <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r bg-[#1B3F95]" />
-        )}
+        {active && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r bg-[#1B3F95]" />}
 
-        <span
-          className={`transition-colors ${
-            active ? "text-[#1B3F95]" : "text-slate-400 group-hover:text-slate-600"
-          }`}
-        >
+        <span className={`transition-colors ${active ? "text-[#1B3F95]" : "text-slate-400 group-hover:text-slate-600"}`}>
           {icon}
         </span>
         <span>{label}</span>
@@ -182,12 +134,6 @@ function SectionLabel({ label }: { label: string }) {
 }
 
 /* ================= ICONS ================= */
-
-const MenuIcon = () => (
-  <svg className="w-6 h-6 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-  </svg>
-);
 
 const DashboardIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
