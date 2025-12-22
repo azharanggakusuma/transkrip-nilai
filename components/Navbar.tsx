@@ -31,7 +31,7 @@ export default function Navbar({ onOpenSidebar }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
         {/* LEFT */}
         <div className="flex items-center gap-3 min-w-0">
-          {/* ✅ Mobile toggle inside Navbar (no more overlap) */}
+          {/* Mobile toggle */}
           <button
             type="button"
             onClick={onOpenSidebar}
@@ -66,10 +66,11 @@ export default function Navbar({ onOpenSidebar }: NavbarProps) {
           {/* Search Desktop */}
           <div className="hidden md:block">
             <div className="relative group">
-              <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 transition-colors duration-200 group-focus-within:text-slate-500">
+              <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 transition-colors duration-200 group-focus-within:text-blue-600">
                 <SearchIcon />
               </span>
 
+              {/* ✅ Outline / ring saat diklik (focus) */}
               <input
                 type="text"
                 placeholder="Cari data..."
@@ -78,12 +79,13 @@ export default function Navbar({ onOpenSidebar }: NavbarProps) {
                            border border-transparent outline-none
                            transition-all duration-200
                            hover:bg-slate-100/70
-                           focus:bg-white focus:border-slate-200 focus:ring-1 focus:ring-slate-200"
+                           focus:bg-white focus:border-blue-200
+                           focus:ring-2 focus:ring-blue-100"
               />
             </div>
           </div>
 
-          {/* Search Mobile */}
+          {/* Search Mobile (icon) */}
           <button
             type="button"
             className="md:hidden h-9 w-9 inline-flex items-center justify-center rounded-full
