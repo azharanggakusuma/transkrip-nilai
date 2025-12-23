@@ -1,4 +1,5 @@
 // lib/data.ts
+import studentsJson from "./students-data.json";
 
 // =========================================
 // 1. TYPE DEFINITIONS
@@ -179,121 +180,18 @@ function createStudent(
 // 4. DATA MAHASISWA
 // =========================================
 
-// --- DATA 1: AZHARANGGA KUSUMA ---
-const azhar = createStudent(
-  "azhar",
-  {
-    nama: "AZHARANGGA KUSUMA",
-    nim: "41226142",
-    prodi: "Teknik Informatika (S1)",
-    semester: 7,
-  },
-  [
-    // Semester 1
-    { kode: "MKWI-21012", hm: "A" },
-    { kode: "MKWI-21013", hm: "A" },
-    { kode: "MKD-0006",   hm: "A" },
-    { kode: "MKWI-21014", hm: "B" },
-    { kode: "MKWI-21001", hm: "B" },
-    { kode: "MKWN-21003", hm: "B" },
-    { kode: "MKWI-21007", hm: "B" },
-    { kode: "MKWN-21001", hm: "B" },
+// Mengambil data dari JSON
+const rawData = studentsJson as {
+  id: string;
+  profile: StudentProfile;
+  grades: RawGrade[];
+}[];
 
-    // Semester 2
-    { kode: "MKWN-004",   hm: "B" },
-    { kode: "SIW-2121",   hm: "A" },
-    { kode: "MKD-0105",   hm: "B" },
-    { kode: "MKWI-21002", hm: "B" },
-    { kode: "SIW-2123",   hm: "B" },
-    { kode: "MKWI-21005", hm: "B" },
-    { kode: "MKWN-002",   hm: "A" },
-
-    // Semester 3
-    { kode: "MDK-0303", hm: "B" },
-    { kode: "TDK-0304", hm: "A" },
-    { kode: "MDK-0305", hm: "A" },
-    { kode: "MDK-0301", hm: "B" },
-    { kode: "MDK-0306", hm: "B" },
-    { kode: "MDK-0302", hm: "B" },
-
-    // Semester 4
-    { kode: "MBKM-TI-04078", hm: "A" },
-    { kode: "MBKM-TI-04049", hm: "A" },
-    { kode: "MBKM-TI-04051", hm: "A" },
-    { kode: "MBKM-TI-04066", hm: "B" },
-    { kode: "MBKM-TI-04017", hm: "B" },
-    { kode: "MBKM-TI-04073", hm: "A" },
-    { kode: "MBKM-TI-04044", hm: "B" },
-
-    // Semester 5
-    { kode: "TKK-0501", hm: "A" },
-    { kode: "MKK-0502", hm: "B" },
-    { kode: "TKK-0503", hm: "A" },
-    { kode: "TKK-0504", hm: "B" },
-    { kode: "TKK-0505", hm: "A" },
-
-    // Semester 6
-    { kode: "TKK-0601", hm: "B" },
-    { kode: "TKK-0602", hm: "A" },
-    { kode: "TKK-0603", hm: "B" },
-    { kode: "TKK-0604", hm: "A" },
-    { kode: "TKK-0605", hm: "A" },
-
-    // Semester 7
-    { kode: "MKK-0705", hm: "B" },
-    { kode: "MKK-0704", hm: "B" },
-    { kode: "MKK-0703", hm: "C" },
-    { kode: "MKK-0702", hm: "A" },
-    { kode: "MKK-0701", hm: "B" },
-  ]
+// Mapping data JSON ke format StudentData menggunakan createStudent
+export const students: StudentData[] = rawData.map((mhs) =>
+  createStudent(
+    mhs.id,
+    mhs.profile,
+    mhs.grades
+  )
 );
-
-// --- DATA 2: JOHN DOE ---
-const budi = createStudent(
-  "budi",
-  {
-    nama: "JOHN DOE",
-    nim: "41226155",
-    prodi: "Teknik Informatika (S1)",
-    semester: 4,
-  },
-  [
-    // Smt 1
-    { kode: "MKWI-21012", hm: "A" },
-    { kode: "MKWI-21013", hm: "B" },
-    { kode: "MKD-0006",   hm: "B" },
-    { kode: "MKWI-21014", hm: "C" },
-    { kode: "MKWI-21001", hm: "A" },
-    { kode: "MKWN-21003", hm: "A" },
-    { kode: "MKWI-21007", hm: "B" },
-    { kode: "MKWN-21001", hm: "A" },
-
-    // Smt 2
-    { kode: "MKWN-004",   hm: "B" },
-    { kode: "SIW-2121",   hm: "B" },
-    { kode: "MKD-0105",   hm: "C" },
-    { kode: "MKWI-21002", hm: "B" },
-    { kode: "SIW-2123",   hm: "C" },
-    { kode: "MKWI-21005", hm: "C" },
-    { kode: "MKWN-002",   hm: "A" },
-
-    // Smt 3
-    { kode: "MDK-0303", hm: "B" },
-    { kode: "TDK-0304", hm: "B" },
-    { kode: "MDK-0305", hm: "A" },
-    { kode: "MDK-0301", hm: "A" },
-    { kode: "MDK-0306", hm: "B" },
-    { kode: "MDK-0302", hm: "B" },
-
-    // Smt 4
-    { kode: "TDK-0406", hm: "A" },
-    { kode: "MDK-0405", hm: "B" },
-    { kode: "MDK-0404", hm: "B" },
-    { kode: "TDK-0403", hm: "B" },
-    { kode: "MDK-0402", hm: "B" },
-    { kode: "TDK-0401", hm: "A" },
-  ]
-);
-
-// EXPORT ARRAY UTAMA
-export const students: StudentData[] = [azhar, budi];
