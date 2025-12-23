@@ -140,9 +140,7 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
             Logout
           </button>
 
-          <div className="text-center text-[11px] font-medium text-slate-400">
-            Version App 1.0.0
-          </div>
+          {/* Bagian Version App 1.0.0 telah dihapus dari sini */}
         </div>
       </aside>
     </>
@@ -150,6 +148,7 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
 }
 
 /* ================= NAV ITEM ================= */
+// ... (sisa kode di bawah ini tetap sama seperti sebelumnya)
 
 function NavItem({
   href,
