@@ -4,15 +4,19 @@
 // 1. TYPE DEFINITIONS
 // =========================================
 
+// Tipe kategori
+export type CourseCategory = "Reguler" | "MBKM";
+
 export interface TranscriptItem {
   no: number;
   kode: string;
   matkul: string;
   smt: number;
   sks: number;
-  hm: string; // Huruf Mutu (A, B, C...)
-  am: number; // Angka Mutu (4, 3, 2...)
-  nm: number; // Nilai Mutu (am x sks)
+  hm: string;
+  am: number;
+  nm: number;
+  kategori: CourseCategory;
 }
 
 export interface StudentProfile {
@@ -28,98 +32,94 @@ export interface StudentData {
   transcript: TranscriptItem[];
 }
 
-// Tipe data untuk Master Mata Kuliah (Database MK)
 type CourseData = {
   matkul: string;
   sks: number;
-  smt_default: number; // Semester standar MK ini diambil
+  smt_default: number;
+  kategori: CourseCategory;
 };
 
-// Tipe data input ringkas (hanya butuh Kode & Nilai)
 type RawGrade = {
   kode: string;
   hm: string;
-  smt?: number; // Opsional: jika mahasiswa ambil di semester beda (misal SP/mengulang)
+  smt?: number;
 };
 
 // =========================================
 // 2. MASTER DATA (DATABASE MATA KULIAH)
 // =========================================
-// Tambahkan semua mata kuliah di sini.
-// Format: "KODE_MK": { matkul: "Nama MK", sks: 2, smt_default: 1 }
 
 const COURSES_DB: Record<string, CourseData> = {
-  // --- SEMESTER 1 ---
-  "MKWI-21012": { matkul: "Bahasa Inggris Dasar", sks: 2, smt_default: 1 },
-  "MKWI-21013": { matkul: "Pengenalan Budaya Cirebon", sks: 2, smt_default: 1 },
-  "MKD-0006":   { matkul: "Data Manajemen", sks: 3, smt_default: 1 },
-  "MKWI-21014": { matkul: "Kalkulus", sks: 3, smt_default: 1 },
-  "MKWI-21001": { matkul: "Algoritma dan Pemrograman Dasar", sks: 3, smt_default: 1 },
-  "MKWN-21003": { matkul: "Pendidikan Agama", sks: 2, smt_default: 1 },
-  "MKWI-21007": { matkul: "Dasar-Dasar Artificial Intelligence", sks: 3, smt_default: 1 },
-  "MKWN-21001": { matkul: "Pancasila", sks: 2, smt_default: 1 },
+  // --- SEMESTER 1 (Reguler) ---
+  "MKWI-21012": { matkul: "Bahasa Inggris Dasar", sks: 2, smt_default: 1, kategori: "Reguler" },
+  "MKWI-21013": { matkul: "Pengenalan Budaya Cirebon", sks: 2, smt_default: 1, kategori: "Reguler" },
+  "MKD-0006":   { matkul: "Data Manajemen", sks: 3, smt_default: 1, kategori: "Reguler" },
+  "MKWI-21014": { matkul: "Kalkulus", sks: 3, smt_default: 1, kategori: "Reguler" },
+  "MKWI-21001": { matkul: "Algoritma dan Pemrograman Dasar", sks: 3, smt_default: 1, kategori: "Reguler" },
+  "MKWN-21003": { matkul: "Pendidikan Agama", sks: 2, smt_default: 1, kategori: "Reguler" },
+  "MKWI-21007": { matkul: "Dasar-Dasar Artificial Intelligence", sks: 3, smt_default: 1, kategori: "Reguler" },
+  "MKWN-21001": { matkul: "Pancasila", sks: 2, smt_default: 1, kategori: "Reguler" },
 
-  // --- SEMESTER 2 ---
-  "MKWN-004":   { matkul: "Pendidikan Kewarganegaraan", sks: 2, smt_default: 2 },
-  "SIW-2121":   { matkul: "Jaringan Komputer", sks: 3, smt_default: 2 },
-  "MKD-0105":   { matkul: "Struktur Data", sks: 3, smt_default: 2 },
-  "MKWI-21002": { matkul: "Algoritma dan Pemrograman Lanjut", sks: 4, smt_default: 2 },
-  "SIW-2123":   { matkul: "Statistika", sks: 3, smt_default: 2 },
-  "MKWI-21005": { matkul: "Aljabar Linear", sks: 3, smt_default: 2 },
-  "MKWN-002":   { matkul: "Bahasa Indonesia", sks: 2, smt_default: 2 },
+  // --- SEMESTER 2 (Reguler) ---
+  "MKWN-004":   { matkul: "Pendidikan Kewarganegaraan", sks: 2, smt_default: 2, kategori: "Reguler" },
+  "SIW-2121":   { matkul: "Jaringan Komputer", sks: 3, smt_default: 2, kategori: "Reguler" },
+  "MKD-0105":   { matkul: "Struktur Data", sks: 3, smt_default: 2, kategori: "Reguler" },
+  "MKWI-21002": { matkul: "Algoritma dan Pemrograman Lanjut", sks: 4, smt_default: 2, kategori: "Reguler" },
+  "SIW-2123":   { matkul: "Statistika", sks: 3, smt_default: 2, kategori: "Reguler" },
+  "MKWI-21005": { matkul: "Aljabar Linear", sks: 3, smt_default: 2, kategori: "Reguler" },
+  "MKWN-002":   { matkul: "Bahasa Indonesia", sks: 2, smt_default: 2, kategori: "Reguler" },
 
-  // --- SEMESTER 3 ---
-  "MDK-0303":   { matkul: "Matematika Diskrit", sks: 3, smt_default: 3 },
-  "TDK-0304":   { matkul: "Jaringan Komputer Advanced", sks: 3, smt_default: 3 },
-  "MDK-0305":   { matkul: "Pemrograman Web", sks: 3, smt_default: 3 },
-  "MDK-0301":   { matkul: "Pemrograman SQL", sks: 4, smt_default: 3 },
-  "MDK-0306":   { matkul: "Data Science", sks: 3, smt_default: 3 },
-  "MDK-0302":   { matkul: "Rekayasa Perangkat Lunak", sks: 4, smt_default: 3 },
+  // --- SEMESTER 3 (Reguler) ---
+  "MDK-0303":   { matkul: "Matematika Diskrit", sks: 3, smt_default: 3, kategori: "Reguler" },
+  "TDK-0304":   { matkul: "Jaringan Komputer Advanced", sks: 3, smt_default: 3, kategori: "Reguler" },
+  "MDK-0305":   { matkul: "Pemrograman Web", sks: 3, smt_default: 3, kategori: "Reguler" },
+  "MDK-0301":   { matkul: "Pemrograman SQL", sks: 4, smt_default: 3, kategori: "Reguler" },
+  "MDK-0306":   { matkul: "Data Science", sks: 3, smt_default: 3, kategori: "Reguler" },
+  "MDK-0302":   { matkul: "Rekayasa Perangkat Lunak", sks: 4, smt_default: 3, kategori: "Reguler" },
 
-  // --- SEMESTER 4 (REGULER / ASLI KAMPUS) ---
-  "TDK-0406": { matkul: "Basis Data", sks: 3, smt_default: 4 },
-  "MDK-0405": { matkul: "Internet of Thing", sks: 3, smt_default: 4 },
-  "MDK-0404": { matkul: "Data Mining", sks: 4, smt_default: 4 },
-  "TDK-0403": { matkul: "Metode Numerik", sks: 3, smt_default: 4 },
-  "MDK-0402": { matkul: "Interaksi Manusia Komputer", sks: 3, smt_default: 4 },
-  "TDK-0401": { matkul: "Jaringan Komputer Expert", sks: 4, smt_default: 4 },
+  // --- SEMESTER 4 (REGULER / KAMPUS) ---
+  "TDK-0406": { matkul: "Basis Data", sks: 3, smt_default: 4, kategori: "Reguler" },
+  "MDK-0405": { matkul: "Internet of Thing", sks: 3, smt_default: 4, kategori: "Reguler" },
+  "MDK-0404": { matkul: "Data Mining", sks: 4, smt_default: 4, kategori: "Reguler" },
+  "TDK-0403": { matkul: "Metode Numerik", sks: 3, smt_default: 4, kategori: "Reguler" },
+  "MDK-0402": { matkul: "Interaksi Manusia Komputer", sks: 3, smt_default: 4, kategori: "Reguler" },
+  "TDK-0401": { matkul: "Jaringan Komputer Expert", sks: 4, smt_default: 4, kategori: "Reguler" },
 
-  // --- SEMESTER 4 (KHUSUS MBKM / LUAR KAMPUS) ---
-  "MBKM-TI-04078": { matkul: "TP. Camping dan Trekking", sks: 3, smt_default: 4 },
-  "MBKM-TI-04049": { matkul: "Modul Nusantara", sks: 4, smt_default: 4 },
-  "MBKM-TI-04051": { matkul: "Pendidikan Anti Korupsi", sks: 3, smt_default: 4 },
-  "MBKM-TI-04066": { matkul: "Semiotika", sks: 2, smt_default: 4 },
-  "MBKM-TI-04017": { matkul: "Etika Bisnis Profesi", sks: 3, smt_default: 4 },
-  "MBKM-TI-04073": { matkul: "Technopreneurship", sks: 3, smt_default: 4 },
-  "MBKM-TI-04044": { matkul: "Media Pembelajaran", sks: 3, smt_default: 4 },
+  // --- SEMESTER 4 (MBKM / LUAR KAMPUS) ---
+  "MBKM-TI-04078": { matkul: "TP. Camping dan Trekking", sks: 3, smt_default: 4, kategori: "MBKM" },
+  "MBKM-TI-04049": { matkul: "Modul Nusantara", sks: 4, smt_default: 4, kategori: "MBKM" },
+  "MBKM-TI-04051": { matkul: "Pendidikan Anti Korupsi", sks: 3, smt_default: 4, kategori: "MBKM" },
+  "MBKM-TI-04066": { matkul: "Semiotika", sks: 2, smt_default: 4, kategori: "MBKM" },
+  "MBKM-TI-04017": { matkul: "Etika Bisnis Profesi", sks: 3, smt_default: 4, kategori: "MBKM" },
+  "MBKM-TI-04073": { matkul: "Technopreneurship", sks: 3, smt_default: 4, kategori: "MBKM" },
+  "MBKM-TI-04044": { matkul: "Media Pembelajaran", sks: 3, smt_default: 4, kategori: "MBKM" },
 
-  // --- SEMESTER 5 ---
-  "TKK-0501": { matkul: "Cloud Computing", sks: 4, smt_default: 5 },
-  "MKK-0502": { matkul: "Keamanan Jaringan", sks: 4, smt_default: 5 },
-  "TKK-0503": { matkul: "Text Mining", sks: 4, smt_default: 5 },
-  "TKK-0504": { matkul: "Sistem Operasi", sks: 4, smt_default: 5 },
-  "TKK-0505": { matkul: "Deep Learning Dasar", sks: 4, smt_default: 5 },
+  // --- SEMESTER 5 (Reguler) ---
+  "TKK-0501": { matkul: "Cloud Computing", sks: 4, smt_default: 5, kategori: "Reguler" },
+  "MKK-0502": { matkul: "Keamanan Jaringan", sks: 4, smt_default: 5, kategori: "Reguler" },
+  "TKK-0503": { matkul: "Text Mining", sks: 4, smt_default: 5, kategori: "Reguler" },
+  "TKK-0504": { matkul: "Sistem Operasi", sks: 4, smt_default: 5, kategori: "Reguler" },
+  "TKK-0505": { matkul: "Deep Learning Dasar", sks: 4, smt_default: 5, kategori: "Reguler" },
 
-  // --- SEMESTER 6 ---
-  "TKK-0601": { matkul: "Deep Learning Lanjut", sks: 4, smt_default: 6 },
-  "TKK-0602": { matkul: "Manajemen Proyek Data Science", sks: 4, smt_default: 6 },
-  "TKK-0603": { matkul: "Big Data Analytic", sks: 4, smt_default: 6 },
-  "TKK-0604": { matkul: "Computer Vision", sks: 4, smt_default: 6 },
-  "TKK-0605": { matkul: "Robotic", sks: 4, smt_default: 6 },
+  // --- SEMESTER 6 (Reguler) ---
+  "TKK-0601": { matkul: "Deep Learning Lanjut", sks: 4, smt_default: 6, kategori: "Reguler" },
+  "TKK-0602": { matkul: "Manajemen Proyek Data Science", sks: 4, smt_default: 6, kategori: "Reguler" },
+  "TKK-0603": { matkul: "Big Data Analytic", sks: 4, smt_default: 6, kategori: "Reguler" },
+  "TKK-0604": { matkul: "Computer Vision", sks: 4, smt_default: 6, kategori: "Reguler" },
+  "TKK-0605": { matkul: "Robotic", sks: 4, smt_default: 6, kategori: "Reguler" },
 
-  // --- SEMESTER 7 ---
-  "MKK-0705": { matkul: "IT Entrepreneur", sks: 2, smt_default: 7 },
-  "MKK-0704": { matkul: "Etika Profesi", sks: 2, smt_default: 7 },
-  "MKK-0703": { matkul: "Proposal Skripsi", sks: 2, smt_default: 7 },
-  "MKK-0702": { matkul: "Literature Review", sks: 4, smt_default: 7 },
-  "MKK-0701": { matkul: "Metode Penelitian", sks: 4, smt_default: 7 },
+  // --- SEMESTER 7 (Reguler) ---
+  "MKK-0705": { matkul: "IT Entrepreneur", sks: 2, smt_default: 7, kategori: "Reguler" },
+  "MKK-0704": { matkul: "Etika Profesi", sks: 2, smt_default: 7, kategori: "Reguler" },
+  "MKK-0703": { matkul: "Proposal Skripsi", sks: 2, smt_default: 7, kategori: "Reguler" },
+  "MKK-0702": { matkul: "Literature Review", sks: 4, smt_default: 7, kategori: "Reguler" },
+  "MKK-0701": { matkul: "Metode Penelitian", sks: 4, smt_default: 7, kategori: "Reguler" },
 };
 
 // =========================================
-// 3. HELPER FUNCTIONS (LOGIC OTOMATIS)
+// 3. HELPER FUNCTIONS
 // =========================================
 
-// Konversi Huruf Mutu (A, B..) ke Angka Mutu (4, 3..)
 function getAm(hm: string): number {
   const map: Record<string, number> = {
     "A": 4, "A-": 3.75,
@@ -129,7 +129,6 @@ function getAm(hm: string): number {
   return map[hm] ?? 0;
 }
 
-// Fungsi pembantu untuk membuat Data Mahasiswa
 function createStudent(
   id: string,
   profile: StudentProfile,
@@ -139,18 +138,18 @@ function createStudent(
   const transcript: TranscriptItem[] = rawGrades.map((g, index) => {
     const course = COURSES_DB[g.kode];
     
-    // Error handling jika kode MK salah ketik/tidak ada di DB
     if (!course) {
-      console.warn(`[WARNING] Mata Kuliah dengan kode ${g.kode} tidak ditemukan di COURSES_DB.`);
+      console.warn(`[WARNING] MK kode ${g.kode} tidak ditemukan.`);
       return {
         no: index + 1,
         kode: g.kode,
-        matkul: "UNKNOWN COURSE",
+        matkul: "UNKNOWN",
         smt: g.smt || 0,
         sks: 0,
         hm: g.hm,
         am: 0,
-        nm: 0
+        nm: 0,
+        kategori: "Reguler"
       };
     }
 
@@ -160,11 +159,12 @@ function createStudent(
       no: index + 1,
       kode: g.kode,
       matkul: course.matkul,
-      smt: g.smt || course.smt_default, // Pakai semester default jika tidak di-override
+      smt: g.smt || course.smt_default,
       sks: course.sks,
       hm: g.hm,
       am: am,
-      nm: am * course.sks // Hitung NM otomatis
+      nm: am * course.sks,
+      kategori: course.kategori
     };
   });
 
@@ -172,7 +172,7 @@ function createStudent(
 }
 
 // =========================================
-// 4. DATA MAHASISWA (INPUT DATA DI SINI)
+// 4. DATA MAHASISWA
 // =========================================
 
 // --- DATA 1: AZHARANGGA KUSUMA ---
@@ -244,7 +244,7 @@ const azhar = createStudent(
   ]
 );
 
-// --- DATA 2: BUDI SANTOSO ---
+// --- DATA 2: JOHN DOE ---
 const budi = createStudent(
   "budi",
   {
