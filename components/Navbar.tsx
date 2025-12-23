@@ -11,10 +11,9 @@ type NavbarProps = {
 export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed }: NavbarProps) {
   return (
     <nav className="w-full bg-white/80 backdrop-blur-md print:hidden">
-      {/* HAPUS "max-w-7xl mx-auto" agar mentok kiri-kanan */}
       <div className="w-full px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
         
-        {/* LEFT SECTION */}
+        {/* === LEFT SECTION === */}
         <div className="flex items-center gap-3 min-w-0">
           
           {/* Tombol Mobile (Hanya muncul di layar kecil) */}
@@ -42,11 +41,9 @@ export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed }:
             {isCollapsed ? <ArrowRightIcon /> : <MenuAltIcon />}
           </button>
 
-        </div>
-
-        {/* RIGHT SECTION (Search & Profile) */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          <div className="hidden md:block">
+          {/* --- SEARCH BAR (PINDAH KE SINI) --- */}
+          {/* Menambahkan margin-left (ml-2) agar tidak terlalu mepet dengan tombol toggle */}
+          <div className="hidden md:block ml-2">
             <div className="relative group">
               <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 transition-colors duration-200 group-focus-within:text-blue-600">
                 <SearchIcon />
@@ -59,6 +56,12 @@ export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed }:
             </div>
           </div>
 
+        </div>
+
+        {/* === RIGHT SECTION (Profile) === */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          
+          {/* Search Button untuk Mobile (Tetap ada untuk tampilan layar kecil) */}
           <button
             type="button"
             className="md:hidden h-9 w-9 inline-flex items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100/60 focus:outline-none focus:ring-0"
@@ -67,7 +70,8 @@ export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed }:
             <SearchIcon />
           </button>
 
-          <div className="hidden sm:block h-6 w-px bg-slate-200 mx-1" />
+          {/* Separator dihapus karena search bar sudah pindah */}
+          {/* <div className="hidden sm:block h-6 w-px bg-slate-200 mx-1" /> */}
 
           <button
             type="button"
