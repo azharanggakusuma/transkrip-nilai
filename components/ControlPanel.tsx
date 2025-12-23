@@ -10,6 +10,9 @@ interface ControlPanelProps {
   onSignatureChange: (type: "basah" | "digital" | "none") => void;
 
   onPrint: () => void;
+  
+  // Prop baru untuk trigger Modal Preview (Mobile)
+  onPreview?: () => void;
 
   // Props opsional untuk KHS (Semester)
   showSemesterSelect?: boolean;
@@ -25,6 +28,7 @@ export default function ControlPanel({
   signatureType,
   onSignatureChange,
   onPrint,
+  onPreview, // Destructure prop baru
   showSemesterSelect = false,
   availableSemesters = [],
   selectedSemester,
@@ -37,7 +41,7 @@ export default function ControlPanel({
   const sectionClass = "flex flex-col gap-2 rounded-xl border border-gray-100 bg-gray-50/60 p-3";
 
   return (
-    <aside className="w-full print:hidden sticky top-24">
+    <aside className="w-full print:hidden xl:sticky xl:top-24 h-fit">
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="px-5 pt-5">
           <h3 className="text-sm font-semibold text-gray-900">Panel Kontrol</h3>
@@ -96,8 +100,19 @@ export default function ControlPanel({
             </select>
           </div>
 
-          {/* 4. Tombol Cetak */}
-          <div className="pt-1">
+          {/* 4. Action Buttons */}
+          <div className="pt-1 flex flex-col gap-3">
+            
+            {/* TOMBOL PREVIEW (Hanya muncul di Mobile/Tablet < xl) */}
+            <button
+              onClick={onPreview}
+              className="xl:hidden w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#1B3F95] bg-[#F0F5FF] px-4 py-3 text-sm font-semibold text-[#1B3F95] shadow-sm transition hover:bg-[#E0EAFF] active:translate-y-[1px]"
+            >
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+               Lihat Preview
+            </button>
+
+            {/* TOMBOL CETAK */}
             <button
               onClick={onPrint}
               className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#1B3F95] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900 active:translate-y-[1px]"
@@ -107,7 +122,8 @@ export default function ControlPanel({
               </svg>
               Cetak PDF
             </button>
-            <div className="mt-2 text-center">
+            
+            <div className="text-center">
               <p className="text-[10px] text-gray-400 leading-snug">Pastikan pengaturan kertas <b>A4</b> & margin <b>None</b>.</p>
             </div>
           </div>

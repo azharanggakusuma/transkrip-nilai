@@ -10,10 +10,12 @@ import GradeTable from "@/components/GradeTable";
 import { useSignature } from "@/hooks/useSignature";
 import PageHeader from "@/components/PageHeader";
 import { useLayout } from "@/app/context/LayoutContext";
+import PreviewModal from "@/components/PreviewModal"; // Import Modal
 
 export default function KhsPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedSemester, setSelectedSemester] = useState<number>(1);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false); // State Modal
   const { signatureType, setSignatureType, secureImage } = useSignature("none");
   const { isCollapsed } = useLayout();
 
@@ -54,8 +56,18 @@ export default function KhsPage() {
     window.print();
   };
 
+  // Helper Render Content
+  const renderPaperContent = () => (
+    <>
+      <Header title={`KARTU HASIL STUDI`} />
+      <StudentInfo profile={currentStudent.profile} displaySemester={selectedSemester} />
+      <GradeTable mode="khs" data={semesterData} ips={ips} ipk={ipk} />
+      <Footer signatureType={signatureType} signatureBase64={secureImage} mode="khs" />
+    </>
+  );
+
   return (
-    <div className="flex flex-col gap-8 w-full">
+    <div className="flex flex-col gap-6 w-full">
       <div className="print:hidden">
         <PageHeader 
           title="Kartu Hasil Studi" 
@@ -65,44 +77,38 @@ export default function KhsPage() {
 
       <div className="flex flex-col xl:flex-row items-start justify-start gap-6 min-h-screen">
         
-        {/* WRAPPER KERTAS */}
+        {/* --- AREA KERTAS (HANYA DESKTOP) --- */}
         <div className={`
-            shrink-0 flex justify-start w-full 
+            hidden xl:flex 
+            shrink-0 justify-start w-full 
             transition-all duration-300
-
+            
             ${isCollapsed 
-               ? "lg:w-[179mm] xl:w-[210mm]" 
-               : "lg:w-[147mm] xl:w-[189mm]" 
+               ? "xl:w-[210mm]" 
+               : "xl:w-[189mm]" 
             }
 
-            overflow-x-hidden xl:overflow-visible 
-            mb-[-600px] sm:mb-[-400px] md:mb-[-250px] lg:mb-[-100px] xl:mb-0 
+            overflow-visible mb-0 
         `}>
           
           <div 
              className={`
-              bg-white p-8 sm:p-12 shadow-2xl border border-gray-300 
+              bg-white p-12 shadow-2xl border border-gray-300 
               print:shadow-none print:border-none print:p-0 print:m-0 
               w-[210mm] min-h-[297mm] 
-              origin-top-left transform 
-              transition-transform duration-300
+              
+              origin-top-left 
+              transform transition-transform duration-300
 
-              scale-[0.4] 
-              sm:scale-[0.6] 
-              md:scale-[0.75] 
-
-              ${isCollapsed ? "lg:scale-[0.85] xl:scale-100" : "lg:scale-[0.7] xl:scale-[0.9]"}
+              ${isCollapsed ? "xl:scale-100" : "xl:scale-[0.9]"}
             `}
           >
-            <Header title={`KARTU HASIL STUDI`} />
-            <StudentInfo profile={currentStudent.profile} displaySemester={selectedSemester} />
-            <GradeTable mode="khs" data={semesterData} ips={ips} ipk={ipk} />
-            <Footer signatureType={signatureType} signatureBase64={secureImage} mode="khs" />
+            {renderPaperContent()}
           </div>
         </div>
 
-        {/* Control Panel */}
-        <div className="w-full flex-1 print:hidden xl:h-[calc(100vh-6rem)] xl:sticky xl:top-24 z-10 pb-10 xl:pb-0">
+        {/* --- CONTROL PANEL --- */}
+        <div className="w-full flex-1 print:hidden z-10 pb-10 xl:pb-0">
           <ControlPanel
             students={students}
             selectedIndex={selectedIndex}
@@ -110,6 +116,9 @@ export default function KhsPage() {
             signatureType={signatureType}
             onSignatureChange={setSignatureType}
             onPrint={handlePrint}
+            onPreview={() => setIsPreviewOpen(true)} // Trigger Modal
+            
+            // Props KHS
             showSemesterSelect={true}
             availableSemesters={availableSemesters}
             selectedSemester={selectedSemester}
@@ -117,6 +126,13 @@ export default function KhsPage() {
           />
         </div>
       </div>
+
+       {/* --- MODAL PREVIEW --- */}
+       <PreviewModal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} title="Preview KHS">
+         <div className="bg-white p-6 sm:p-10 w-[210mm] min-h-[297mm] scale-[0.5] sm:scale-[0.6] origin-top">
+            {renderPaperContent()}
+         </div>
+      </PreviewModal>
     </div>
   );
 }
