@@ -34,19 +34,20 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
       <aside
         className={`
           fixed inset-y-0 left-0 z-50 w-64
-          bg-white border-r border-slate-200
+          bg-white border-r border-slate-200 
           flex flex-col
           transform transition-transform duration-300
           ${open ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0 lg:static lg:h-screen
           print:hidden
+          /* UPDATED: border-r dikembalikan untuk membatasi sidebar dan konten utama */
         `}
       >
         {/* === HEADER BRAND === */}
-        {/* UPDATED: h-16 (agar sejajar navbar) & bg-white (agar menyatu) & border-slate-200 */}
-        <div className="h-16 px-6 pr-4 flex items-center justify-between border-b border-slate-200 bg-white">
+        {/* UPDATED: 'border-b' DIHAPUS agar tidak ada garis pemisah antara brand dan menu */}
+        <div className="h-16 px-6 pr-4 flex items-center justify-between bg-white">
           <div className="flex items-center gap-3">
-            <div className="relative w-8 h-8"> {/* Ukuran logo sedikit disesuaikan */}
+            <div className="relative w-8 h-8">
               <Image
                 src="/img/logo-ikmi.png"
                 alt="Logo"
@@ -84,7 +85,6 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
           <div className="space-y-1">
             <SectionLabel label="Menu Utama" />
             
-            {/* 1. Dashboard */}
             <NavItem
               href="/"
               label="Dashboard"
@@ -92,8 +92,6 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
               active={isActive("/")}
               onClick={() => setOpen(false)}
             />
-
-            {/* 2. Data Mahasiswa */}
             <NavItem
               href="/mahasiswa"
               label="Data Mahasiswa"
@@ -101,8 +99,6 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
               active={isActive("/mahasiswa")}
               onClick={() => setOpen(false)}
             />
-
-            {/* 3. Kartu Hasil Studi */}
             <NavItem
               href="/khs"
               label="Kartu Hasil Studi"
@@ -110,8 +106,6 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
               active={isActive("/khs")}
               onClick={() => setOpen(false)}
             />
-
-            {/* 4. Transkrip Nilai */}
             <NavItem
               href="/transkrip"
               label="Transkrip Nilai"
@@ -119,8 +113,6 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
               active={isActive("/transkrip")}
               onClick={() => setOpen(false)}
             />
-
-            {/* 5. Mata Kuliah */}
             <NavItem
               href="/matakuliah"
               label="Mata Kuliah"
@@ -145,8 +137,7 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
         </nav>
 
         {/* === FOOTER === */}
-        {/* UPDATED: bg-white & border-slate-200 */}
-        <div className="p-4 border-t border-slate-200 bg-white">
+        <div className="p-4 bg-white">
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5
@@ -156,7 +147,6 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
             <LogoutIcon />
             Keluar Aplikasi
           </button>
-          {/* Versi App sudah dihapus */}
         </div>
       </aside>
     </>
