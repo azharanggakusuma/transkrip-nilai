@@ -10,11 +10,11 @@ import ControlPanel from "@/components/ControlPanel";
 import { useSignature } from "@/hooks/useSignature";
 import PageHeader from "@/components/PageHeader";
 import { useLayout } from "@/app/context/LayoutContext";
-import PreviewModal from "@/components/PreviewModal"; 
+// [HAPUS] Import Modal dihapus
 
 export default function TranskripPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false); 
+  // [HAPUS] State modal dihapus
   const { signatureType, setSignatureType, secureImage } = useSignature("none");
   const { isCollapsed } = useLayout();
   
@@ -61,10 +61,7 @@ export default function TranskripPage() {
           <div 
             className={`
               bg-white p-12 shadow-2xl border border-gray-300 
-              
-              /* PERBAIKAN: Hapus 'print:p-0' agar margin kertas tetap ada */
               print:shadow-none print:border-none print:m-0 
-              
               w-[210mm] min-h-[297mm] 
               
               origin-top-left 
@@ -87,18 +84,12 @@ export default function TranskripPage() {
             signatureType={signatureType}
             onSignatureChange={setSignatureType}
             onPrint={handlePrint}
-            onPreview={() => setIsPreviewOpen(true)} 
+            // [HAPUS] onPreview dihapus
           />
         </div>
       </div>
 
-      {/* --- MODAL PREVIEW --- */}
-      <PreviewModal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} title="Preview Transkrip">
-         <div className="bg-white p-6 sm:p-10 w-[210mm] min-h-[297mm] scale-[0.5] sm:scale-[0.6] origin-top">
-            {renderPaperContent()}
-         </div>
-      </PreviewModal>
-
+      {/* [HAPUS] Komponen Modal dihapus dari sini */}
     </div>
   );
 }

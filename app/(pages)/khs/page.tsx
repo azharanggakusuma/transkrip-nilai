@@ -10,12 +10,12 @@ import GradeTable from "@/components/GradeTable";
 import { useSignature } from "@/hooks/useSignature";
 import PageHeader from "@/components/PageHeader";
 import { useLayout } from "@/app/context/LayoutContext";
-import PreviewModal from "@/components/PreviewModal"; 
+// [HAPUS] Import Modal dihapus
 
 export default function KhsPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedSemester, setSelectedSemester] = useState<number>(1);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false); 
+  // [HAPUS] State modal dihapus
   const { signatureType, setSignatureType, secureImage } = useSignature("none");
   const { isCollapsed } = useLayout();
 
@@ -93,10 +93,7 @@ export default function KhsPage() {
           <div 
              className={`
               bg-white p-12 shadow-2xl border border-gray-300 
-              
-              /* PERBAIKAN: Hapus 'print:p-0' agar margin kertas tetap ada */
               print:shadow-none print:border-none print:m-0 
-              
               w-[210mm] min-h-[297mm] 
               
               origin-top-left 
@@ -119,7 +116,7 @@ export default function KhsPage() {
             signatureType={signatureType}
             onSignatureChange={setSignatureType}
             onPrint={handlePrint}
-            onPreview={() => setIsPreviewOpen(true)}
+            // [HAPUS] onPreview dihapus
             
             showSemesterSelect={true}
             availableSemesters={availableSemesters}
@@ -129,12 +126,7 @@ export default function KhsPage() {
         </div>
       </div>
 
-       {/* --- MODAL PREVIEW --- */}
-       <PreviewModal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} title="Preview KHS">
-         <div className="bg-white p-6 sm:p-10 w-[210mm] min-h-[297mm] scale-[0.5] sm:scale-[0.6] origin-top">
-            {renderPaperContent()}
-         </div>
-      </PreviewModal>
+       {/* [HAPUS] Komponen Modal dihapus dari sini */}
     </div>
   );
 }
