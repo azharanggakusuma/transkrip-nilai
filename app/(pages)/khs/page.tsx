@@ -9,13 +9,13 @@ import ControlPanel from "@/components/ControlPanel";
 import GradeTable from "@/components/GradeTable"; 
 import { useSignature } from "@/hooks/useSignature";
 import PageHeader from "@/components/PageHeader";
-import { useLayout } from "@/app/context/LayoutContext"; // Import Context
+import { useLayout } from "@/app/context/LayoutContext";
 
 export default function KhsPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedSemester, setSelectedSemester] = useState<number>(1);
   const { signatureType, setSignatureType, secureImage } = useSignature("none");
-  const { isCollapsed } = useLayout(); // Ambil state sidebar
+  const { isCollapsed } = useLayout();
 
   const currentStudent = students[selectedIndex];
 
@@ -63,23 +63,35 @@ export default function KhsPage() {
         />
       </div>
 
-      <div className="flex flex-col xl:flex-row items-start justify-center gap-6 xl:gap-8 min-h-screen">
-        {/* AREA KERTAS KHS */}
-        <div className="flex-1 flex justify-center w-full xl:w-auto overflow-x-hidden xl:overflow-visible mb-[-600px] sm:mb-[-400px] md:mb-[-250px] lg:mb-[-100px] xl:mb-0 transition-all duration-300">
+      <div className="flex flex-col xl:flex-row items-start justify-start gap-6 min-h-screen">
+        
+        {/* WRAPPER KERTAS DENGAN LEBAR DINAMIS */}
+        <div className={`
+            shrink-0 flex justify-start w-full 
+            transition-all duration-300
+
+            /* Logika Lebar Dinamis */
+            ${isCollapsed 
+               ? "lg:w-[179mm] xl:w-[210mm]" 
+               : "lg:w-[147mm] xl:w-[189mm]" 
+            }
+
+            overflow-x-hidden xl:overflow-visible 
+            mb-[-600px] sm:mb-[-400px] md:mb-[-250px] lg:mb-[-100px] xl:mb-0 
+        `}>
           
           <div 
              className={`
               bg-white p-8 sm:p-12 shadow-2xl border border-gray-300 
               print:shadow-none print:border-none print:p-0 print:m-0 
-              w-[210mm] min-h-[297mm] origin-top transform 
+              w-[210mm] min-h-[297mm] 
+              origin-top-left transform 
               transition-transform duration-300
 
-              /* Scaling Responsif */
               scale-[0.4] 
               sm:scale-[0.6] 
               md:scale-[0.75] 
 
-              /* LOGIKA BARU: Jika collapsed, kertas membesar */
               ${isCollapsed ? "lg:scale-[0.85] xl:scale-100" : "lg:scale-[0.7] xl:scale-[0.9]"}
             `}
           >
