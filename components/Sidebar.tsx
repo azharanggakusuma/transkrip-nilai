@@ -78,11 +78,10 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
 
         {/* === MENU NAVIGATION === */}
         <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-          
           {/* GROUP: MENU UTAMA */}
           <div className="space-y-1">
             <SectionLabel label="Menu Utama" />
-            
+
             {/* 1. Dashboard */}
             <NavItem
               href="/"
@@ -140,7 +139,6 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
               onClick={() => setOpen(false)}
             />
           </div>
-
         </nav>
 
         {/* === FOOTER === */}
