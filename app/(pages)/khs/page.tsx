@@ -80,7 +80,7 @@ export default function KhsPage() {
         <PageHeader title="Kartu Hasil Studi" breadcrumb={["SIAKAD", "KHS"]} />
       </div>
 
-      <div className="flex flex-col xl:flex-row items-start justify-start gap-6 min-h-screen">
+      <div className="flex flex-col xl:flex-row items-stretch justify-start gap-6 min-h-screen">
         {/* --- AREA KERTAS --- */}
         <div
           className={`
