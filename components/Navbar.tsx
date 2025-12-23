@@ -1,36 +1,19 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { usePathname } from "next/navigation";
+import React from "react";
+// import { usePathname } from "next/navigation"; // Tidak lagi dibutuhkan untuk judul
 
 type NavbarProps = {
   onOpenSidebar?: () => void;
 };
 
-type PageInfo = {
-  title: string;
-  breadcrumb: string[];
-};
-
-const ROUTES: Record<string, PageInfo> = {
-  "/": { title: "Dashboard", breadcrumb: ["SIAKAD"] },
-  "/transkrip": { title: "Transkrip Nilai", breadcrumb: ["SIAKAD", "Transkrip"] },
-  "/khs": { title: "Kartu Hasil Studi", breadcrumb: ["SIAKAD", "KHS"] }, // [Baru]
-  "/mahasiswa": { title: "Data Mahasiswa", breadcrumb: ["SIAKAD", "Mahasiswa"] },
-  "/matakuliah": { title: "Mata Kuliah", breadcrumb: ["SIAKAD", "Mata Kuliah"] },
-  "/pengaturan": { title: "Pengaturan", breadcrumb: ["SIAKAD", "Pengaturan"] },
-};
-
-const DEFAULT_PAGE: PageInfo = { title: "Halaman", breadcrumb: ["SIAKAD"] };
-
 export default function Navbar({ onOpenSidebar }: NavbarProps) {
-  const pathname = usePathname() || "/";
-  const page = useMemo(() => ROUTES[pathname] ?? DEFAULT_PAGE, [pathname]);
+  // Logika penentuan judul halaman dihapus karena dipindah ke PageHeader
 
   return (
-    <nav className="w-full bg-white/80 backdrop-blur-md print:hidden">
+    <nav className="w-full bg-white/80 backdrop-blur-md print:hidden sticky top-0 z-30 border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
-        {/* LEFT */}
+        {/* LEFT: Hanya tombol Menu Mobile (Judul dihapus) */}
         <div className="flex items-center gap-3 min-w-0">
           <button
             type="button"
@@ -42,25 +25,9 @@ export default function Navbar({ onOpenSidebar }: NavbarProps) {
           >
             <MenuIcon />
           </button>
-
-          <div className="flex flex-col min-w-0">
-            <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-800 truncate">
-              {page.title}
-            </h1>
-            <div className="mt-1 flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-slate-400 truncate">
-              {page.breadcrumb.map((item, idx) => (
-                <React.Fragment key={`${item}-${idx}`}>
-                  <span className="truncate">{item}</span>
-                  {idx < page.breadcrumb.length - 1 && (
-                    <span className="text-slate-300 shrink-0">/</span>
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
         </div>
 
-        {/* RIGHT (Search & Profile) */}
+        {/* RIGHT (Search & Profile) - Tetap sama */}
         <div className="flex items-center gap-1 sm:gap-2">
           <div className="hidden md:block">
             <div className="relative group">
@@ -108,7 +75,7 @@ export default function Navbar({ onOpenSidebar }: NavbarProps) {
   );
 }
 
-/* ================= ICONS ================= */
+/* ================= ICONS (Tetap sama) ================= */
 function MenuIcon() {
   return (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
