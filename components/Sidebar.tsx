@@ -43,9 +43,10 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
         `}
       >
         {/* === HEADER BRAND === */}
-        <div className="h-20 px-6 pr-4 flex items-center justify-between border-b border-slate-100 bg-slate-50">
+        {/* UPDATED: h-16 (agar sejajar navbar) & bg-white (agar menyatu) & border-slate-200 */}
+        <div className="h-16 px-6 pr-4 flex items-center justify-between border-b border-slate-200 bg-white">
           <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10">
+            <div className="relative w-8 h-8"> {/* Ukuran logo sedikit disesuaikan */}
               <Image
                 src="/img/logo-ikmi.png"
                 alt="Logo"
@@ -57,8 +58,8 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
               <p className="font-bold text-slate-800 text-lg leading-none">
                 SIAKAD
               </p>
-              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mt-1">
-                STMIK IKMI Cirebon
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mt-0.5">
+                STMIK IKMI
               </p>
             </div>
           </div>
@@ -78,10 +79,11 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
 
         {/* === MENU NAVIGATION === */}
         <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+          
           {/* GROUP: MENU UTAMA */}
           <div className="space-y-1">
             <SectionLabel label="Menu Utama" />
-
+            
             {/* 1. Dashboard */}
             <NavItem
               href="/"
@@ -139,19 +141,22 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
               onClick={() => setOpen(false)}
             />
           </div>
+
         </nav>
 
         {/* === FOOTER === */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50">
+        {/* UPDATED: bg-white & border-slate-200 */}
+        <div className="p-4 border-t border-slate-200 bg-white">
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5
                        rounded-lg text-sm font-semibold transition-colors
-                       text-rose-600 hover:bg-rose-100/60"
+                       text-rose-600 hover:bg-rose-50"
           >
             <LogoutIcon />
-            Logout
+            Keluar Aplikasi
           </button>
+          {/* Versi App sudah dihapus */}
         </div>
       </aside>
     </>
@@ -182,7 +187,7 @@ function NavItem({
           ${
             active
               ? "bg-blue-50 text-[#1B3F95]"
-              : "text-slate-600 hover:bg-slate-100"
+              : "text-slate-600 hover:bg-slate-50"
           }
         `}
       >
