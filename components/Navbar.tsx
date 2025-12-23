@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 
 type NavbarProps = {
   onOpenSidebar?: () => void;
@@ -9,6 +10,26 @@ type NavbarProps = {
 };
 
 export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed }: NavbarProps) {
+  // State untuk Tooltip Toggle
+  const [showToggleTooltip, setShowToggleTooltip] = useState(false);
+  const toggleBtnRef = useRef<HTMLButtonElement>(null);
+  const [toggleCoords, setToggleCoords] = useState({ top: 0, left: 0 });
+
+  // Handler Hover untuk Toggle Button
+  const handleToggleMouseEnter = () => {
+    if (!toggleBtnRef.current) return;
+    const rect = toggleBtnRef.current.getBoundingClientRect();
+    setToggleCoords({
+      top: rect.top + rect.height / 2,
+      left: rect.right + 10 // Muncul di sebelah kanan agar sama dengan menu sidebar
+    });
+    setShowToggleTooltip(true);
+  };
+
+  const handleToggleMouseLeave = () => {
+    setShowToggleTooltip(false);
+  };
+
   return (
     <nav className="w-full bg-white/80 backdrop-blur-md print:hidden">
       <div className="w-full px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
@@ -16,7 +37,7 @@ export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed }:
         {/* === LEFT SECTION === */}
         <div className="flex items-center gap-3 min-w-0">
           
-          {/* Tombol Mobile (Hanya muncul di layar kecil) */}
+          {/* Tombol Mobile */}
           <button
             type="button"
             onClick={onOpenSidebar}
@@ -28,21 +49,40 @@ export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed }:
             <MenuIcon />
           </button>
 
-          {/* Tombol Desktop (Hanya muncul di layar besar) */}
+          {/* Tombol Desktop (Toggle Sidebar) */}
           <button
+            ref={toggleBtnRef}
             type="button"
             onClick={onToggleCollapse}
+            onMouseEnter={handleToggleMouseEnter}
+            onMouseLeave={handleToggleMouseLeave}
             className="hidden lg:inline-flex h-9 w-9 items-center justify-center rounded-full
                        text-slate-600 hover:bg-slate-100/60 transition
                        focus:outline-none focus:ring-0"
-            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            // Hapus title standar browser
+            // title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
-            {/* Ikon Toggle: Ganti ikon berdasarkan state */}
             {isCollapsed ? <ArrowRightIcon /> : <MenuAltIcon />}
           </button>
 
-          {/* --- SEARCH BAR (PINDAH KE SINI) --- */}
-          {/* Menambahkan margin-left (ml-2) agar tidak terlalu mepet dengan tombol toggle */}
+          {/* TOOLTIP PORTAL UNTUK TOGGLE */}
+          {showToggleTooltip && createPortal(
+            <div 
+              className="fixed z-[9999] px-3 py-2 bg-slate-800 text-white text-[11px] font-medium rounded shadow-xl pointer-events-none whitespace-nowrap"
+              style={{
+                top: `${toggleCoords.top}px`,
+                left: `${toggleCoords.left}px`,
+                transform: "translateY(-50%)" 
+              }}
+            >
+              {isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+              {/* Panah */}
+              <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-4 border-transparent border-r-slate-800" />
+            </div>,
+            document.body
+          )}
+
+          {/* --- SEARCH BAR --- */}
           <div className="hidden md:block ml-2">
             <div className="relative group">
               <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 transition-colors duration-200 group-focus-within:text-blue-600">
@@ -61,7 +101,6 @@ export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed }:
         {/* === RIGHT SECTION (Profile) === */}
         <div className="flex items-center gap-1 sm:gap-2">
           
-          {/* Search Button untuk Mobile (Tetap ada untuk tampilan layar kecil) */}
           <button
             type="button"
             className="md:hidden h-9 w-9 inline-flex items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100/60 focus:outline-none focus:ring-0"
@@ -69,9 +108,6 @@ export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed }:
           >
             <SearchIcon />
           </button>
-
-          {/* Separator dihapus karena search bar sudah pindah */}
-          {/* <div className="hidden sm:block h-6 w-px bg-slate-200 mx-1" /> */}
 
           <button
             type="button"
@@ -104,7 +140,6 @@ function MenuIcon() {
     </svg>
   );
 }
-// Icon khusus untuk Desktop Toggle (Garis putus-putus sebelah kiri)
 function MenuAltIcon() {
   return (
      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -119,7 +154,6 @@ function ArrowRightIcon() {
       </svg>
     );
 }
-
 function SearchIcon() {
   return (
     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -127,7 +161,6 @@ function SearchIcon() {
     </svg>
   );
 }
-
 function UserIcon() {
   return (
     <svg className="h-5 w-5 text-slate-500" fill="currentColor" viewBox="0 0 20 20">

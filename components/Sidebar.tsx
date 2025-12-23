@@ -14,12 +14,32 @@ type SidebarProps = {
 
 export default function Sidebar({ open, setOpen, isCollapsed = false }: SidebarProps) {
   const pathname = usePathname();
+  
+  // State untuk Tooltip Logout
+  const [showLogoutTooltip, setShowLogoutTooltip] = useState(false);
+  const logoutBtnRef = useRef<HTMLButtonElement>(null);
+  const [logoutCoords, setLogoutCoords] = useState({ top: 0, left: 0 });
 
   const isActive = (path: string) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path);
 
   const handleLogout = () => {
     window.location.href = "/login";
+  };
+
+  // Handler Hover untuk Logout
+  const handleLogoutMouseEnter = () => {
+    if (!isCollapsed || !logoutBtnRef.current) return;
+    const rect = logoutBtnRef.current.getBoundingClientRect();
+    setLogoutCoords({
+      top: rect.top + rect.height / 2,
+      left: rect.right + 10 // Muncul di sebelah kanan
+    });
+    setShowLogoutTooltip(true);
+  };
+
+  const handleLogoutMouseLeave = () => {
+    setShowLogoutTooltip(false);
   };
 
   return (
@@ -158,15 +178,19 @@ export default function Sidebar({ open, setOpen, isCollapsed = false }: SidebarP
         </nav>
 
         {/* === FOOTER === */}
-        <div className="p-3 bg-white border-t border-slate-100 shrink-0">
+        <div className="p-3 bg-white border-t border-slate-100 shrink-0 relative">
            <button
+            ref={logoutBtnRef}
             onClick={handleLogout}
+            onMouseEnter={handleLogoutMouseEnter}
+            onMouseLeave={handleLogoutMouseLeave}
             className={`
-              w-full flex items-center rounded-lg text-sm font-semibold transition-colors overflow-hidden
+              w-full flex items-center rounded-lg text-sm font-semibold transition-colors overflow-hidden group
               text-rose-600 hover:bg-rose-50
               ${isCollapsed ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"}
             `}
-            title={isCollapsed ? "Logout" : ""}
+            // HAPUS title standar browser
+            // title={isCollapsed ? "Logout" : ""} 
           >
             <div className="shrink-0">
                <LogoutIcon />
@@ -176,6 +200,23 @@ export default function Sidebar({ open, setOpen, isCollapsed = false }: SidebarP
               Logout
             </span>
           </button>
+
+          {/* LOGOUT TOOLTIP PORTAL */}
+          {isCollapsed && showLogoutTooltip && createPortal(
+            <div 
+              className="fixed z-[9999] px-3 py-2 bg-slate-800 text-white text-[11px] font-medium rounded shadow-xl pointer-events-none whitespace-nowrap"
+              style={{
+                top: `${logoutCoords.top}px`,
+                left: `${logoutCoords.left}px`,
+                transform: "translateY(-50%)" 
+              }}
+            >
+              Logout
+              {/* Panah */}
+              <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-4 border-transparent border-r-slate-800" />
+            </div>,
+            document.body
+          )}
         </div>
       </aside>
     </>
@@ -199,21 +240,16 @@ function NavItem({
   onClick?: () => void;
   isCollapsed?: boolean;
 }) {
-  // State untuk mengontrol visibilitas tooltip
   const [showTooltip, setShowTooltip] = useState(false);
-  // Ref untuk elemen Link agar kita bisa tahu posisinya di layar
   const linkRef = useRef<HTMLAnchorElement>(null);
-  // State untuk menyimpan koordinat dimana tooltip harus muncul
   const [coords, setCoords] = useState({ top: 0, left: 0 });
 
   const handleMouseEnter = () => {
     if (!isCollapsed || !linkRef.current) return;
-
-    // Dapatkan posisi elemen menu yang di-hover relatif terhadap viewport
     const rect = linkRef.current.getBoundingClientRect();
     setCoords({
-      top: rect.top + rect.height / 2, // Posisi tengah vertikal dari menu item
-      left: rect.right + 10 // Posisi di sebelah kanan menu item (ditambah jarak 10px)
+      top: rect.top + rect.height / 2,
+      left: rect.right + 10
     });
     setShowTooltip(true);
   };
@@ -222,22 +258,19 @@ function NavItem({
     setShowTooltip(false);
   };
 
-  // Komponen Tooltip yang akan di-render via Portal
   const TooltipPortal = isCollapsed && showTooltip ? createPortal(
     <div 
       className="fixed z-[9999] px-3 py-2 bg-slate-800 text-white text-[11px] font-medium rounded shadow-xl pointer-events-none whitespace-nowrap"
       style={{
         top: `${coords.top}px`,
         left: `${coords.left}px`,
-        // Geser ke atas 50% dari tingginya sendiri agar benar-benar di tengah secara vertikal
         transform: "translateY(-50%)" 
       }}
     >
       {label}
-      {/* Panah kecil di kiri tooltip */}
       <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-4 border-transparent border-r-slate-800" />
     </div>,
-    document.body // Render langsung ke dalam elemen <body>
+    document.body
   ) : null;
 
   return (
@@ -245,9 +278,9 @@ function NavItem({
       <Link 
         href={href} 
         onClick={onClick} 
-        ref={linkRef} // Pasang ref di sini
-        onMouseEnter={handleMouseEnter} // Handle hover masuk
-        onMouseLeave={handleMouseLeave} // Handle hover keluar
+        ref={linkRef} 
+        onMouseEnter={handleMouseEnter} 
+        onMouseLeave={handleMouseLeave} 
         className="block group relative"
       >
         <div
@@ -262,12 +295,9 @@ function NavItem({
             }
           `}
         >
-          {/* Active Indicator */}
           {active && !isCollapsed && (
             <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#1B3F95]" />
           )}
-
-          {/* ICON */}
           <span
             className={`transition-colors shrink-0 ${
               active
@@ -277,15 +307,11 @@ function NavItem({
           >
             {icon}
           </span>
-          
-          {/* Label Menu */}
           <span className={`truncate transition-all duration-300 ${isCollapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100"}`}>
               {label}
           </span>
         </div>
       </Link>
-      
-      {/* Render Portal di luar Link */}
       {TooltipPortal}
     </>
   );
@@ -295,7 +321,6 @@ function SectionLabel({ label, isCollapsed }: { label: string; isCollapsed?: boo
   if (isCollapsed) {
     return <div className="h-px bg-slate-100 mx-2 my-2" />;
   }
-
   return (
     <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 select-none truncate transition-opacity duration-300">
       {label}
@@ -303,7 +328,7 @@ function SectionLabel({ label, isCollapsed }: { label: string; isCollapsed?: boo
   );
 }
 
-/* ================= ICONS (Tidak ada perubahan) ================= */
+/* ================= ICONS ================= */
 const CloseIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
