@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { students } from "@/lib/data";
 import Header from "@/components/Header"; 
 import Footer from "@/components/Footer"; 
@@ -13,7 +13,6 @@ export default function SuratKeteranganPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   
   // --- STATE DATA ---
-  // "nomorSurat" sekarang hanya menyimpan urutan (contoh: "125")
   const [nomorSurat, setNomorSurat] = useState(""); 
   const [tahunAkademik, setTahunAkademik] = useState("");
   
@@ -40,7 +39,6 @@ export default function SuratKeteranganPage() {
   const currentMonthRoman = getRomanMonth();
   
   // Format: [Urutan]/A/S.KET/STMIK-IKMI/[BulanRomawi]/[Tahun]
-  // Jika nomorSurat kosong, tampilkan placeholder "..." di preview
   const fullNomorSurat = `${nomorSurat || "..."}/A/S.KET/STMIK-IKMI/${currentMonthRoman}/${currentYear}`;
 
   const handlePrint = () => {
@@ -65,7 +63,6 @@ export default function SuratKeteranganPage() {
       {/* 2. JUDUL & NOMOR SURAT */}
       <div className="text-center mt-[-10px] mb-8 font-['Cambria'] text-black leading-snug">
         <h2 className="font-bold text-[14px] underline uppercase mb-0">SURAT KETERANGAN</h2>
-        {/* Tampilkan Nomor Surat Otomatis */}
         <p className="text-[11px]">Nomor : {fullNomorSurat}</p>
       </div>
 
@@ -110,7 +107,6 @@ export default function SuratKeteranganPage() {
                 <td style={labelStyle}>Tempat, tanggal lahir</td>
                 <td style={colonStyle}>:</td>
                 <td style={valueStyle} className="capitalize break-words">
-                  {/* Fallback tampilan jika kosong */}
                   {tempatLahir || "..."}
                   , {tanggalLahir || "..."}
                 </td>
@@ -162,13 +158,13 @@ export default function SuratKeteranganPage() {
           </table>
         </div>
 
-        {/* === PENUTUP === */}
-        <p className="mb-3 text-justify leading-relaxed">
-          Benar merupakan mahasiswa aktif STMIK IKMI Cirebon yang pada saat ini yang bersangkutan aktif kuliah di semester {currentStudent.profile.semester} ({terbilangSemester(currentStudent.profile.semester)}). Surat keterangan ini dibuat dan diberikan kepada yang bersangkutan untuk dipergunakan sebagaimana mestinya.
+        {/* === PENUTUP (DIPERPANJANG & LEBIH FORMAL) === */}
+        <p className="mb-4 text-justify leading-relaxed">
+          Dengan ini menerangkan bahwa mahasiswa yang namanya tersebut di atas adalah benar-benar tercatat sebagai mahasiswa aktif di STMIK IKMI Cirebon. Pada saat surat ini diterbitkan, yang bersangkutan sedang menempuh kegiatan perkuliahan secara aktif pada semester {currentStudent.profile.semester} ({terbilangSemester(currentStudent.profile.semester)}) Tahun Akademik {tahunAkademik || "..."}.
         </p>
 
         <p className="mb-8 text-justify leading-relaxed">
-          Demikian surat keterangan ini kami berikan untuk dapat dipergunakan sebagaimana mestinya.
+          Surat Keterangan ini dibuat dan diberikan kepada yang bersangkutan untuk dapat dipergunakan sebagai bukti keaktifan kuliah dan keperluan administrasi lainnya sebagaimana mestinya. Demikian surat keterangan ini kami buat dengan sebenarnya untuk dapat dipergunakan sesuai dengan ketentuan yang berlaku.
         </p>
       </div>
 
@@ -231,7 +227,7 @@ export default function SuratKeteranganPage() {
             onSignatureChange={setSignatureType}
             onPrint={handlePrint}
             
-            // State (nomorSurat disini hanya urutan)
+            // State
             nomorSurat={nomorSurat} setNomorSurat={setNomorSurat}
             tahunAkademik={tahunAkademik} setTahunAkademik={setTahunAkademik}
             tempatLahir={tempatLahir} setTempatLahir={setTempatLahir}
