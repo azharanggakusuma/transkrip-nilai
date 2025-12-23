@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import Sidebar from "../../components/Sidebar";
-import Navbar from "../../components/Navbar";
-import AppFooter from "../../components/AppFooter";
+import React from "react";
+import Sidebar from "@/components/Sidebar"; 
+import Navbar from "@/components/Navbar";
+import AppFooter from "@/components/AppFooter";
+import { LayoutProvider, useLayout } from "@/app/context/LayoutContext";
 
-export default function PagesLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Untuk Mobile
-  const [isCollapsed, setIsCollapsed] = useState(false); // Untuk Desktop
+// Komponen konten internal yang menggunakan Context
+function LayoutContent({ children }: { children: React.ReactNode }) {
+  const { sidebarOpen, setSidebarOpen, isCollapsed, setIsCollapsed } = useLayout();
 
   return (
     <div className="flex min-h-screen bg-slate-100 font-sans text-gray-800 print:bg-white print:block">
@@ -42,5 +43,14 @@ export default function PagesLayout({ children }: { children: React.ReactNode })
         </div>
       </div>
     </div>
+  );
+}
+
+// Layout Utama yang mengekspor Provider
+export default function PagesLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <LayoutProvider>
+      <LayoutContent>{children}</LayoutContent>
+    </LayoutProvider>
   );
 }
