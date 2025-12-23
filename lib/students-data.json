@@ -5,7 +5,8 @@
       "nama": "AZHARANGGA KUSUMA",
       "nim": "41226142",
       "prodi": "Teknik Informatika (S1)",
-      "semester": 7
+      "semester": 7,
+      "alamat": ""
     },
     "grades": [
       { "kode": "MKWI-21012", "hm": "A" },
@@ -59,7 +60,8 @@
       "nama": "JOHN DOE",
       "nim": "41226155",
       "prodi": "Teknik Informatika (S1)",
-      "semester": 4
+      "semester": 4,
+      "alamat": "Jl. Pemuda No. 10, Cirebon"
     },
     "grades": [
       { "kode": "MKWI-21012", "hm": "A" },

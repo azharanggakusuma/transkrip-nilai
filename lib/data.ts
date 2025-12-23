@@ -25,6 +25,7 @@ export interface StudentProfile {
   nim: string;
   prodi: string;
   semester: number;
+  alamat: string; // <--- DITAMBAHKAN DISINI
 }
 
 export interface StudentData {
@@ -180,14 +181,12 @@ function createStudent(
 // 4. DATA MAHASISWA
 // =========================================
 
-// Mengambil data dari JSON
 const rawData = studentsJson as {
   id: string;
   profile: StudentProfile;
   grades: RawGrade[];
 }[];
 
-// Mapping data JSON ke format StudentData menggunakan createStudent
 export const students: StudentData[] = rawData.map((mhs) =>
   createStudent(
     mhs.id,
