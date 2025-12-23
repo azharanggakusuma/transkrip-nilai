@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { students } from "@/lib/data";
 import Header from "@/components/Header"; 
 import Footer from "@/components/Footer"; 
@@ -18,7 +18,6 @@ export default function SuratKeteranganPage() {
   
   const [tempatLahir, setTempatLahir] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
-  
   const [alamat, setAlamat] = useState("");
   
   const [namaOrangTua, setNamaOrangTua] = useState("");
@@ -26,6 +25,39 @@ export default function SuratKeteranganPage() {
 
   const { signatureType, setSignatureType, secureImage } = useSignature("none");
   const { isCollapsed } = useLayout();
+
+  // --- LOGIKA DETEKSI HALAMAN (REAL-TIME & AKURAT) ---
+  const paperRef = useRef<HTMLDivElement>(null);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    if (!paperRef.current) return;
+
+    // ResizeObserver mendeteksi perubahan ukuran elemen secara presisi
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // Ambil tinggi elemen sebenarnya (scrollHeight mencakup konten yang meluap)
+        const contentHeight = entry.target.scrollHeight;
+        
+        // KONSTANTA FISIK: 1 inch = 96px (CSS Standard)
+        // Tinggi A4 = 297mm = 11.69 inch
+        // 11.69 * 96 = ~1122.5 px
+        const A4_HEIGHT_PX = 1122.5; 
+
+        // Hitung Halaman
+        // Kita kurangi 1px (contentHeight - 1) untuk mentolerir pembulatan sub-pixel browser
+        // agar jika tingginya pas 1123px tidak dianggap 2 halaman.
+        const pages = Math.ceil((contentHeight - 1) / A4_HEIGHT_PX);
+        
+        setTotalPages(pages < 1 ? 1 : pages);
+      }
+    });
+
+    observer.observe(paperRef.current);
+
+    // Cleanup saat komponen unmount
+    return () => observer.disconnect();
+  }, []);
 
   const currentStudent = students[selectedIndex];
 
@@ -38,7 +70,6 @@ export default function SuratKeteranganPage() {
   const currentYear = new Date().getFullYear();
   const currentMonthRoman = getRomanMonth();
   
-  // Format: [Urutan]/A/S.KET/STMIK-IKMI/[BulanRomawi]/[Tahun]
   const fullNomorSurat = `${nomorSurat || "..."}/A/S.KET/STMIK-IKMI/${currentMonthRoman}/${currentYear}`;
 
   const handlePrint = () => {
@@ -57,19 +88,15 @@ export default function SuratKeteranganPage() {
 
   const renderPaperContent = () => (
     <>
-      {/* 1. KOP SURAT */}
       <Header title="" />
 
-      {/* 2. JUDUL & NOMOR SURAT */}
       <div className="text-center mt-[-10px] mb-8 font-['Cambria'] text-black leading-snug">
         <h2 className="font-bold text-[14px] underline uppercase mb-0">SURAT KETERANGAN</h2>
         <p className="text-[11px]">Nomor : {fullNomorSurat}</p>
       </div>
 
-      {/* 3. ISI SURAT */}
       <div className="text-[11px] font-['Cambria'] text-black px-4 min-h-[450px]">
         
-        {/* === PENANDATANGAN === */}
         <p className="mb-2">Yang bertanda tangan di bawah ini :</p>
         <div className="ml-4 mb-4">
           <table className="w-full" style={{ tableLayout: 'fixed' }}>
@@ -88,7 +115,6 @@ export default function SuratKeteranganPage() {
           </table>
         </div>
 
-        {/* === MAHASISWA === */}
         <p className="mb-2">Menerangkan bahwa :</p>
         <div className="ml-4 mb-4">
           <table className="w-full" style={{ tableLayout: 'fixed' }}>
@@ -139,7 +165,6 @@ export default function SuratKeteranganPage() {
           </table>
         </div>
 
-        {/* === ORANG TUA === */}
         <p className="mb-2">Dan orang tua dari mahasiswa tersebut adalah :</p>
         <div className="ml-4 mb-4">
           <table className="w-full" style={{ tableLayout: 'fixed' }}>
@@ -158,9 +183,8 @@ export default function SuratKeteranganPage() {
           </table>
         </div>
 
-        {/* === PENUTUP (DIPERPANJANG & LEBIH FORMAL) === */}
-        <p className="mb-4 text-justify leading-relaxed">
-          Dengan ini menerangkan bahwa mahasiswa yang namanya tersebut di atas adalah benar-benar tercatat sebagai mahasiswa aktif di STMIK IKMI Cirebon. Pada saat surat ini diterbitkan, yang bersangkutan sedang menempuh kegiatan perkuliahan secara aktif pada semester {currentStudent.profile.semester} ({terbilangSemester(currentStudent.profile.semester)}) Tahun Akademik {tahunAkademik || "..."}.
+        <p className="mb-3 text-justify leading-relaxed">
+          Dengan ini menerangkan bahwa mahasiswa yang namanya tersebut di atas adalah benar-benar tercatat sebagai mahasiswa aktif di Sekolah Tinggi Manajemen Informatika dan Komputer (STMIK) IKMI Cirebon. Pada saat surat ini diterbitkan, yang bersangkutan sedang menempuh kegiatan perkuliahan secara aktif pada semester {currentStudent.profile.semester} ({terbilangSemester(currentStudent.profile.semester)}) Tahun Akademik {tahunAkademik || "..."}.
         </p>
 
         <p className="mb-8 text-justify leading-relaxed">
@@ -168,7 +192,6 @@ export default function SuratKeteranganPage() {
         </p>
       </div>
 
-      {/* 4. TANDA TANGAN */}
       <Footer 
         signatureType={signatureType} 
         signatureBase64={secureImage} 
@@ -197,6 +220,7 @@ export default function SuratKeteranganPage() {
             ${isCollapsed ? "xl:w-[210mm]" : "xl:w-[189mm]"}
         `}>
           <div 
+             ref={paperRef}
              className={`
               bg-white p-8 shadow-2xl border border-gray-300 
               print:shadow-none print:border-none print:m-0 
@@ -235,6 +259,9 @@ export default function SuratKeteranganPage() {
             alamat={alamat} setAlamat={setAlamat}
             namaOrangTua={namaOrangTua} setNamaOrangTua={setNamaOrangTua}
             pekerjaanOrangTua={pekerjaanOrangTua} setPekerjaanOrangTua={setPekerjaanOrangTua}
+            
+            // Info Halaman
+            totalPages={totalPages}
           />
         </div>
       </div>

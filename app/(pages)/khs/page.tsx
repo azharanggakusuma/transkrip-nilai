@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { students } from "@/lib/data";
 import Header from "@/components/Header";
 import StudentInfo from "@/components/StudentInfo";
@@ -18,6 +18,29 @@ export default function KhsPage() {
   const { isCollapsed } = useLayout();
 
   const currentStudent = students[selectedIndex];
+
+  // --- LOGIKA DETEKSI HALAMAN (REAL-TIME) ---
+  const paperRef = useRef<HTMLDivElement>(null);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    if (!paperRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const contentHeight = entry.target.scrollHeight;
+        // Standar A4 @ 96 DPI = 1122.5px
+        const A4_HEIGHT_PX = 1122.5; 
+        
+        // Kurangi 1px untuk toleransi pembulatan browser
+        const pages = Math.ceil((contentHeight - 1) / A4_HEIGHT_PX);
+        setTotalPages(pages < 1 ? 1 : pages);
+      }
+    });
+
+    observer.observe(paperRef.current);
+    return () => observer.disconnect();
+  }, []); // Dependency kosong, ResizeObserver akan menangani perubahan konten otomatis
 
   const availableSemesters = useMemo(() => {
     const smts = currentStudent.transcript.map((t) => t.smt);
@@ -94,6 +117,7 @@ export default function KhsPage() {
         `}
         >
           <div
+            ref={paperRef} // REF dipasang di sini
             className={`
               bg-white p-8 shadow-2xl border border-gray-300 
               print:shadow-none print:border-none print:m-0 
@@ -123,6 +147,7 @@ export default function KhsPage() {
             availableSemesters={availableSemesters}
             selectedSemester={selectedSemester}
             onSelectSemester={setSelectedSemester}
+            totalPages={totalPages} // Oper data halaman
           />
         </div>
       </div>

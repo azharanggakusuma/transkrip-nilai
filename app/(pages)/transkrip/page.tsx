@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { students } from "@/lib/data";
 import Header from "@/components/Header";
 import StudentInfo from "@/components/StudentInfo";
@@ -17,6 +17,29 @@ export default function TranskripPage() {
   const { isCollapsed } = useLayout();
 
   const currentStudent = students[selectedIndex];
+
+  // --- LOGIKA DETEKSI HALAMAN (REAL-TIME) ---
+  const paperRef = useRef<HTMLDivElement>(null);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    if (!paperRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const contentHeight = entry.target.scrollHeight;
+        // Standar A4 @ 96 DPI = 1122.5px
+        const A4_HEIGHT_PX = 1122.5; 
+        
+        // Kurangi 1px untuk toleransi
+        const pages = Math.ceil((contentHeight - 1) / A4_HEIGHT_PX);
+        setTotalPages(pages < 1 ? 1 : pages);
+      }
+    });
+
+    observer.observe(paperRef.current);
+    return () => observer.disconnect();
+  }, []); 
 
   const handlePrint = () => {
     window.print();
@@ -58,6 +81,7 @@ export default function TranskripPage() {
         `}
         >
           <div
+            ref={paperRef} // REF dipasang di sini
             className={`
               bg-white p-8 shadow-2xl border border-gray-300 
               print:shadow-none print:border-none print:m-0 
@@ -83,6 +107,7 @@ export default function TranskripPage() {
             signatureType={signatureType}
             onSignatureChange={setSignatureType}
             onPrint={handlePrint}
+            totalPages={totalPages} // Oper data halaman
           />
         </div>
       </div>

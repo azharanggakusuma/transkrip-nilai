@@ -34,6 +34,9 @@ interface ControlPanelProps {
   setNamaOrangTua?: (val: string) => void;
   pekerjaanOrangTua?: string;
   setPekerjaanOrangTua?: (val: string) => void;
+  
+  // [BARU] Info Halaman
+  totalPages?: number;
 }
 
 export default function ControlPanel({
@@ -55,6 +58,7 @@ export default function ControlPanel({
   alamat, setAlamat,
   namaOrangTua, setNamaOrangTua,
   pekerjaanOrangTua, setPekerjaanOrangTua,
+  totalPages
 }: ControlPanelProps) {
   const selectedStudent = students[selectedIndex];
 
@@ -67,9 +71,21 @@ export default function ControlPanel({
   return (
     <aside className="w-full print:hidden xl:sticky xl:top-24 h-fit">
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="px-5 pt-5">
-          <h3 className="text-sm font-semibold text-gray-900">Panel Kontrol</h3>
-          <p className="mt-1 text-xs text-gray-500">Atur opsi dokumen, lalu cetak.</p>
+        <div className="px-5 pt-5 flex justify-between items-start">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900">Panel Kontrol</h3>
+            <p className="mt-1 text-xs text-gray-500">Atur opsi dokumen, lalu cetak.</p>
+          </div>
+          {/* INDIKATOR HALAMAN */}
+          {totalPages !== undefined && (
+            <div className={`px-2 py-1 rounded-xl text-[10px] font-bold border ${
+              totalPages > 1 
+                ? "bg-yellow-50 text-yellow-700 border-yellow-200" 
+                : "bg-green-50 text-green-700 border-green-200"
+            }`}>
+              {totalPages} Hal.
+            </div>
+          )}
         </div>
 
         <div className="p-5 flex flex-col gap-4">
