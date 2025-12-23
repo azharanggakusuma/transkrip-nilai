@@ -1,14 +1,18 @@
 // lib/data.ts
 
+// =========================================
+// 1. TYPE DEFINITIONS
+// =========================================
+
 export interface TranscriptItem {
   no: number;
   kode: string;
   matkul: string;
   smt: number;
   sks: number;
-  hm: string;
-  am: number;
-  nm: number;
+  hm: string; // Huruf Mutu (A, B, C...)
+  am: number; // Angka Mutu (4, 3, 2...)
+  nm: number; // Nilai Mutu (am x sks)
 }
 
 export interface StudentProfile {
@@ -24,109 +28,259 @@ export interface StudentData {
   transcript: TranscriptItem[];
 }
 
+// Tipe data untuk Master Mata Kuliah (Database MK)
+type CourseData = {
+  matkul: string;
+  sks: number;
+  smt_default: number; // Semester standar MK ini diambil
+};
+
+// Tipe data input ringkas (hanya butuh Kode & Nilai)
+type RawGrade = {
+  kode: string;
+  hm: string;
+  smt?: number; // Opsional: jika mahasiswa ambil di semester beda (misal SP/mengulang)
+};
+
+// =========================================
+// 2. MASTER DATA (DATABASE MATA KULIAH)
+// =========================================
+// Tambahkan semua mata kuliah di sini.
+// Format: "KODE_MK": { matkul: "Nama MK", sks: 2, smt_default: 1 }
+
+const COURSES_DB: Record<string, CourseData> = {
+  // --- SEMESTER 1 ---
+  "MKWI-21012": { matkul: "Bahasa Inggris Dasar", sks: 2, smt_default: 1 },
+  "MKWI-21013": { matkul: "Pengenalan Budaya Cirebon", sks: 2, smt_default: 1 },
+  "MKD-0006":   { matkul: "Data Manajemen", sks: 3, smt_default: 1 },
+  "MKWI-21014": { matkul: "Kalkulus", sks: 3, smt_default: 1 },
+  "MKWI-21001": { matkul: "Algoritma dan Pemrograman Dasar", sks: 3, smt_default: 1 },
+  "MKWN-21003": { matkul: "Pendidikan Agama", sks: 2, smt_default: 1 },
+  "MKWI-21007": { matkul: "Dasar-Dasar Artificial Intelligence", sks: 3, smt_default: 1 },
+  "MKWN-21001": { matkul: "Pancasila", sks: 2, smt_default: 1 },
+
+  // --- SEMESTER 2 ---
+  "MKWN-004":   { matkul: "Pendidikan Kewarganegaraan", sks: 2, smt_default: 2 },
+  "SIW-2121":   { matkul: "Jaringan Komputer", sks: 3, smt_default: 2 },
+  "MKD-0105":   { matkul: "Struktur Data", sks: 3, smt_default: 2 },
+  "MKWI-21002": { matkul: "Algoritma dan Pemrograman Lanjut", sks: 4, smt_default: 2 },
+  "SIW-2123":   { matkul: "Statistika", sks: 3, smt_default: 2 },
+  "MKWI-21005": { matkul: "Aljabar Linear", sks: 3, smt_default: 2 },
+  "MKWN-002":   { matkul: "Bahasa Indonesia", sks: 2, smt_default: 2 },
+
+  // --- SEMESTER 3 ---
+  "MDK-0303":   { matkul: "Matematika Diskrit", sks: 3, smt_default: 3 },
+  "TDK-0304":   { matkul: "Jaringan Komputer Advanced", sks: 3, smt_default: 3 },
+  "MDK-0305":   { matkul: "Pemrograman Web", sks: 3, smt_default: 3 },
+  "MDK-0301":   { matkul: "Pemrograman SQL", sks: 4, smt_default: 3 },
+  "MDK-0306":   { matkul: "Data Science", sks: 3, smt_default: 3 },
+  "MDK-0302":   { matkul: "Rekayasa Perangkat Lunak", sks: 4, smt_default: 3 },
+
+  // --- SEMESTER 4 (MBKM / Reguler) ---
+  "MBKM-TI-04078": { matkul: "TP. Camping dan Trekking", sks: 3, smt_default: 4 },
+  "MBKM-TI-04049": { matkul: "Modul Nusantara", sks: 4, smt_default: 4 },
+  "MBKM-TI-04051": { matkul: "Pendidikan Anti Korupsi", sks: 3, smt_default: 4 },
+  "MBKM-TI-04066": { matkul: "Semiotika", sks: 2, smt_default: 4 },
+  "MBKM-TI-04017": { matkul: "Etika Bisnis Profesi", sks: 3, smt_default: 4 },
+  "MBKM-TI-04073": { matkul: "Technopreneurship", sks: 3, smt_default: 4 },
+  "MBKM-TI-04044": { matkul: "Media Pembelajaran", sks: 3, smt_default: 4 },
+
+  // --- SEMESTER 5 ---
+  "TKK-0501": { matkul: "Cloud Computing", sks: 4, smt_default: 5 },
+  "MKK-0502": { matkul: "Keamanan Jaringan", sks: 4, smt_default: 5 },
+  "TKK-0503": { matkul: "Text Mining", sks: 4, smt_default: 5 },
+  "TKK-0504": { matkul: "Sistem Operasi", sks: 4, smt_default: 5 },
+  "TKK-0505": { matkul: "Deep Learning Dasar", sks: 4, smt_default: 5 },
+
+  // --- SEMESTER 6 ---
+  "TKK-0601": { matkul: "Deep Learning Lanjut", sks: 4, smt_default: 6 },
+  "TKK-0602": { matkul: "Manajemen Proyek Data Science", sks: 4, smt_default: 6 },
+  "TKK-0603": { matkul: "Big Data Analytic", sks: 4, smt_default: 6 },
+  "TKK-0604": { matkul: "Computer Vision", sks: 4, smt_default: 6 },
+  "TKK-0605": { matkul: "Robotic", sks: 4, smt_default: 6 },
+
+  // --- SEMESTER 7 ---
+  "MKK-0705": { matkul: "IT Entrepreneur", sks: 2, smt_default: 7 },
+  "MKK-0704": { matkul: "Etika Profesi", sks: 2, smt_default: 7 },
+  "MKK-0703": { matkul: "Proposal Skripsi", sks: 2, smt_default: 7 },
+  "MKK-0702": { matkul: "Literature Review", sks: 4, smt_default: 7 },
+  "MKK-0701": { matkul: "Metode Penelitian", sks: 4, smt_default: 7 },
+};
+
+// =========================================
+// 3. HELPER FUNCTIONS (LOGIC OTOMATIS)
+// =========================================
+
+// Konversi Huruf Mutu (A, B..) ke Angka Mutu (4, 3..)
+function getAm(hm: string): number {
+  const map: Record<string, number> = {
+    "A": 4, "A-": 3.75,
+    "B+": 3.5, "B": 3, "B-": 2.75,
+    "C+": 2.5, "C": 2, "D": 1, "E": 0
+  };
+  return map[hm] ?? 0;
+}
+
+// Fungsi pembantu untuk membuat Data Mahasiswa
+function createStudent(
+  id: string,
+  profile: StudentProfile,
+  rawGrades: RawGrade[]
+): StudentData {
+  
+  const transcript: TranscriptItem[] = rawGrades.map((g, index) => {
+    const course = COURSES_DB[g.kode];
+    
+    // Error handling jika kode MK salah ketik/tidak ada di DB
+    if (!course) {
+      console.warn(`[WARNING] Mata Kuliah dengan kode ${g.kode} tidak ditemukan di COURSES_DB.`);
+      return {
+        no: index + 1,
+        kode: g.kode,
+        matkul: "UNKNOWN COURSE",
+        smt: g.smt || 0,
+        sks: 0,
+        hm: g.hm,
+        am: 0,
+        nm: 0
+      };
+    }
+
+    const am = getAm(g.hm);
+    
+    return {
+      no: index + 1,
+      kode: g.kode,
+      matkul: course.matkul,
+      smt: g.smt || course.smt_default, // Pakai semester default jika tidak di-override
+      sks: course.sks,
+      hm: g.hm,
+      am: am,
+      nm: am * course.sks // Hitung NM otomatis
+    };
+  });
+
+  return { id, profile, transcript };
+}
+
+// =========================================
+// 4. DATA MAHASISWA (INPUT DATA DI SINI)
+// =========================================
+
 // --- DATA 1: AZHARANGGA KUSUMA ---
-const transcriptAzhar: TranscriptItem[] = [
-  { no: 1, kode: "MKWI-21012", matkul: "Bahasa Inggris Dasar", smt: 1, sks: 2, hm: "A", am: 4, nm: 8 },
-  { no: 2, kode: "MKWI-21013", matkul: "Pengenalan Budaya Cirebon", smt: 1, sks: 2, hm: "A", am: 4, nm: 8 },
-  { no: 3, kode: "MKD-0006", matkul: "Data Manajemen", smt: 1, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 4, kode: "MKWI-21014", matkul: "Kalkulus", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 5, kode: "MKWI-21001", matkul: "Algoritma dan Pemrograman Dasar", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 6, kode: "MKWN-21003", matkul: "Pendidikan Agama", smt: 1, sks: 2, hm: "B", am: 3, nm: 6 },
-  { no: 7, kode: "MKWI-21007", matkul: "Dasar-Dasar Artificial Intelligence", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 8, kode: "MKWN-21001", matkul: "Pancasila", smt: 1, sks: 2, hm: "B", am: 3, nm: 6 },
-  { no: 9, kode: "MKWN-004", matkul: "Pendidikan Kewarganegaraan", smt: 2, sks: 2, hm: "B", am: 3, nm: 6 },
-  { no: 10, kode: "SIW-2121", matkul: "Jaringan Komputer", smt: 2, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 11, kode: "MKD-0105", matkul: "Struktur Data", smt: 2, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 12, kode: "MKWI-21002", matkul: "Algoritma dan Pemrograman Lanjut", smt: 2, sks: 4, hm: "B", am: 3, nm: 12 },
-  { no: 13, kode: "SIW-2123", matkul: "Statistika", smt: 2, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 14, kode: "MKWI-21005", matkul: "Aljabar Linear", smt: 2, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 15, kode: "MKWN-002", matkul: "Bahasa Indonesia", smt: 2, sks: 2, hm: "A", am: 4, nm: 8 },
-  { no: 16, kode: "MDK-0303", matkul: "Matematika Diskrit", smt: 3, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 17, kode: "TDK-0304", matkul: "Jaringan Komputer Advanced", smt: 3, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 18, kode: "MDK-0305", matkul: "Pemrograman Web", smt: 3, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 19, kode: "MDK-0301", matkul: "Pemrograman SQL", smt: 3, sks: 4, hm: "B", am: 3, nm: 12 },
-  { no: 20, kode: "MDK-0306", matkul: "Data Science", smt: 3, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 21, kode: "MDK-0302", matkul: "Rekayasa Perangkat Lunak", smt: 3, sks: 4, hm: "B", am: 3, nm: 12 },
-  { no: 22, kode: "MBKM-TI-04078", matkul: "TP. Camping dan Trekking", smt: 4, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 23, kode: "MBKM-TI-04049", matkul: "Modul Nusantara", smt: 4, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 24, kode: "MBKM-TI-04051", matkul: "Pendidikan Anti Korupsi", smt: 4, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 25, kode: "MBKM-TI-04066", matkul: "Semiotika", smt: 4, sks: 2, hm: "B", am: 3, nm: 6 },
-  { no: 26, kode: "MBKM-TI-04017", matkul: "Etika Bisnis Profesi", smt: 4, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 27, kode: "MBKM-TI-04073", matkul: "Technopreneurship", smt: 4, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 28, kode: "MBKM-TI-04044", matkul: "Media Pembelajaran", smt: 4, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 29, kode: "TKK-0501", matkul: "Cloud Computing", smt: 5, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 30, kode: "MKK-0502", matkul: "Keamanan Jaringan", smt: 5, sks: 4, hm: "B", am: 3, nm: 12 },
-  { no: 31, kode: "TKK-0503", matkul: "Text Mining", smt: 5, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 32, kode: "TKK-0504", matkul: "Sistem Operasi", smt: 5, sks: 4, hm: "B", am: 3, nm: 12 },
-  { no: 33, kode: "TKK-0505", matkul: "Deep Learning Dasar", smt: 5, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 34, kode: "TKK-0601", matkul: "Deep Learning Lanjut", smt: 6, sks: 4, hm: "B", am: 3, nm: 12 },
-  { no: 35, kode: "TKK-0602", matkul: "Manajemen Proyek Data Science", smt: 6, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 36, kode: "TKK-0603", matkul: "Big Data Analytic", smt: 6, sks: 4, hm: "B", am: 3, nm: 12 },
-  { no: 37, kode: "TKK-0604", matkul: "Computer Vision", smt: 6, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 38, kode: "TKK-0605", matkul: "Robotic", smt: 6, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 39, kode: "MKK-0705", matkul: "IT Entrepreneur", smt: 7, sks: 2, hm: "B", am: 3, nm: 6 },
-  { no: 40, kode: "MKK-0704", matkul: "Etika Profesi", smt: 7, sks: 2, hm: "B", am: 3, nm: 6 },
-  { no: 41, kode: "MKK-0703", matkul: "Proposal Skripsi", smt: 7, sks: 2, hm: "C", am: 2, nm: 4 },
-  { no: 42, kode: "MKK-0702", matkul: "Literature Review", smt: 7, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 43, kode: "MKK-0701", matkul: "Metode Penelitian", smt: 7, sks: 4, hm: "B", am: 3, nm: 12 },
-];
+const azhar = createStudent(
+  "azhar",
+  {
+    nama: "AZHARANGGA KUSUMA",
+    nim: "41226142",
+    prodi: "Teknik Informatika (S1)",
+    semester: 7,
+  },
+  [
+    // Semester 1
+    { kode: "MKWI-21012", hm: "A" },
+    { kode: "MKWI-21013", hm: "A" },
+    { kode: "MKD-0006",   hm: "A" },
+    { kode: "MKWI-21014", hm: "B" },
+    { kode: "MKWI-21001", hm: "B" },
+    { kode: "MKWN-21003", hm: "B" },
+    { kode: "MKWI-21007", hm: "B" },
+    { kode: "MKWN-21001", hm: "B" },
+
+    // Semester 2
+    { kode: "MKWN-004",   hm: "B" },
+    { kode: "SIW-2121",   hm: "A" },
+    { kode: "MKD-0105",   hm: "B" },
+    { kode: "MKWI-21002", hm: "B" },
+    { kode: "SIW-2123",   hm: "B" },
+    { kode: "MKWI-21005", hm: "B" },
+    { kode: "MKWN-002",   hm: "A" },
+
+    // Semester 3
+    { kode: "MDK-0303", hm: "B" },
+    { kode: "TDK-0304", hm: "A" },
+    { kode: "MDK-0305", hm: "A" },
+    { kode: "MDK-0301", hm: "B" },
+    { kode: "MDK-0306", hm: "B" },
+    { kode: "MDK-0302", hm: "B" },
+
+    // Semester 4
+    { kode: "MBKM-TI-04078", hm: "A" },
+    { kode: "MBKM-TI-04049", hm: "A" },
+    { kode: "MBKM-TI-04051", hm: "A" },
+    { kode: "MBKM-TI-04066", hm: "B" },
+    { kode: "MBKM-TI-04017", hm: "B" },
+    { kode: "MBKM-TI-04073", hm: "A" },
+    { kode: "MBKM-TI-04044", hm: "B" },
+
+    // Semester 5
+    { kode: "TKK-0501", hm: "A" },
+    { kode: "MKK-0502", hm: "B" },
+    { kode: "TKK-0503", hm: "A" },
+    { kode: "TKK-0504", hm: "B" },
+    { kode: "TKK-0505", hm: "A" },
+
+    // Semester 6
+    { kode: "TKK-0601", hm: "B" },
+    { kode: "TKK-0602", hm: "A" },
+    { kode: "TKK-0603", hm: "B" },
+    { kode: "TKK-0604", hm: "A" },
+    { kode: "TKK-0605", hm: "A" },
+
+    // Semester 7
+    { kode: "MKK-0705", hm: "B" },
+    { kode: "MKK-0704", hm: "B" },
+    { kode: "MKK-0703", hm: "C" },
+    { kode: "MKK-0702", hm: "A" },
+    { kode: "MKK-0701", hm: "B" },
+  ]
+);
 
 // --- DATA 2: BUDI SANTOSO ---
-const transcriptBudi: TranscriptItem[] = [
-  // Semester 1
-  { no: 1, kode: "MKWI-21012", matkul: "Bahasa Inggris Dasar", smt: 1, sks: 2, hm: "A", am: 4, nm: 8 },
-  { no: 2, kode: "MKWI-21013", matkul: "Pengenalan Budaya Cirebon", smt: 1, sks: 2, hm: "B", am: 3, nm: 6 },
-  { no: 3, kode: "MKD-0006", matkul: "Data Manajemen", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 4, kode: "MKWI-21014", matkul: "Kalkulus", smt: 1, sks: 3, hm: "C", am: 2, nm: 6 },
-  { no: 5, kode: "MKWI-21001", matkul: "Algoritma dan Pemrograman Dasar", smt: 1, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 6, kode: "MKWN-21003", matkul: "Pendidikan Agama", smt: 1, sks: 2, hm: "A", am: 4, nm: 8 },
-  { no: 7, kode: "MKWI-21007", matkul: "Dasar-Dasar Artificial Intelligence", smt: 1, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 8, kode: "MKWN-21001", matkul: "Pancasila", smt: 1, sks: 2, hm: "A", am: 4, nm: 8 },
-  
-  // Semester 2
-  { no: 9, kode: "MKWN-004", matkul: "Pendidikan Kewarganegaraan", smt: 2, sks: 2, hm: "B", am: 3, nm: 6 },
-  { no: 10, kode: "SIW-2121", matkul: "Jaringan Komputer", smt: 2, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 11, kode: "MKD-0105", matkul: "Struktur Data", smt: 2, sks: 3, hm: "C", am: 2, nm: 6 },
-  { no: 12, kode: "MKWI-21002", matkul: "Algoritma dan Pemrograman Lanjut", smt: 2, sks: 4, hm: "B", am: 3, nm: 12 },
-  { no: 13, kode: "SIW-2123", matkul: "Statistika", smt: 2, sks: 3, hm: "C", am: 2, nm: 6 },
-  { no: 14, kode: "MKWI-21005", matkul: "Aljabar Linear", smt: 2, sks: 3, hm: "C", am: 2, nm: 6 },
-  { no: 15, kode: "MKWN-002", matkul: "Bahasa Indonesia", smt: 2, sks: 2, hm: "A", am: 4, nm: 8 },
-
-  // Semester 3
-  { no: 16, kode: "MDK-0303", matkul: "Matematika Diskrit", smt: 3, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 17, kode: "TDK-0304", matkul: "Jaringan Komputer Advanced", smt: 3, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 18, kode: "MDK-0305", matkul: "Pemrograman Web", smt: 3, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 19, kode: "MDK-0301", matkul: "Pemrograman SQL", smt: 3, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 20, kode: "MDK-0306", matkul: "Data Science", smt: 3, sks: 3, hm: "B", am: 3, nm: 9 },
-  { no: 21, kode: "MDK-0302", matkul: "Rekayasa Perangkat Lunak", smt: 3, sks: 4, hm: "B", am: 3, nm: 12 },
-
-  // Semester 4
-  { no: 22, kode: "MBKM-TI-04078", matkul: "TP. Camping dan Trekking", smt: 4, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 23, kode: "MBKM-TI-04049", matkul: "Modul Nusantara", smt: 4, sks: 4, hm: "A", am: 4, nm: 16 },
-  { no: 24, kode: "MBKM-TI-04051", matkul: "Pendidikan Anti Korupsi", smt: 4, sks: 3, hm: "A", am: 4, nm: 12 },
-  { no: 25, kode: "MBKM-TI-04066", matkul: "Semiotika", smt: 4, sks: 2, hm: "B", am: 3, nm: 6 },
-  { no: 26, kode: "MBKM-TI-04017", matkul: "Etika Bisnis Profesi", smt: 4, sks: 3, hm: "B", am: 3, nm: 9 },
-];
-
-export const students: StudentData[] = [
+const budi = createStudent(
+  "budi",
   {
-    id: "azhar",
-    profile: {
-      nama: "AZHARANGGA KUSUMA",
-      nim: "41226142",
-      prodi: "Teknik Informatika (S1)",
-      semester: 7,
-    },
-    transcript: transcriptAzhar,
+    nama: "BUDI SANTOSO",
+    nim: "41226155",
+    prodi: "Teknik Informatika (S1)",
+    semester: 4,
   },
-  {
-    id: "budi",
-    profile: {
-      nama: "BUDI SANTOSO",
-      nim: "41226155",
-      prodi: "Teknik Informatika (S1)",
-      semester: 4,
-    },
-    transcript: transcriptBudi,
-  },
-];
+  [
+    // Smt 1
+    { kode: "MKWI-21012", hm: "A" },
+    { kode: "MKWI-21013", hm: "B" },
+    { kode: "MKD-0006",   hm: "B" },
+    { kode: "MKWI-21014", hm: "C" },
+    { kode: "MKWI-21001", hm: "A" },
+    { kode: "MKWN-21003", hm: "A" },
+    { kode: "MKWI-21007", hm: "B" },
+    { kode: "MKWN-21001", hm: "A" },
+
+    // Smt 2
+    { kode: "MKWN-004",   hm: "B" },
+    { kode: "SIW-2121",   hm: "B" },
+    { kode: "MKD-0105",   hm: "C" },
+    { kode: "MKWI-21002", hm: "B" },
+    { kode: "SIW-2123",   hm: "C" },
+    { kode: "MKWI-21005", hm: "C" },
+    { kode: "MKWN-002",   hm: "A" },
+
+    // Smt 3
+    { kode: "MDK-0303", hm: "B" },
+    { kode: "TDK-0304", hm: "B" },
+    { kode: "MDK-0305", hm: "A" },
+    { kode: "MDK-0301", hm: "A" },
+    { kode: "MDK-0306", hm: "B" },
+    { kode: "MDK-0302", hm: "B" },
+
+    // Smt 4
+    { kode: "MBKM-TI-04078", hm: "A" },
+    { kode: "MBKM-TI-04049", hm: "A" },
+    { kode: "MBKM-TI-04051", hm: "A" },
+    { kode: "MBKM-TI-04066", hm: "B" },
+    { kode: "MBKM-TI-04017", hm: "B" },
+  ]
+);
+
+// EXPORT ARRAY UTAMA
+export const students: StudentData[] = [azhar, budi];
