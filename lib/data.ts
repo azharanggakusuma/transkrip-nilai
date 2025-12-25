@@ -33,7 +33,8 @@ export interface StudentData {
   transcript: TranscriptItem[];
 }
 
-type CourseData = {
+// --- PERUBAHAN: Tambahkan 'export' di sini ---
+export type CourseData = {
   matkul: string;
   sks: number;
   smt_default: number;
@@ -50,7 +51,8 @@ type RawGrade = {
 // 2. MASTER DATA (DATABASE MATA KULIAH)
 // =========================================
 
-const COURSES_DB: Record<string, CourseData> = {
+// --- PERUBAHAN: Tambahkan 'export' di sini ---
+export const COURSES_DB: Record<string, CourseData> = {
   "MKWI-21012": { matkul: "Bahasa Inggris Dasar", sks: 2, smt_default: 1, kategori: "Reguler" },
   "MKWI-21013": { matkul: "Pengenalan Budaya Cirebon", sks: 2, smt_default: 1, kategori: "Reguler" },
   "MKD-0006":   { matkul: "Data Manajemen", sks: 3, smt_default: 1, kategori: "Reguler" },

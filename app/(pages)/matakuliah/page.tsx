@@ -45,19 +45,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// --- TYPES ---
-type CourseCategory = "Reguler" | "MBKM";
+// --- IMPORT DATA DARI LIB ---
+import { COURSES_DB, type CourseData as TCourseData, type CourseCategory } from "@/lib/data";
 
-// Tipe data utama untuk disimpan di array 'courses'
-interface CourseData {
+// --- TYPES ---
+// Kita perlu tipe data yang memiliki properti 'kode', karena COURSES_DB menyimpannya sebagai key object
+interface CourseState extends TCourseData {
   kode: string;
-  matkul: string;
-  sks: number;
-  smt_default: number;
-  kategori: CourseCategory;
 }
 
-// Tipe data khusus untuk Form
+// Tipe data khusus untuk Form (agar bisa menampung string kosong saat input dihapus)
 interface CourseFormState {
   kode: string;
   matkul: string;
@@ -66,20 +63,15 @@ interface CourseFormState {
   kategori: CourseCategory | "";
 }
 
-// --- DATA AWAL ---
-const INITIAL_DATA: CourseData[] = [
-  { kode: "MKWI-21012", matkul: "Bahasa Inggris Dasar", sks: 2, smt_default: 1, kategori: "Reguler" },
-  { kode: "MKWI-21014", matkul: "Kalkulus", sks: 3, smt_default: 1, kategori: "Reguler" },
-  { kode: "MKWI-21001", matkul: "Algoritma dan Pemrograman Dasar", sks: 3, smt_default: 1, kategori: "Reguler" },
-  { kode: "SIW-2121", matkul: "Jaringan Komputer", sks: 3, smt_default: 2, kategori: "Reguler" },
-  { kode: "MDK-0306", matkul: "Data Science", sks: 3, smt_default: 3, kategori: "Reguler" },
-  { kode: "MBKM-TI-04073", matkul: "Technopreneurship", sks: 3, smt_default: 4, kategori: "MBKM" },
-  { kode: "MDK-0402", matkul: "Interaksi Manusia Komputer", sks: 3, smt_default: 4, kategori: "Reguler" },
-  { kode: "TKK-0501", matkul: "Cloud Computing", sks: 4, smt_default: 5, kategori: "Reguler" },
-];
+// --- TRANSFORMASI DATA ---
+// Mengubah Object COURSES_DB menjadi Array untuk ditampilkan di tabel
+const DATA_FROM_DB: CourseState[] = Object.entries(COURSES_DB).map(([kode, data]) => ({
+  kode,
+  ...data
+}));
 
 export default function MataKuliahPage() {
-  const [courses, setCourses] = useState<CourseData[]>(INITIAL_DATA);
+  const [courses, setCourses] = useState<CourseState[]>(DATA_FROM_DB);
   const [searchQuery, setSearchQuery] = useState("");
   
   // --- PAGINATION STATE ---
@@ -131,7 +123,7 @@ export default function MataKuliahPage() {
   };
 
   // 2. Handler Buka Modal Edit
-  const handleOpenEdit = (course: CourseData) => {
+  const handleOpenEdit = (course: CourseState) => {
     setFormData({
       kode: course.kode,
       matkul: course.matkul,
@@ -161,7 +153,7 @@ export default function MataKuliahPage() {
       return;
     }
 
-    const finalData: CourseData = {
+    const finalData: CourseState = {
       kode: formData.kode,
       matkul: formData.matkul,
       sks: Number(formData.sks),
