@@ -26,7 +26,8 @@ import {
 
 // --- IMPORT CUSTOM COMPONENTS ---
 import { DataTable, type Column } from "@/components/DataTable";
-import { FormModal } from "@/components/FormModal"; // <--- KOMPONEN BARU
+import { FormModal } from "@/components/FormModal";
+import { ConfirmModal } from "@/components/ConfirmModal"; // <--- IMPORT MODAL BARU
 
 // --- IMPORT DATA ---
 import { COURSES_DB, type CourseData as TCourseData, type CourseCategory } from "@/lib/data";
@@ -49,23 +50,30 @@ const DATA_FROM_DB: CourseState[] = Object.entries(COURSES_DB).map(([kode, data]
 }));
 
 export default function MataKuliahPage() {
+  // --- STATE ---
   const [courses, setCourses] = useState<CourseState[]>(DATA_FROM_DB);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Filter & Pagination
+  // FILTER STATE
   const [categoryFilter, setCategoryFilter] = useState<"ALL" | CourseCategory>("ALL");
   const [semesterFilter, setSemesterFilter] = useState<string>("ALL");
+
+  // PAGINATION STATE
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Dialog & Form
+  // MODAL STATE (FORM)
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<CourseFormState>({
     kode: "", matkul: "", sks: "", smt_default: "", kategori: "",   
   });
 
-  // --- LOGIC ---
+  // MODAL STATE (DELETE)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteCode, setDeleteCode] = useState<string | null>(null);
+
+  // --- LOGIC FILTER ---
   const filteredCourses = courses.filter((course) => {
     const matchSearch = 
       course.matkul.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -106,10 +114,22 @@ export default function MataKuliahPage() {
       className: "text-center w-[100px]",
       render: (row) => (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50" onClick={() => handleOpenEdit(row)}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50" 
+            onClick={() => handleOpenEdit(row)}
+            title="Edit Data"
+          >
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(row.kode)}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" 
+            onClick={() => handleDelete(row.kode)}
+            title="Hapus Data"
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -136,10 +156,20 @@ export default function MataKuliahPage() {
     setIsDialogOpen(true);
   };
 
+  // 1. Handler Delete (Hanya Buka Modal)
   const handleDelete = (kode: string) => {
-    if (confirm(`Hapus data ${kode}?`)) {
-      setCourses((prev) => prev.filter((item) => item.kode !== kode));
-      if (currentData.length === 1 && currentPage > 1) setCurrentPage((prev) => prev - 1);
+    setDeleteCode(kode);
+    setIsDeleteOpen(true);
+  };
+
+  // 2. Handler Konfirmasi Delete (Eksekusi Hapus)
+  const confirmDelete = () => {
+    if (deleteCode) {
+      setCourses((prev) => prev.filter((item) => item.kode !== deleteCode));
+      // Reset pagination jika halaman kosong
+      if (currentData.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      }
     }
   };
 
@@ -209,7 +239,7 @@ export default function MataKuliahPage() {
         </CardContent>
       </Card>
 
-      {/* --- MENGGUNAKAN COMPONENT FORM MODAL --- */}
+      {/* FORM MODAL */}
       <FormModal
         isOpen={isDialogOpen}
         onClose={setIsDialogOpen}
@@ -218,36 +248,48 @@ export default function MataKuliahPage() {
         onSubmit={handleSubmit}
         maxWidth="sm:max-w-[600px]"
       >
-        <div className="grid grid-cols-4 gap-4">
-          <div className="grid gap-2 col-span-2">
-            <Label htmlFor="kode">Kode MK</Label>
-            <Input id="kode" value={formData.kode} onChange={(e) => setFormData({ ...formData, kode: e.target.value })} disabled={isEditing} placeholder="Contoh: TKK-01" required />
+        <div className="grid gap-5 py-4">
+          <div className="grid grid-cols-4 gap-4">
+            <div className="grid gap-2 col-span-2">
+              <Label htmlFor="kode">Kode MK</Label>
+              <Input id="kode" value={formData.kode} onChange={(e) => setFormData({ ...formData, kode: e.target.value })} disabled={isEditing} placeholder="Contoh: TKK-01" required />
+            </div>
+            <div className="grid gap-2 col-span-1">
+              <Label htmlFor="sks">SKS</Label>
+              <Input id="sks" type="number" min={0} max={6} value={formData.sks} onChange={(e) => setFormData({ ...formData, sks: e.target.value })} placeholder="0" required />
+            </div>
+            <div className="grid gap-2 col-span-1">
+              <Label htmlFor="smt">Smt</Label>
+              <Input id="smt" type="number" min={1} max={8} value={formData.smt_default} onChange={(e) => setFormData({ ...formData, smt_default: e.target.value })} placeholder="0" required />
+            </div>
           </div>
-          <div className="grid gap-2 col-span-1">
-            <Label htmlFor="sks">SKS</Label>
-            <Input id="sks" type="number" min={0} max={6} value={formData.sks} onChange={(e) => setFormData({ ...formData, sks: e.target.value })} placeholder="0" required />
+          <div className="grid gap-2">
+            <Label htmlFor="matkul">Nama Mata Kuliah</Label>
+            <Input id="matkul" value={formData.matkul} onChange={(e) => setFormData({ ...formData, matkul: e.target.value })} placeholder="Contoh: Pemrograman Web Lanjut" required />
           </div>
-          <div className="grid gap-2 col-span-1">
-            <Label htmlFor="smt">Smt</Label>
-            <Input id="smt" type="number" min={1} max={8} value={formData.smt_default} onChange={(e) => setFormData({ ...formData, smt_default: e.target.value })} placeholder="0" required />
+          <div className="grid gap-2">
+            <Label htmlFor="kategori">Kategori</Label>
+            <Select value={formData.kategori} onValueChange={(val: CourseCategory) => setFormData({ ...formData, kategori: val })}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Kategori Mata Kuliah" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Reguler">Reguler</SelectItem>
+                <SelectItem value="MBKM">MBKM</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="matkul">Nama Mata Kuliah</Label>
-          <Input id="matkul" value={formData.matkul} onChange={(e) => setFormData({ ...formData, matkul: e.target.value })} placeholder="Contoh: Pemrograman Web Lanjut" required />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="kategori">Kategori</Label>
-          <Select value={formData.kategori} onValueChange={(val: CourseCategory) => setFormData({ ...formData, kategori: val })}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Kategori Mata Kuliah" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Reguler">Reguler</SelectItem>
-              <SelectItem value="MBKM">MBKM</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </FormModal>
 
+      {/* CONFIRM DELETE MODAL */}
+      <ConfirmModal 
+        isOpen={isDeleteOpen}
+        onClose={setIsDeleteOpen}
+        onConfirm={confirmDelete}
+        title="Hapus Mata Kuliah?"
+        description={`Apakah Anda yakin ingin menghapus mata kuliah ${deleteCode}? Tindakan ini tidak dapat dibatalkan.`}
+        confirmLabel="Hapus Permanen"
+        variant="destructive"
+      />
     </div>
   );
 }
