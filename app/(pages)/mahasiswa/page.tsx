@@ -67,29 +67,34 @@ export default function MahasiswaPage() {
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
         
         {/* TOOLBAR */}
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* justify-between: Mendorong elemen ke ujung kiri dan kanan */}
+        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between gap-2">
           
-          {/* SEARCH BAR (Identik dengan Navbar) */}
-          <div className="relative group w-full sm:w-64">
+          {/* SEARCH BAR (KIRI 30%) */}
+          {/* w-[30%]: Memaksa lebar hanya 30% dari wadah, tidak akan full width */}
+          <div className="relative group w-[30%] min-w-[150px]">
             <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 transition-colors duration-200 group-focus-within:text-blue-600">
               <SearchIcon className="h-4 w-4" />
             </span>
             <input
               type="text"
-              placeholder="Cari Nama atau NIM..."
+              placeholder="Cari..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-full bg-slate-100 py-2.5 pl-9 pr-4 text-xs text-slate-700 border border-transparent outline-none transition-all duration-200 hover:bg-slate-100/70 focus:bg-white focus:border-blue-200 focus:ring-2 focus:ring-blue-100"
             />
           </div>
 
-          {/* TOMBOL TAMBAH DATA (Lebar Sedang/Proporsional) */}
+          {/* SISA RUANG KOSONG (OTOMATIS 60%) */}
+
+          {/* TOMBOL TAMBAH DATA (KANAN ~10%) */}
           <button
             onClick={handleAdd}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-2.5 bg-[#1B3F95] text-white text-xs font-semibold rounded-full hover:bg-blue-800 transition shadow-md shadow-blue-900/10 active:scale-95"
+            className="w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1B3F95] text-white text-xs font-semibold rounded-full hover:bg-blue-800 transition shadow-md shadow-blue-900/10 active:scale-95 whitespace-nowrap"
           >
             <PlusIcon className="w-4 h-4" />
-            <span>Tambah Data</span>
+            <span className="hidden sm:inline">Tambah Data</span>
+            <span className="sm:hidden">Tambah</span>
           </button>
         </div>
 
