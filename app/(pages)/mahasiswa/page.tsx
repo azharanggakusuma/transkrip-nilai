@@ -335,7 +335,7 @@ export default function MahasiswaPage() {
               value={formData.prodi} 
               onValueChange={(val) => setFormData({ ...formData, prodi: val })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Pilih Program Studi" />
               </SelectTrigger>
               <SelectContent>
