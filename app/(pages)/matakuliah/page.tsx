@@ -89,27 +89,22 @@ export default function MataKuliahPage() {
   });
 
   // --- FILTER & PAGINATION LOGIC ---
-  
-  // 1. Filter Data (Search)
   const filteredCourses = courses.filter((course) =>
     course.matkul.toLowerCase().includes(searchQuery.toLowerCase()) ||
     course.kode.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // 2. Hitung Pagination
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredCourses.slice(startIndex, endIndex);
 
-  // Handler Search (Reset page ke 1 saat search berubah)
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1); 
   };
 
   // --- CRUD HANDLERS ---
-
   const handleOpenAdd = () => {
     setFormData({ kode: "", matkul: "", sks: 2, smt_default: 1, kategori: "Reguler" });
     setIsEditing(false);
@@ -125,7 +120,6 @@ export default function MataKuliahPage() {
   const handleDelete = (kode: string) => {
     if (confirm(`Hapus data ${kode}?`)) {
       setCourses((prev) => prev.filter((item) => item.kode !== kode));
-      // Jika halaman kosong setelah delete, mundur 1 halaman (kecuali di halaman 1)
       if (currentData.length === 1 && currentPage > 1) {
         setCurrentPage((prev) => prev - 1);
       }
@@ -174,7 +168,11 @@ export default function MataKuliahPage() {
                 </Button>
             </div>
 
-            <Button onClick={handleOpenAdd} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
+            {/* BUTTON TAMBAH DATA (Updated: Menggunakan bg-primary) */}
+            <Button 
+              onClick={handleOpenAdd} 
+              className="bg-primary hover:bg-primary/90 text-white w-full sm:w-auto"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Tambah Data
             </Button>
@@ -228,7 +226,6 @@ export default function MataKuliahPage() {
                         </Badge>
                       </TableCell>
                       
-                      {/* --- TOMBOL AKSI LANGSUNG (TANPA DROPDOWN) --- */}
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-2">
                           <Button
@@ -269,7 +266,6 @@ export default function MataKuliahPage() {
           
           {/* PAGINATION FOOTER */}
           <div className="flex items-center justify-between mt-4">
-             {/* Info Data */}
              <div className="text-xs text-muted-foreground">
               {filteredCourses.length > 0 ? (
                 <>
@@ -280,7 +276,6 @@ export default function MataKuliahPage() {
               )}
             </div>
 
-            {/* Tombol Navigasi */}
             <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
@@ -387,7 +382,10 @@ export default function MataKuliahPage() {
             </div>
 
             <DialogFooter className="mt-4">
-              <Button type="submit">Simpan Data</Button>
+              {/* BUTTON SIMPAN (Updated: Menggunakan bg-primary) */}
+              <Button type="submit" className="bg-primary hover:bg-primary/90 text-white">
+                Simpan Data
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
