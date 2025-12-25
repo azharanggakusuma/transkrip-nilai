@@ -190,6 +190,7 @@ export default function MahasiswaPage() {
       className: "text-center w-[100px] text-gray-700", 
       render: (row) => row.profile.semester 
     },
+    { header: "Alamat", render: (row) => <span className="text-gray-600">{row.profile.alamat}</span> },
 
     {
       header: "Aksi",
@@ -251,7 +252,7 @@ export default function MahasiswaPage() {
             onSearchChange={handleSearchChange}
             searchPlaceholder="Cari Nama atau NIM..."
             onAdd={handleOpenAdd}
-            addLabel="Tambah Mahasiswa"
+            addLabel="Tambah Data"
             filterContent={filterContent}
             isFilterActive={prodiFilter !== "ALL" || semesterFilter !== "ALL"}
             onResetFilter={() => { setProdiFilter("ALL"); setSemesterFilter("ALL"); setSearchQuery(""); }}
