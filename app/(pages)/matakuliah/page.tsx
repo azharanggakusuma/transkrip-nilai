@@ -48,6 +48,7 @@ import {
 // --- TYPES ---
 type CourseCategory = "Reguler" | "MBKM";
 
+// Tipe data utama untuk disimpan di array 'courses'
 interface CourseData {
   kode: string;
   matkul: string;
@@ -56,7 +57,16 @@ interface CourseData {
   kategori: CourseCategory;
 }
 
-// --- DATA ---
+// Tipe data khusus untuk Form
+interface CourseFormState {
+  kode: string;
+  matkul: string;
+  sks: number | string;
+  smt_default: number | string;
+  kategori: CourseCategory | "";
+}
+
+// --- DATA AWAL ---
 const INITIAL_DATA: CourseData[] = [
   { kode: "MKWI-21012", matkul: "Bahasa Inggris Dasar", sks: 2, smt_default: 1, kategori: "Reguler" },
   { kode: "MKWI-21014", matkul: "Kalkulus", sks: 3, smt_default: 1, kategori: "Reguler" },
@@ -80,12 +90,13 @@ export default function MataKuliahPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   
-  const [formData, setFormData] = useState<CourseData>({
+  // Form State
+  const [formData, setFormData] = useState<CourseFormState>({
     kode: "",
     matkul: "",
-    sks: 2,
-    smt_default: 1,
-    kategori: "Reguler",
+    sks: "",        
+    smt_default: "",
+    kategori: "",   
   });
 
   // --- FILTER & PAGINATION LOGIC ---
@@ -105,14 +116,29 @@ export default function MataKuliahPage() {
   };
 
   // --- CRUD HANDLERS ---
+  
+  // 1. Handler Buka Modal Tambah
   const handleOpenAdd = () => {
-    setFormData({ kode: "", matkul: "", sks: 2, smt_default: 1, kategori: "Reguler" });
+    setFormData({ 
+      kode: "", 
+      matkul: "", 
+      sks: "",         
+      smt_default: "", 
+      kategori: ""     
+    });
     setIsEditing(false);
     setIsDialogOpen(true);
   };
 
+  // 2. Handler Buka Modal Edit
   const handleOpenEdit = (course: CourseData) => {
-    setFormData(course);
+    setFormData({
+      kode: course.kode,
+      matkul: course.matkul,
+      sks: course.sks,
+      smt_default: course.smt_default,
+      kategori: course.kategori
+    });
     setIsEditing(true);
     setIsDialogOpen(true);
   };
@@ -126,18 +152,33 @@ export default function MataKuliahPage() {
     }
   };
 
+  // 3. Handler Submit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.sks === "" || formData.smt_default === "" || formData.kategori === "") {
+      alert("Mohon lengkapi semua data (SKS, Semester, dan Kategori harus diisi).");
+      return;
+    }
+
+    const finalData: CourseData = {
+      kode: formData.kode,
+      matkul: formData.matkul,
+      sks: Number(formData.sks),
+      smt_default: Number(formData.smt_default),
+      kategori: formData.kategori as CourseCategory,
+    };
+
     if (isEditing) {
       setCourses((prev) =>
-        prev.map((item) => (item.kode === formData.kode ? formData : item))
+        prev.map((item) => (item.kode === finalData.kode ? finalData : item))
       );
     } else {
-      if (courses.some((c) => c.kode === formData.kode)) {
-        alert("Kode sudah ada!");
+      if (courses.some((c) => c.kode === finalData.kode)) {
+        alert("Kode Mata Kuliah sudah ada!");
         return;
       }
-      setCourses((prev) => [...prev, formData]);
+      setCourses((prev) => [...prev, finalData]);
     }
     setIsDialogOpen(false);
   };
@@ -204,11 +245,13 @@ export default function MataKuliahPage() {
                       <TableCell>
                         <span className="font-medium text-gray-700">{row.matkul}</span>
                       </TableCell>
-                      <TableCell className="text-center">
-                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-xs font-semibold text-gray-700">
-                          {row.sks}
-                        </div>
+                      
+                      {/* --- SKS (PLAIN TEXT) --- */}
+                      <TableCell className="text-center text-gray-700">
+                        {row.sks}
                       </TableCell>
+                      {/* ----------------------- */}
+
                       <TableCell className="text-center text-muted-foreground">
                         {row.smt_default}
                       </TableCell>
@@ -302,7 +345,7 @@ export default function MataKuliahPage() {
         </CardContent>
       </Card>
 
-      {/* --- MODAL DIALOG (UPDATED LAYOUT) --- */}
+      {/* --- MODAL DIALOG --- */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -317,7 +360,6 @@ export default function MataKuliahPage() {
           <form onSubmit={handleSubmit}>
             <div className="grid gap-5 py-4">
               
-              {/* Row 1: Kode MK, SKS, Semester (Technical Details) */}
               <div className="grid grid-cols-4 gap-4">
                 <div className="grid gap-2 col-span-2">
                   <Label htmlFor="kode">Kode MK</Label>
@@ -335,10 +377,11 @@ export default function MataKuliahPage() {
                   <Input
                     id="sks"
                     type="number"
-                    min={1} 
+                    min={0} 
                     max={6}
-                    value={formData.sks}
-                    onChange={(e) => setFormData({ ...formData, sks: parseInt(e.target.value) || 0 })}
+                    value={formData.sks} 
+                    onChange={(e) => setFormData({ ...formData, sks: e.target.value })} 
+                    placeholder="0"
                     required
                   />
                 </div>
@@ -349,14 +392,14 @@ export default function MataKuliahPage() {
                     type="number"
                     min={1} 
                     max={8}
-                    value={formData.smt_default}
-                    onChange={(e) => setFormData({ ...formData, smt_default: parseInt(e.target.value) || 0 })}
+                    value={formData.smt_default} 
+                    onChange={(e) => setFormData({ ...formData, smt_default: e.target.value })} 
+                    placeholder="0" 
                     required
                   />
                 </div>
               </div>
 
-              {/* Row 2: Nama Mata Kuliah (Full Width) */}
               <div className="grid gap-2">
                 <Label htmlFor="matkul">Nama Mata Kuliah</Label>
                 <Input
@@ -368,7 +411,6 @@ export default function MataKuliahPage() {
                 />
               </div>
 
-              {/* Row 3: Kategori (Full Width - WIDENED) */}
               <div className="grid gap-2">
                 <Label htmlFor="kategori">Kategori</Label>
                 <Select
