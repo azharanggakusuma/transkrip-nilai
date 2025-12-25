@@ -250,23 +250,21 @@ export default function MataKuliahPage() {
                       <TableCell className="text-center text-gray-700">
                         {row.sks}
                       </TableCell>
-                      {/* ----------------------- */}
 
                       <TableCell className="text-center text-muted-foreground">
                         {row.smt_default}
                       </TableCell>
+                      
+                      {/* --- BADGE KATEGORI (SERAGAM OUTLINE) --- */}
                       <TableCell>
                         <Badge 
-                          variant={row.kategori === "MBKM" ? "secondary" : "outline"}
-                          className={`font-normal ${
-                            row.kategori === "MBKM" 
-                              ? "bg-purple-100 text-purple-700 hover:bg-purple-100 border-none" 
-                              : "border-gray-300 text-gray-600"
-                          }`}
+                          variant="outline"
+                          className="font-normal border-gray-300 text-gray-600"
                         >
                           {row.kategori}
                         </Badge>
                       </TableCell>
+                      
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-2">
                           <Button
