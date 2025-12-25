@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { 
-  MoreHorizontal, 
   Pencil, 
   Trash2, 
   Plus, 
@@ -45,14 +44,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 // --- TYPES ---
 type CourseCategory = "Reguler" | "MBKM";
@@ -175,7 +166,7 @@ export default function MataKuliahPage() {
                     placeholder="Cari kode atau nama..."
                     className="pl-9 bg-muted/30"
                     value={searchQuery}
-                    onChange={handleSearchChange} // Pakai handler baru
+                    onChange={handleSearchChange}
                   />
                 </div>
                 <Button variant="outline" size="icon" className="text-muted-foreground shrink-0">
@@ -200,7 +191,7 @@ export default function MataKuliahPage() {
                   <TableHead className="text-center w-[100px]">SKS</TableHead>
                   <TableHead className="text-center w-[100px]">Semester</TableHead>
                   <TableHead className="w-[150px]">Kategori</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead className="w-[100px] text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -208,7 +199,6 @@ export default function MataKuliahPage() {
                   currentData.map((row, index) => (
                     <TableRow key={row.kode} className="group hover:bg-muted/30 transition-colors">
                       <TableCell className="text-center font-medium text-muted-foreground">
-                        {/* Nomor urut global (bukan reset per halaman) */}
                         {startIndex + index + 1}
                       </TableCell>
                       <TableCell className="font-medium text-foreground">
@@ -237,28 +227,29 @@ export default function MataKuliahPage() {
                           {row.kategori}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity data-[state=open]:opacity-100">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleOpenEdit(row)}>
-                              <Pencil className="mr-2 h-4 w-4 text-muted-foreground" /> Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                              onClick={() => handleDelete(row.kode)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" /> Hapus
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                      
+                      {/* --- TOMBOL AKSI LANGSUNG (TANPA DROPDOWN) --- */}
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                            onClick={() => handleOpenEdit(row)}
+                            title="Edit Data"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleDelete(row.kode)}
+                            title="Hapus Data"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
