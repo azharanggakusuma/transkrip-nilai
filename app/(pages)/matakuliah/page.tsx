@@ -2,25 +2,14 @@
 
 import React, { useState } from "react";
 import PageHeader from "@/components/PageHeader";
-import { 
-  Pencil, 
-  Trash2, 
-} from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
-// Import Komponen UI
+// --- IMPORT KOMPONEN UI ---
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -35,13 +24,13 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-// Import DataTable Reusable
+// --- IMPORT CUSTOM COMPONENTS ---
 import { DataTable, type Column } from "@/components/DataTable";
+import { FormModal } from "@/components/FormModal"; // <--- KOMPONEN BARU
 
-// Import Data
+// --- IMPORT DATA ---
 import { COURSES_DB, type CourseData as TCourseData, type CourseCategory } from "@/lib/data";
 
-// --- TYPES ---
 interface CourseState extends TCourseData {
   kode: string;
 }
@@ -54,7 +43,6 @@ interface CourseFormState {
   kategori: CourseCategory | "";
 }
 
-// Transformasi Data Awal
 const DATA_FROM_DB: CourseState[] = Object.entries(COURSES_DB).map(([kode, data]) => ({
   kode,
   ...data
@@ -64,22 +52,20 @@ export default function MataKuliahPage() {
   const [courses, setCourses] = useState<CourseState[]>(DATA_FROM_DB);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Filter State
+  // Filter & Pagination
   const [categoryFilter, setCategoryFilter] = useState<"ALL" | CourseCategory>("ALL");
   const [semesterFilter, setSemesterFilter] = useState<string>("ALL");
-
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Dialog State
+  // Dialog & Form
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<CourseFormState>({
     kode: "", matkul: "", sks: "", smt_default: "", kategori: "",   
   });
 
-  // --- LOGIC FILTER ---
+  // --- LOGIC ---
   const filteredCourses = courses.filter((course) => {
     const matchSearch = 
       course.matkul.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -89,42 +75,22 @@ export default function MataKuliahPage() {
     return matchSearch && matchCategory && matchSemester;
   });
 
-  // --- LOGIC PAGINATION ---
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredCourses.slice(startIndex, endIndex);
 
-  // --- DEFINISI KOLOM TABLE ---
-  // Inilah kelebihannya, kita mendefinisikan kolom sebagai konfigurasi
+  // --- COLUMNS ---
   const columns: Column<CourseState>[] = [
     {
       header: "#",
       className: "w-[50px] text-center",
       render: (_, index) => <span className="text-muted-foreground font-medium">{startIndex + index + 1}</span>
     },
-    {
-      header: "Kode MK",
-      accessorKey: "kode",
-      className: "font-medium"
-    },
-    {
-      header: "Mata Kuliah",
-      accessorKey: "matkul",
-      render: (row) => <span className="text-gray-700 font-medium">{row.matkul}</span>
-    },
-    {
-      header: "SKS",
-      accessorKey: "sks",
-      className: "text-center w-[100px] text-gray-700",
-      render: (row) => row.sks
-    },
-    {
-      header: "Semester",
-      accessorKey: "smt_default",
-      className: "text-center w-[100px] text-muted-foreground",
-      render: (row) => row.smt_default
-    },
+    { header: "Kode MK", accessorKey: "kode", className: "font-medium" },
+    { header: "Mata Kuliah", accessorKey: "matkul", render: (row) => <span className="text-gray-700 font-medium">{row.matkul}</span> },
+    { header: "SKS", accessorKey: "sks", className: "text-center w-[100px] text-gray-700" },
+    { header: "Semester", accessorKey: "smt_default", className: "text-center w-[100px] text-muted-foreground" },
     {
       header: "Kategori",
       accessorKey: "kategori",
@@ -140,22 +106,10 @@ export default function MataKuliahPage() {
       className: "text-center w-[100px]",
       render: (row) => (
         <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
-            onClick={() => handleOpenEdit(row)}
-            title="Edit Data"
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50" onClick={() => handleOpenEdit(row)}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={() => handleDelete(row.kode)}
-            title="Hapus Data"
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(row.kode)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -164,11 +118,6 @@ export default function MataKuliahPage() {
   ];
 
   // --- HANDLERS ---
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1); 
-  };
-
   const handleOpenAdd = () => {
     setFormData({ kode: "", matkul: "", sks: "", smt_default: "", kategori: "" });
     setIsEditing(false);
@@ -211,15 +160,13 @@ export default function MataKuliahPage() {
       setCourses((prev) => prev.map((item) => (item.kode === finalData.kode ? finalData : item)));
     } else {
       if (courses.some((c) => c.kode === finalData.kode)) {
-        alert("Kode Mata Kuliah sudah ada!");
-        return;
+        alert("Kode sudah ada!"); return;
       }
       setCourses((prev) => [...prev, finalData]);
     }
     setIsDialogOpen(false);
   };
 
-  // --- KONTEN FILTER DROPDOWN ---
   const filterContent = (
     <>
       <DropdownMenuLabel>Kategori</DropdownMenuLabel>
@@ -232,9 +179,7 @@ export default function MataKuliahPage() {
       <DropdownMenuLabel>Semester</DropdownMenuLabel>
       <DropdownMenuRadioGroup value={semesterFilter} onValueChange={(v) => { setSemesterFilter(v); setCurrentPage(1); }}>
         <DropdownMenuRadioItem value="ALL">Semua</DropdownMenuRadioItem>
-        {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-          <DropdownMenuRadioItem key={i} value={i.toString()}>Semester {i}</DropdownMenuRadioItem>
-        ))}
+        {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <DropdownMenuRadioItem key={i} value={i.toString()}>Semester {i}</DropdownMenuRadioItem>)}
       </DropdownMenuRadioGroup>
     </>
   );
@@ -245,21 +190,15 @@ export default function MataKuliahPage() {
 
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-6">
-          
-          {/* GUNAKAN KOMPONEN DATA TABLE REUSABLE */}
           <DataTable 
             data={currentData}
             columns={columns}
             searchQuery={searchQuery}
-            onSearchChange={handleSearchChange}
+            onSearchChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             onAdd={handleOpenAdd}
-            
-            // Konfigurasi Filter
             filterContent={filterContent}
             isFilterActive={categoryFilter !== "ALL" || semesterFilter !== "ALL"}
             onResetFilter={() => { setCategoryFilter("ALL"); setSemesterFilter("ALL"); setSearchQuery(""); }}
-            
-            // Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
@@ -267,59 +206,48 @@ export default function MataKuliahPage() {
             endIndex={endIndex}
             totalItems={filteredCourses.length}
           />
-
         </CardContent>
       </Card>
 
-      {/* MODAL DIALOG TETAP DI SINI KARENA SPESIFIK */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="text-xl">
-               {isEditing ? "Edit Mata Kuliah" : "Tambah Mata Kuliah"}
-            </DialogTitle>
-            <DialogDescription>
-              Lengkapi detail mata kuliah di bawah ini.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-5 py-4">
-              <div className="grid grid-cols-4 gap-4">
-                <div className="grid gap-2 col-span-2">
-                  <Label htmlFor="kode">Kode MK</Label>
-                  <Input id="kode" value={formData.kode} onChange={(e) => setFormData({ ...formData, kode: e.target.value })} disabled={isEditing} placeholder="Contoh: TKK-01" required />
-                </div>
-                <div className="grid gap-2 col-span-1">
-                  <Label htmlFor="sks">SKS</Label>
-                  <Input id="sks" type="number" min={0} max={6} value={formData.sks} onChange={(e) => setFormData({ ...formData, sks: e.target.value })} placeholder="0" required />
-                </div>
-                <div className="grid gap-2 col-span-1">
-                  <Label htmlFor="smt">Smt</Label>
-                  <Input id="smt" type="number" min={1} max={8} value={formData.smt_default} onChange={(e) => setFormData({ ...formData, smt_default: e.target.value })} placeholder="0" required />
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="matkul">Nama Mata Kuliah</Label>
-                <Input id="matkul" value={formData.matkul} onChange={(e) => setFormData({ ...formData, matkul: e.target.value })} placeholder="Contoh: Pemrograman Web Lanjut" required />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="kategori">Kategori</Label>
-                <Select value={formData.kategori} onValueChange={(val: CourseCategory) => setFormData({ ...formData, kategori: val })}>
-                  <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Kategori Mata Kuliah" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Reguler">Reguler</SelectItem>
-                    <SelectItem value="MBKM">MBKM</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter className="mt-2">
-               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-white">Simpan Data</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* --- MENGGUNAKAN COMPONENT FORM MODAL --- */}
+      <FormModal
+        isOpen={isDialogOpen}
+        onClose={setIsDialogOpen}
+        title={isEditing ? "Edit Mata Kuliah" : "Tambah Mata Kuliah"}
+        description="Lengkapi detail mata kuliah di bawah ini."
+        onSubmit={handleSubmit}
+        maxWidth="sm:max-w-[600px]"
+      >
+        <div className="grid grid-cols-4 gap-4">
+          <div className="grid gap-2 col-span-2">
+            <Label htmlFor="kode">Kode MK</Label>
+            <Input id="kode" value={formData.kode} onChange={(e) => setFormData({ ...formData, kode: e.target.value })} disabled={isEditing} placeholder="Contoh: TKK-01" required />
+          </div>
+          <div className="grid gap-2 col-span-1">
+            <Label htmlFor="sks">SKS</Label>
+            <Input id="sks" type="number" min={0} max={6} value={formData.sks} onChange={(e) => setFormData({ ...formData, sks: e.target.value })} placeholder="0" required />
+          </div>
+          <div className="grid gap-2 col-span-1">
+            <Label htmlFor="smt">Smt</Label>
+            <Input id="smt" type="number" min={1} max={8} value={formData.smt_default} onChange={(e) => setFormData({ ...formData, smt_default: e.target.value })} placeholder="0" required />
+          </div>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="matkul">Nama Mata Kuliah</Label>
+          <Input id="matkul" value={formData.matkul} onChange={(e) => setFormData({ ...formData, matkul: e.target.value })} placeholder="Contoh: Pemrograman Web Lanjut" required />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="kategori">Kategori</Label>
+          <Select value={formData.kategori} onValueChange={(val: CourseCategory) => setFormData({ ...formData, kategori: val })}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Kategori Mata Kuliah" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Reguler">Reguler</SelectItem>
+              <SelectItem value="MBKM">MBKM</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </FormModal>
+
     </div>
   );
 }
