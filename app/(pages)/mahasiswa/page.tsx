@@ -17,6 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 // --- IMPORT CUSTOM COMPONENTS ---
 import { DataTable, type Column } from "@/components/DataTable";
@@ -30,7 +36,7 @@ interface StudentFormState {
   nim: string;
   nama: string;
   prodi: string;
-  semester: number | string; // Bisa kosong saat input awal
+  semester: number | string;
   alamat: string;
 }
 
@@ -39,9 +45,13 @@ export default function MahasiswaPage() {
   const [dataList, setDataList] = useState<StudentData[]>(initialData);
   const [searchQuery, setSearchQuery] = useState("");
   
+  // FILTER STATE
+  const [prodiFilter, setProdiFilter] = useState<string>("ALL");
+  const [semesterFilter, setSemesterFilter] = useState<string>("ALL");
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Disamakan dengan Mata Kuliah (default 5)
+  const itemsPerPage = 5;
 
   // Dialog & Form State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -50,20 +60,52 @@ export default function MahasiswaPage() {
     nim: "", nama: "", prodi: "", semester: "", alamat: ""
   });
 
-  // --- LOGIC SEARCH & PAGINATION ---
+  // --- LOGIC FILTER (SEARCH + PRODI + SEMESTER) ---
   const filteredData = dataList.filter((student) => {
+    // 1. Filter Search (Nama / NIM)
     const query = searchQuery.toLowerCase();
-    return (
+    const matchSearch = 
       student.profile.nama.toLowerCase().includes(query) ||
-      student.profile.nim.toLowerCase().includes(query) ||
-      student.profile.prodi.toLowerCase().includes(query)
-    );
+      student.profile.nim.toLowerCase().includes(query);
+
+    // 2. Filter Prodi
+    const matchProdi = prodiFilter === "ALL" || student.profile.prodi === prodiFilter;
+
+    // 3. Filter Semester
+    const matchSemester = semesterFilter === "ALL" || student.profile.semester.toString() === semesterFilter;
+
+    return matchSearch && matchProdi && matchSemester;
   });
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
+
+  // --- DEFINISI KONTEN FILTER (DROPDOWN) ---
+  const filterContent = (
+    <>
+      <DropdownMenuLabel>Program Studi</DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={prodiFilter} onValueChange={(v) => { setProdiFilter(v); setCurrentPage(1); }}>
+        <DropdownMenuRadioItem value="ALL">Semua</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Teknik Informatika">Teknik Informatika</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Sistem Informasi">Sistem Informasi</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Manajemen Informatika">Manajemen Informatika</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Komputerisasi Akuntansi">Komputerisasi Akuntansi</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
+      
+      <DropdownMenuSeparator />
+      
+      <DropdownMenuLabel>Semester</DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={semesterFilter} onValueChange={(v) => { setSemesterFilter(v); setCurrentPage(1); }}>
+        <DropdownMenuRadioItem value="ALL">Semua</DropdownMenuRadioItem>
+        {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+          <DropdownMenuRadioItem key={i} value={i.toString()}>Semester {i}</DropdownMenuRadioItem>
+        ))}
+      </DropdownMenuRadioGroup>
+    </>
+  );
 
   // --- COLUMNS DEFINITION ---
   const columns: Column<StudentData>[] = [
@@ -74,7 +116,7 @@ export default function MahasiswaPage() {
     },
     {
       header: "NIM",
-      accessorKey: "id", // id sama dengan nim di struktur data
+      accessorKey: "id",
       className: "w-[120px]",
       render: (row) => (
         <Badge variant="outline" className="font-mono font-normal bg-slate-50 text-slate-700">
@@ -154,7 +196,6 @@ export default function MahasiswaPage() {
   const handleDelete = (id: string) => {
     if (confirm(`Hapus data mahasiswa dengan NIM ${id}?`)) {
       setDataList((prev) => prev.filter((item) => item.id !== id));
-      // Reset page jika data terakhir di halaman tersebut dihapus
       if (currentData.length === 1 && currentPage > 1) {
         setCurrentPage((prev) => prev - 1);
       }
@@ -164,7 +205,6 @@ export default function MahasiswaPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validasi
     if (!formData.nim || !formData.nama || !formData.prodi || formData.semester === "") {
       alert("Mohon lengkapi data wajib (NIM, Nama, Prodi, Semester).");
       return;
@@ -187,18 +227,15 @@ export default function MahasiswaPage() {
         )
       );
     } else {
-      // Cek Duplikat NIM
       if (dataList.some((s) => s.id === formData.nim)) {
         alert("NIM sudah terdaftar!");
         return;
       }
-      
       const newStudent: StudentData = {
         id: formData.nim,
         profile: newProfile,
-        transcript: [] // Transcript kosong untuk data baru
+        transcript: []
       };
-      
       setDataList((prev) => [newStudent, ...prev]);
     }
     setIsDialogOpen(false);
@@ -214,16 +251,24 @@ export default function MahasiswaPage() {
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-6">
           
-          {/* MENGGUNAKAN KOMPONEN DATATABLE (SAMA SEPERTI MATA KULIAH) */}
           <DataTable 
             data={currentData}
             columns={columns}
             searchQuery={searchQuery}
             onSearchChange={handleSearchChange}
-            searchPlaceholder="Cari Nama, NIM, atau Prodi..."
+            searchPlaceholder="Cari Nama atau NIM..."
             
             onAdd={handleOpenAdd}
             addLabel="Tambah Mahasiswa"
+            
+            // --- FILTER PROPS ---
+            filterContent={filterContent}
+            isFilterActive={prodiFilter !== "ALL" || semesterFilter !== "ALL"}
+            onResetFilter={() => { 
+              setProdiFilter("ALL"); 
+              setSemesterFilter("ALL"); 
+              setSearchQuery(""); 
+            }}
             
             // Pagination Props
             currentPage={currentPage}
@@ -237,7 +282,6 @@ export default function MahasiswaPage() {
         </CardContent>
       </Card>
 
-      {/* --- FORM MODAL (REUSABLE COMPONENT) --- */}
       <FormModal
         isOpen={isDialogOpen}
         onClose={setIsDialogOpen}
@@ -247,16 +291,14 @@ export default function MahasiswaPage() {
         maxWidth="sm:max-w-[600px]"
       >
         <div className="grid gap-5 py-4">
-          
-          {/* Row 1: NIM & Semester */}
           <div className="grid grid-cols-3 gap-4">
             <div className="grid gap-2 col-span-2">
-              <Label htmlFor="nim">NIM (Nomor Induk Mahasiswa)</Label>
+              <Label htmlFor="nim">NIM</Label>
               <Input 
                 id="nim" 
                 value={formData.nim} 
                 onChange={(e) => setFormData({ ...formData, nim: e.target.value })} 
-                disabled={isEditing} // NIM tidak boleh diedit (Primary Key)
+                disabled={isEditing} 
                 placeholder="Contoh: 4121001" 
                 required 
               />
@@ -276,7 +318,6 @@ export default function MahasiswaPage() {
             </div>
           </div>
 
-          {/* Row 2: Nama Lengkap */}
           <div className="grid gap-2">
             <Label htmlFor="nama">Nama Lengkap</Label>
             <Input 
@@ -288,7 +329,6 @@ export default function MahasiswaPage() {
             />
           </div>
 
-          {/* Row 3: Program Studi */}
           <div className="grid gap-2">
             <Label htmlFor="prodi">Program Studi</Label>
             <Select 
@@ -308,7 +348,6 @@ export default function MahasiswaPage() {
             </Select>
           </div>
 
-          {/* Row 4: Alamat */}
           <div className="grid gap-2">
             <Label htmlFor="alamat">Alamat Domisili</Label>
             <Input 
@@ -318,7 +357,6 @@ export default function MahasiswaPage() {
               placeholder="Contoh: Jl. Perjuangan No. 1, Cirebon" 
             />
           </div>
-
         </div>
       </FormModal>
 
