@@ -168,7 +168,6 @@ export default function MataKuliahPage() {
                 </Button>
             </div>
 
-            {/* BUTTON TAMBAH DATA (Updated: Menggunakan bg-primary) */}
             <Button 
               onClick={handleOpenAdd} 
               className="bg-primary hover:bg-primary/90 text-white w-full sm:w-auto"
@@ -225,7 +224,6 @@ export default function MataKuliahPage() {
                           {row.kategori}
                         </Badge>
                       </TableCell>
-                      
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-2">
                           <Button
@@ -304,85 +302,97 @@ export default function MataKuliahPage() {
         </CardContent>
       </Card>
 
-      {/* --- MODAL DIALOG --- */}
+      {/* --- MODAL DIALOG (LEBIH LEBAR & RAPI) --- */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        {/* Mengubah max-width jadi 600px agar lebih lega */}
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>{isEditing ? "Edit Mata Kuliah" : "Tambah Mata Kuliah"}</DialogTitle>
+            <DialogTitle className="text-xl">
+               {isEditing ? "Edit Mata Kuliah" : "Tambah Mata Kuliah"}
+            </DialogTitle>
             <DialogDescription>
-              Pastikan kode mata kuliah unik dan sesuai dengan kurikulum yang berlaku.
+              Lengkapi detail mata kuliah di bawah ini. Klik simpan setelah selesai.
             </DialogDescription>
           </DialogHeader>
           
-          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="kode">Kode MK</Label>
-              <Input
-                id="kode"
-                value={formData.kode}
-                onChange={(e) => setFormData({ ...formData, kode: e.target.value })}
-                disabled={isEditing}
-                placeholder="Contoh: TKK-0605"
-                required
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="matkul">Nama Mata Kuliah</Label>
-              <Input
-                id="matkul"
-                value={formData.matkul}
-                onChange={(e) => setFormData({ ...formData, matkul: e.target.value })}
-                placeholder="Contoh: Artificial Intelligence"
-                required
-              />
-            </div>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-6 py-4">
+              {/* Row 1: Kode & Kategori Berdampingan */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="kode">Kode MK</Label>
+                  <Input
+                    id="kode"
+                    value={formData.kode}
+                    onChange={(e) => setFormData({ ...formData, kode: e.target.value })}
+                    disabled={isEditing}
+                    placeholder="Contoh: TKK-01"
+                    required
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="kategori">Kategori</Label>
+                  <Select
+                    value={formData.kategori}
+                    onValueChange={(val: CourseCategory) => setFormData({ ...formData, kategori: val })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih Kategori" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Reguler">Reguler</SelectItem>
+                      <SelectItem value="MBKM">MBKM</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-            <div className="grid grid-cols-2 gap-4">
+              {/* Row 2: Nama Mata Kuliah Full Width */}
               <div className="grid gap-2">
-                <Label htmlFor="sks">SKS</Label>
+                <Label htmlFor="matkul">Nama Mata Kuliah</Label>
                 <Input
-                  id="sks"
-                  type="number"
-                  min={1} 
-                  max={6}
-                  value={formData.sks}
-                  onChange={(e) => setFormData({ ...formData, sks: parseInt(e.target.value) || 0 })}
+                  id="matkul"
+                  value={formData.matkul}
+                  onChange={(e) => setFormData({ ...formData, matkul: e.target.value })}
+                  placeholder="Contoh: Pemrograman Web Lanjut"
                   required
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="smt">Semester</Label>
-                <Input
-                  id="smt"
-                  type="number"
-                  min={1} 
-                  max={8}
-                  value={formData.smt_default}
-                  onChange={(e) => setFormData({ ...formData, smt_default: parseInt(e.target.value) || 0 })}
-                  required
-                />
+
+              {/* Row 3: SKS & Semester Berdampingan */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="sks">SKS (Kredit)</Label>
+                  <Input
+                    id="sks"
+                    type="number"
+                    min={1} 
+                    max={6}
+                    value={formData.sks}
+                    onChange={(e) => setFormData({ ...formData, sks: parseInt(e.target.value) || 0 })}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="smt">Semester</Label>
+                  <Input
+                    id="smt"
+                    type="number"
+                    min={1} 
+                    max={8}
+                    value={formData.smt_default}
+                    onChange={(e) => setFormData({ ...formData, smt_default: parseInt(e.target.value) || 0 })}
+                    required
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="kategori">Kategori</Label>
-              <Select
-                value={formData.kategori}
-                onValueChange={(val: CourseCategory) => setFormData({ ...formData, kategori: val })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Kategori" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Reguler">Reguler</SelectItem>
-                  <SelectItem value="MBKM">MBKM</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <DialogFooter className="mt-4">
-              {/* BUTTON SIMPAN (Updated: Menggunakan bg-primary) */}
+            <DialogFooter className="mt-2">
+               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Batal
+              </Button>
               <Button type="submit" className="bg-primary hover:bg-primary/90 text-white">
                 Simpan Data
               </Button>
