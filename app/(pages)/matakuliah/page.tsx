@@ -27,7 +27,9 @@ import {
 // --- IMPORT CUSTOM COMPONENTS ---
 import { DataTable, type Column } from "@/components/DataTable";
 import { FormModal } from "@/components/FormModal";
-import { ConfirmModal } from "@/components/ConfirmModal"; // <--- IMPORT MODAL BARU
+import { ConfirmModal } from "@/components/ConfirmModal";
+import Tooltip from "@/components/Tooltip"; // <--- 1. Import Tooltip
+import { toast } from "sonner"; // <--- 2. Import Toast
 
 // --- IMPORT DATA ---
 import { COURSES_DB, type CourseData as TCourseData, type CourseCategory } from "@/lib/data";
@@ -96,7 +98,21 @@ export default function MataKuliahPage() {
       render: (_, index) => <span className="text-muted-foreground font-medium">{startIndex + index + 1}</span>
     },
     { header: "Kode MK", accessorKey: "kode", className: "font-medium" },
-    { header: "Mata Kuliah", accessorKey: "matkul", render: (row) => <span className="text-gray-700 font-medium">{row.matkul}</span> },
+    
+    // --- UPDATE KOLOM MATA KULIAH (Tooltip & Truncate) ---
+    { 
+      header: "Mata Kuliah", 
+      className: "max-w-[250px]", // Batasi lebar kolom
+      render: (row) => (
+        <Tooltip content={row.matkul} position="top">
+          <div className="truncate text-gray-700 font-medium cursor-default">
+            {row.matkul}
+          </div>
+        </Tooltip>
+      ) 
+    },
+    // -----------------------------------------------------
+
     { header: "SKS", accessorKey: "sks", className: "text-center w-[100px] text-gray-700" },
     { header: "Semester", accessorKey: "smt_default", className: "text-center w-[100px] text-muted-foreground" },
     {
@@ -156,27 +172,31 @@ export default function MataKuliahPage() {
     setIsDialogOpen(true);
   };
 
-  // 1. Handler Delete (Hanya Buka Modal)
   const handleDelete = (kode: string) => {
     setDeleteCode(kode);
     setIsDeleteOpen(true);
   };
 
-  // 2. Handler Konfirmasi Delete (Eksekusi Hapus)
   const confirmDelete = () => {
     if (deleteCode) {
       setCourses((prev) => prev.filter((item) => item.kode !== deleteCode));
-      // Reset pagination jika halaman kosong
       if (currentData.length === 1 && currentPage > 1) {
         setCurrentPage((prev) => prev - 1);
       }
+      // TOAST SUCCESS DELETE
+      toast.success("Berhasil Dihapus", {
+        description: `Mata kuliah ${deleteCode} telah dihapus permanen.`
+      });
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.sks === "" || formData.smt_default === "" || formData.kategori === "") {
-      alert("Mohon lengkapi data.");
+      // TOAST ERROR
+      toast.error("Gagal Menyimpan", {
+        description: "Mohon lengkapi semua data mata kuliah."
+      });
       return;
     }
     const finalData: CourseState = {
@@ -186,13 +206,26 @@ export default function MataKuliahPage() {
       smt_default: Number(formData.smt_default),
       kategori: formData.kategori as CourseCategory,
     };
+    
     if (isEditing) {
       setCourses((prev) => prev.map((item) => (item.kode === finalData.kode ? finalData : item)));
+      // TOAST SUCCESS EDIT
+      toast.success("Data Diperbarui", {
+        description: `Mata kuliah ${finalData.matkul} berhasil diupdate.`
+      });
     } else {
       if (courses.some((c) => c.kode === finalData.kode)) {
-        alert("Kode sudah ada!"); return;
+        // TOAST ERROR DUPLIKAT
+        toast.error("Gagal Menambahkan", {
+          description: `Kode MK ${finalData.kode} sudah terdaftar!`
+        });
+        return;
       }
       setCourses((prev) => [...prev, finalData]);
+      // TOAST SUCCESS ADD
+      toast.success("Berhasil Ditambahkan", {
+        description: `Mata kuliah baru ${finalData.matkul} telah disimpan.`
+      });
     }
     setIsDialogOpen(false);
   };
