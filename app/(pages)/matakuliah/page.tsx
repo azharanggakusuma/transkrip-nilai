@@ -14,8 +14,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-// Pastikan import ini sudah huruf kecil (data-table)
-import { DataTable, type Column } from "@/components/ui/data-table"; 
+import { DataTable, type Column } from "@/components/ui/data-table";
 
 import { FormModal } from "@/components/shared/FormModal";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
@@ -23,15 +22,19 @@ import Tooltip from "@/components/shared/Tooltip";
 import { toast } from "sonner";
 
 import { CourseForm, type CourseFormValues } from "@/components/features/matakuliah/CourseForm";
-import { COURSES_DB, type CourseData as TCourseData, type CourseCategory } from "@/lib/data";
+
+// --- PERUBAHAN: Import data langsung dari JSON, bukan dari lib/data.ts ---
+import coursesDB from "@/lib/courses.json";
+import { type CourseData as TCourseData, type CourseCategory } from "@/lib/data";
 
 interface CourseState extends TCourseData {
   kode: string;
 }
 
-const DATA_FROM_DB: CourseState[] = Object.entries(COURSES_DB).map(([kode, data]) => ({
+// --- PERUBAHAN: Casting data dari JSON ---
+const DATA_FROM_DB: CourseState[] = Object.entries(coursesDB).map(([kode, data]) => ({
   kode,
-  ...data
+  ...(data as TCourseData) // Pastikan TypeScript mengenali strukturnya
 }));
 
 export default function MataKuliahPage() {
@@ -204,7 +207,6 @@ export default function MataKuliahPage() {
         maxWidth="sm:max-w-[600px]"
       >
         <CourseForm
-            // RAHSIA UTAMA: key ini memaksa komponen dibuat ulang saat data berubah
             key={isEditing ? `edit-${formData?.kode}` : "create-new"} 
             initialData={formData}
             isEditing={isEditing}
