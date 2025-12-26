@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import PageHeader from "@/components/layout/PageHeader";
-import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -15,148 +14,141 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-// === UPDATE IMPORT DI SINI ===
-import { DataTable, type Column } from "@/components/ui/data-table";
+// Pastikan import ini sudah huruf kecil (data-table)
+import { DataTable, type Column } from "@/components/ui/data-table"; 
 
 import { FormModal } from "@/components/shared/FormModal";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import Tooltip from "@/components/shared/Tooltip";
-import { StudentForm, type StudentFormValues } from "@/components/features/mahasiswa/StudentForm";
+import { toast } from "sonner";
 
-import { students as initialData, type StudentData } from "@/lib/data";
+import { CourseForm, type CourseFormValues } from "@/components/features/matakuliah/CourseForm";
+import { COURSES_DB, type CourseData as TCourseData, type CourseCategory } from "@/lib/data";
 
-export default function MahasiswaPage() {
-  const [dataList, setDataList] = useState<StudentData[]>(initialData);
+interface CourseState extends TCourseData {
+  kode: string;
+}
+
+const DATA_FROM_DB: CourseState[] = Object.entries(COURSES_DB).map(([kode, data]) => ({
+  kode,
+  ...data
+}));
+
+export default function MataKuliahPage() {
+  const [courses, setCourses] = useState<CourseState[]>(DATA_FROM_DB);
   const [searchQuery, setSearchQuery] = useState("");
-  const [prodiFilter, setProdiFilter] = useState<string>("ALL");
+  
+  const [categoryFilter, setCategoryFilter] = useState<"ALL" | CourseCategory>("ALL");
   const [semesterFilter, setSemesterFilter] = useState<string>("ALL");
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<StudentFormValues | undefined>(undefined);
+  const [deleteCode, setDeleteCode] = useState<string | null>(null);
+  const [formData, setFormData] = useState<CourseFormValues | undefined>(undefined);
 
-  const filteredData = useMemo(() => {
-    return dataList.filter((student) => {
-      const query = searchQuery.toLowerCase();
-      const matchSearch =
-        student.profile.nama.toLowerCase().includes(query) ||
-        student.profile.nim.toLowerCase().includes(query);
-      const matchProdi = prodiFilter === "ALL" || student.profile.prodi === prodiFilter;
-      const matchSemester = semesterFilter === "ALL" || student.profile.semester.toString() === semesterFilter;
-      return matchSearch && matchProdi && matchSemester;
-    });
-  }, [dataList, searchQuery, prodiFilter, semesterFilter]);
+  // --- LOGIC FILTER ---
+  const filteredCourses = courses.filter((course) => {
+    const matchSearch = 
+      course.matkul.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.kode.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchCategory = categoryFilter === "ALL" || course.kategori === categoryFilter;
+    const matchSemester = semesterFilter === "ALL" || course.smt_default.toString() === semesterFilter;
+    return matchSearch && matchCategory && matchSemester;
+  });
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentData = filteredData.slice(startIndex, endIndex);
+  const currentData = filteredCourses.slice(startIndex, endIndex);
 
+  // --- HANDLERS ---
   const handleOpenAdd = () => {
-    setFormData(undefined);
+    setFormData(undefined); // Reset data
     setIsEditing(false);
-    setIsFormOpen(true);
+    setIsDialogOpen(true);
   };
 
-  const handleOpenEdit = (student: StudentData) => {
+  const handleOpenEdit = (course: CourseState) => {
     setFormData({
-      nim: student.profile.nim,
-      nama: student.profile.nama,
-      prodi: student.profile.prodi,
-      jenjang: student.profile.jenjang,
-      semester: student.profile.semester,
-      alamat: student.profile.alamat,
+      kode: course.kode,
+      matkul: course.matkul,
+      sks: course.sks,
+      smt_default: course.smt_default,
+      kategori: course.kategori
     });
     setIsEditing(true);
-    setIsFormOpen(true);
+    setIsDialogOpen(true);
   };
 
-  const handleFormSubmit = (values: StudentFormValues) => {
-    if (!values.nim || !values.nama || !values.prodi || !values.jenjang || values.semester === "") {
-      toast.error("Gagal menyimpan", { description: "Data wajib belum lengkap." });
+  const handleDelete = (kode: string) => {
+    setDeleteCode(kode);
+    setIsDeleteOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteCode) {
+      setCourses((prev) => prev.filter((item) => item.kode !== deleteCode));
+      if (currentData.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      }
+      toast.success("Berhasil Dihapus", { description: `Mata kuliah ${deleteCode} telah dihapus.` });
+    }
+  };
+
+  const handleFormSubmit = (values: CourseFormValues) => {
+    if (values.sks === "" || values.smt_default === "" || values.kategori === "") {
+      toast.error("Gagal Menyimpan", { description: "Mohon lengkapi semua data mata kuliah." });
       return;
     }
-
-    const newProfile = { ...values, semester: Number(values.semester) };
-
+    const finalData: CourseState = {
+      kode: values.kode,
+      matkul: values.matkul,
+      sks: Number(values.sks),
+      smt_default: Number(values.smt_default),
+      kategori: values.kategori as CourseCategory,
+    };
+    
     if (isEditing) {
-      setDataList((prev) => prev.map((item) => item.id === values.nim ? { ...item, profile: newProfile } : item));
-      toast.success("Berhasil Update", { description: `Data ${values.nama} diperbarui.` });
+      setCourses((prev) => prev.map((item) => (item.kode === finalData.kode ? finalData : item)));
+      toast.success("Data Diperbarui", { description: `Mata kuliah ${finalData.matkul} berhasil diupdate.` });
     } else {
-      if (dataList.some((s) => s.id === values.nim)) {
-        toast.error("Gagal", { description: "NIM sudah terdaftar." });
+      if (courses.some((c) => c.kode === finalData.kode)) {
+        toast.error("Gagal Menambahkan", { description: `Kode MK ${finalData.kode} sudah terdaftar!` });
         return;
       }
-      setDataList((prev) => [{ id: values.nim, profile: newProfile, transcript: [] }, ...prev]);
-      toast.success("Berhasil", { description: `Mahasiswa ${values.nama} ditambahkan.` });
+      setCourses((prev) => [...prev, finalData]);
+      toast.success("Berhasil Ditambahkan", { description: `Mata kuliah baru ${finalData.matkul} telah disimpan.` });
     }
-    setIsFormOpen(false);
+    setIsDialogOpen(false);
   };
 
-  const handleDelete = () => {
-    if (deleteId) {
-      setDataList((prev) => prev.filter((item) => item.id !== deleteId));
-      if (currentData.length === 1 && currentPage > 1) setCurrentPage((p) => p - 1);
-      toast.success("Dihapus", { description: "Data mahasiswa dihapus permanen." });
-    }
-  };
-
-  const columns: Column<StudentData>[] = [
-    {
-      header: "#",
-      className: "w-[50px] text-center",
-      render: (_: StudentData, index: number) => (
-        <span className="text-muted-foreground font-medium">{startIndex + index + 1}</span>
-      )
-    },
-    {
-      header: "NIM",
-      accessorKey: "id",
-      className: "w-[120px]",
-      render: (row: StudentData) => (
-        <span className="font-mono font-medium text-gray-700">{row.profile.nim}</span>
-      )
-    },
+  const columns: Column<CourseState>[] = [
+    { header: "#", className: "w-[50px] text-center", render: (_, index) => <span className="text-muted-foreground font-medium">{startIndex + index + 1}</span> },
+    { header: "Kode MK", accessorKey: "kode", className: "font-medium" },
     { 
-      header: "Nama Lengkap", 
-      render: (row: StudentData) => <span className="font-semibold text-gray-800">{row.profile.nama}</span> 
+      header: "Mata Kuliah", 
+      className: "max-w-[250px]",
+      render: (row) => <Tooltip content={row.matkul} position="top"><div className="truncate text-gray-700 font-medium cursor-default">{row.matkul}</div></Tooltip>
     },
-    { 
-      header: "Program Studi", 
-      render: (row: StudentData) => <span className="text-gray-600">{row.profile.prodi}</span> 
-    },
+    { header: "SKS", accessorKey: "sks", className: "text-center w-[100px] text-gray-700" },
+    { header: "Semester", accessorKey: "smt_default", className: "text-center w-[100px] text-muted-foreground" },
     {
-      header: "Jenjang",
-      className: "text-center w-[80px]",
-      render: (row: StudentData) => (
-        <Badge variant="outline" className="bg-slate-50 text-slate-700">{row.profile.jenjang}</Badge>
-      )
-    },
-    { header: "Smt", className: "text-center w-[60px]", render: (row: StudentData) => row.profile.semester },
-    {
-      header: "Alamat",
-      className: "max-w-[250px]", 
-      render: (row: StudentData) => (
-        <Tooltip content={row.profile.alamat} position="top">
-          <div className="truncate text-gray-600 cursor-default">{row.profile.alamat}</div>
-        </Tooltip>
-      )
+      header: "Kategori",
+      accessorKey: "kategori",
+      className: "w-[150px]",
+      render: (row) => <Badge variant="outline" className="font-normal border-gray-300 text-gray-600">{row.kategori}</Badge>
     },
     {
       header: "Aksi",
       className: "text-center w-[100px]",
-      render: (row: StudentData) => (
-        <div className="flex justify-center gap-2">
-          <Button variant="ghost" size="icon" className="text-yellow-600 hover:bg-yellow-50 h-8 w-8" onClick={() => handleOpenEdit(row)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-red-600 hover:bg-red-50 h-8 w-8" onClick={() => { setDeleteId(row.id); setIsDeleteOpen(true); }}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
+      render: (row) => (
+        <div className="flex items-center justify-center gap-2">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50" onClick={() => handleOpenEdit(row)}><Pencil className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(row.kode)}><Trash2 className="h-4 w-4" /></Button>
         </div>
       )
     }
@@ -164,14 +156,11 @@ export default function MahasiswaPage() {
 
   const filterContent = (
     <>
-      <DropdownMenuLabel>Program Studi</DropdownMenuLabel>
-      <DropdownMenuRadioGroup value={prodiFilter} onValueChange={(v) => { setProdiFilter(v); setCurrentPage(1); }}>
+      <DropdownMenuLabel>Kategori</DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v as any); setCurrentPage(1); }}>
         <DropdownMenuRadioItem value="ALL">Semua</DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="Teknik Informatika">Teknik Informatika</DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="Sistem Informasi">Sistem Informasi</DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="Manajemen Informatika">Manajemen Informatika</DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="Komputerisasi Akuntansi">Komputerisasi Akuntansi</DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Reguler">Reguler</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="MBKM">MBKM</DropdownMenuRadioItem>
       </DropdownMenuRadioGroup>
       <DropdownMenuSeparator />
       <DropdownMenuLabel>Semester</DropdownMenuLabel>
@@ -184,52 +173,52 @@ export default function MahasiswaPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
-      <PageHeader title="Data Mahasiswa" breadcrumb={["SIAKAD", "Mahasiswa"]} />
+      <PageHeader title="Mata Kuliah" breadcrumb={["SIAKAD", "Mata Kuliah"]} />
 
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-6">
-          <DataTable
+          <DataTable 
             data={currentData}
             columns={columns}
             searchQuery={searchQuery}
-            onSearchChange={(e: React.ChangeEvent<HTMLInputElement>) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            searchPlaceholder="Cari Nama atau NIM..."
+            onSearchChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             onAdd={handleOpenAdd}
-            addLabel="Tambah Data"
             filterContent={filterContent}
-            isFilterActive={prodiFilter !== "ALL" || semesterFilter !== "ALL"}
-            onResetFilter={() => { setProdiFilter("ALL"); setSemesterFilter("ALL"); setSearchQuery(""); }}
+            isFilterActive={categoryFilter !== "ALL" || semesterFilter !== "ALL"}
+            onResetFilter={() => { setCategoryFilter("ALL"); setSemesterFilter("ALL"); setSearchQuery(""); }}
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
             startIndex={startIndex}
             endIndex={endIndex}
-            totalItems={filteredData.length}
+            totalItems={filteredCourses.length}
           />
         </CardContent>
       </Card>
 
       <FormModal
-        isOpen={isFormOpen}
-        onClose={setIsFormOpen}
-        title={isEditing ? "Edit Data Mahasiswa" : "Tambah Mahasiswa Baru"}
-        description="Pastikan data mahasiswa yang dimasukkan sudah benar."
+        isOpen={isDialogOpen}
+        onClose={setIsDialogOpen}
+        title={isEditing ? "Edit Mata Kuliah" : "Tambah Mata Kuliah"}
+        description="Lengkapi detail mata kuliah di bawah ini."
         maxWidth="sm:max-w-[600px]"
       >
-        <StudentForm 
-            initialData={formData as StudentFormValues}
+        <CourseForm
+            // RAHSIA UTAMA: key ini memaksa komponen dibuat ulang saat data berubah
+            key={isEditing ? `edit-${formData?.kode}` : "create-new"} 
+            initialData={formData}
             isEditing={isEditing}
             onSubmit={handleFormSubmit}
-            onCancel={() => setIsFormOpen(false)}
+            onCancel={() => setIsDialogOpen(false)}
         />
       </FormModal>
 
-      <ConfirmModal
+      <ConfirmModal 
         isOpen={isDeleteOpen}
         onClose={setIsDeleteOpen}
-        onConfirm={handleDelete}
-        title="Hapus Data?"
-        description={`Yakin hapus NIM ${deleteId}?`}
+        onConfirm={confirmDelete}
+        title="Hapus Mata Kuliah?"
+        description={`Apakah Anda yakin ingin menghapus mata kuliah ${deleteCode}?`}
         confirmLabel="Hapus Permanen"
         variant="destructive"
       />

@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { CourseCategory } from "@/lib/data";
 
-// Definisi tipe data form
 export interface CourseFormValues {
   kode: string;
   matkul: string;
@@ -32,14 +31,11 @@ const defaultValues: CourseFormValues = {
 };
 
 export function CourseForm({ initialData, isEditing, onSubmit, onCancel }: CourseFormProps) {
-  const [formData, setFormData] = useState<CourseFormValues>(defaultValues);
+  // Langsung gunakan initialData jika ada saat inisialisasi state
+  const [formData, setFormData] = useState<CourseFormValues>(initialData || defaultValues);
 
   useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
-    } else {
-      setFormData(defaultValues);
-    }
+    setFormData(initialData || defaultValues);
   }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -100,6 +96,7 @@ export function CourseForm({ initialData, isEditing, onSubmit, onCancel }: Cours
         />
       </div>
 
+      {/* Input Kategori sudah dibuat LEBAR (Full Width) */}
       <div className="grid gap-2">
         <Label htmlFor="kategori">Kategori</Label>
         <Select 
