@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import Link from "next/link";
-import { students, coursesList, StudentData, TranscriptItem } from "../../lib/data";
+import { students, coursesList, StudentData, TranscriptItem } from "../../lib/data"; //
 
 /* ================= TYPES ================= */
 
@@ -11,24 +11,24 @@ type StatCardProps = {
   value: string;
   description: string;
   icon: React.ReactNode;
-  themeColor: "chart-1" | "chart-2" | "chart-3" | "chart-4"; // Menggunakan token warna chart dari globals.css
+  themeColor: "chart-1" | "chart-2" | "chart-3" | "chart-4";
 };
 
 /* ================= HELPER FUNCTIONS ================= */
 
 function calculateIPK(transcript: TranscriptItem[]) {
-  const totalSKS = transcript.reduce((acc, curr) => acc + curr.sks, 0);
-  const totalNM = transcript.reduce((acc, curr) => acc + curr.nm, 0);
+  const totalSKS = transcript.reduce((acc, curr) => acc + curr.sks, 0); //
+  const totalNM = transcript.reduce((acc, curr) => acc + curr.nm, 0); //
   if (totalSKS === 0) return 0;
   return totalNM / totalSKS;
 }
 
 function calculateStudentIPS(transcript: TranscriptItem[], semester: number) {
-  const semesterItems = transcript.filter((t) => t.smt === semester);
+  const semesterItems = transcript.filter((t) => t.smt === semester); //
   if (semesterItems.length === 0) return null;
 
-  const totalSKS = semesterItems.reduce((acc, curr) => acc + curr.sks, 0);
-  const totalNM = semesterItems.reduce((acc, curr) => acc + curr.nm, 0);
+  const totalSKS = semesterItems.reduce((acc, curr) => acc + curr.sks, 0); //
+  const totalNM = semesterItems.reduce((acc, curr) => acc + curr.nm, 0); //
   
   if (totalSKS === 0) return 0;
   return totalNM / totalSKS;
@@ -93,8 +93,8 @@ function calculateGradeDistribution(allStudents: StudentData[]) {
 export default function DashboardPage() {
   
   const { statData, trendData, gradeDistData } = useMemo(() => {
-    const studentCount = students.length;
-    const courseCount = coursesList.length;
+    const studentCount = students.length; //
+    const courseCount = coursesList.length; //
 
     let totalIPK = 0;
     students.forEach(s => {
@@ -151,7 +151,7 @@ export default function DashboardPage() {
             Dashboard Akademik
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Ringkasan performa akademik dan statistik data terkini.
+            Ringkasan performa akademik berdasarkan data riil sistem.
           </p>
         </div>
 
@@ -179,7 +179,7 @@ export default function DashboardPage() {
       {/* ===== GRAFIK GRID ===== */}
       <div className="grid gap-6 lg:grid-cols-7">
         
-        {/* GRAFIK 1: TREN PERFORMA */}
+        {/* GRAFIK 1: TREN PERFORMA (Bar Chart) */}
         <section className="lg:col-span-4 rounded-xl border border-border bg-card text-card-foreground shadow-sm flex flex-col overflow-hidden">
           <header className="px-6 py-5 border-b border-border bg-muted/40">
             <h3 className="font-semibold tracking-tight text-foreground flex items-center gap-2">
@@ -193,11 +193,11 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* GRAFIK 2: DISTRIBUSI NILAI */}
+        {/* GRAFIK 2: DISTRIBUSI NILAI (Donut Chart) */}
         <section className="lg:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-sm flex flex-col overflow-hidden">
           <header className="px-6 py-5 border-b border-border bg-muted/40">
             <h3 className="font-semibold tracking-tight text-foreground flex items-center gap-2">
-              <ChartPieIcon className="w-4 h-4 text-chart-2" />
+              <ChartPieIcon className="w-4 h-4 text-primary" />
               Distribusi Nilai Mata Kuliah
             </h3>
           </header>
@@ -214,7 +214,6 @@ export default function DashboardPage() {
 /* ================= COMPONENTS ================= */
 
 function StatCard({ label, value, description, icon, themeColor }: StatCardProps) {
-  // Mapping ke class Tailwind berdasarkan variabel theme globals.css
   const colorMap = {
     "chart-1": "text-chart-1 border-chart-1/20 bg-chart-1/10",
     "chart-2": "text-chart-2 border-chart-2/20 bg-chart-2/10",
@@ -237,7 +236,6 @@ function StatCard({ label, value, description, icon, themeColor }: StatCardProps
           </p>
         </div>
         
-        {/* Icon Container */}
         <div className={`flex h-12 w-12 items-center justify-center rounded-xl border ${colorMap[themeColor]} transition-transform group-hover:scale-105`}>
           {icon}
         </div>
@@ -246,31 +244,26 @@ function StatCard({ label, value, description, icon, themeColor }: StatCardProps
   );
 }
 
-// --- CUSTOM BAR CHART COMPONENT ---
 function SemesterBarChart({ data }: { data: { label: string; val: number; height: string }[] }) {
   if (data.length === 0) {
-    return <div className="text-sm text-muted-foreground">Belum ada data nilai per semester.</div>;
+    return <div className="text-sm text-muted-foreground">Belum ada data nilai.</div>;
   }
 
   return (
     <div className="w-full h-full flex items-end justify-between gap-2 sm:gap-4 px-2 pb-2">
       {data.map((item, idx) => (
         <div key={idx} className="group relative flex-1 flex flex-col items-center justify-end h-full">
-          {/* Tooltip Hover */}
           <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 bg-popover text-popover-foreground border border-border text-xs font-medium py-1.5 px-3 rounded-lg shadow-lg whitespace-nowrap z-10">
             IPS: <span className="text-primary font-bold">{item.val}</span>
           </div>
           
-          {/* Bar Container */}
           <div 
             className="w-full max-w-[48px] bg-muted/50 rounded-t-xl relative overflow-hidden group-hover:shadow-lg transition-all"
             style={{ height: item.height }}
           >
-            {/* Bar Fill - Menggunakan Primary Color */}
             <div className="absolute bottom-0 left-0 right-0 bg-primary w-full h-full opacity-90 group-hover:opacity-100 transition-opacity" />
           </div>
 
-          {/* Label X-Axis */}
           <div className="mt-4 text-[10px] sm:text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors text-center uppercase tracking-wider">
             {item.label}
           </div>
@@ -280,7 +273,6 @@ function SemesterBarChart({ data }: { data: { label: string; val: number; height
   );
 }
 
-// --- CUSTOM DONUT CHART COMPONENT ---
 function GradeDonutChart({ counts, total }: { counts: { A: number; B: number; C: number; D: number; E: number }; total: number }) {
   if (total === 0) return <div className="text-sm text-muted-foreground">Belum ada data nilai.</div>;
 
@@ -294,10 +286,11 @@ function GradeDonutChart({ counts, total }: { counts: { A: number; B: number; C:
   const stopC = stopB + pC;
   const stopD = stopC + pD;
 
-  // Menggunakan CSS Variables dari globals.css untuk konsistensi tema
+  // KONFIGURASI WARNA FINAL:
+  // A: Hijau (chart-2), B: Biru (primary), C: Kuning (chart-4), D/E: Merah (chart-5)
   const gradient = `conic-gradient(
     var(--color-chart-2) 0% ${stopA}%, 
-    var(--color-chart-1) ${stopA}% ${stopB}%, 
+    var(--primary) ${stopA}% ${stopB}%, 
     var(--color-chart-4) ${stopB}% ${stopC}%, 
     var(--color-chart-5) ${stopC}% ${stopD}%,
     var(--color-muted) ${stopD}% 100%
@@ -305,9 +298,9 @@ function GradeDonutChart({ counts, total }: { counts: { A: number; B: number; C:
 
   const legend = [
     { label: "A (Sangat Baik)", colorClass: "bg-chart-2", val: `${Math.round(pA)}%` },
-    { label: "B (Baik)", colorClass: "bg-chart-1", val: `${Math.round(pB)}%` },
-    { label: "C (Cukup)", colorClass: "bg-chart-4", val: `${Math.round(pC)}%` },
-    { label: "D/E (Kurang)", colorClass: "bg-chart-5", val: `${Math.round(100 - stopC)}%` },
+    { label: "B (Baik)", colorClass: "bg-primary", val: `${Math.round(pB)}%` }, //
+    { label: "C (Cukup)", colorClass: "bg-chart-4", val: `${Math.round(pC)}%` }, //
+    { label: "D/E (Kurang)", colorClass: "bg-chart-5", val: `${Math.round(100 - stopC)}%` }, //
   ];
 
   return (
