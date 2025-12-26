@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Eye, EyeOff, Loader2, Lock, User, ChevronRight } from "lucide-react";
+import { toast } from "sonner"; 
 
+import { authenticate } from "@/app/actions/auth"; 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,31 +16,39 @@ export function LoginForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     const formData = new FormData(e.currentTarget);
-    const username = formData.get("username");
-    const password = formData.get("password");
 
-    // Simulasi delay login
-    if (username && password) {
-      setTimeout(() => {
+    try {
+      const result = await authenticate(formData);
+
+      if (result.success) {
+        toast.success("Login Berhasil", {
+          description: `Selamat datang kembali, ${result.user?.name}!`,
+        });
         router.push("/");
-      }, 1500);
-    } else {
-      setError("Mohon lengkapi Username dan Password");
+      } else {
+        toast.error("Login Gagal", {
+          description: result.error || "Periksa kembali username dan password Anda.",
+        });
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Terjadi Kesalahan", {
+        description: "Silakan coba lagi beberapa saat lagi.",
+      });
       setLoading(false);
     }
   };
 
   return (
     <div className="w-full max-w-[460px] animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header Mobile (Logo & Judul) */}
+      {/* Header Mobile */}
       <div className="lg:hidden flex flex-col items-center space-y-4 mb-10">
         <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white shadow-lg border border-slate-100 p-3">
           <Image
@@ -57,7 +67,7 @@ export function LoginForm() {
         </div>
       </div>
 
-      {/* Header Desktop (Hanya Text) */}
+      {/* Header Desktop */}
       <div className="hidden lg:block space-y-2 mb-8">
         <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
           Login Akun
@@ -70,14 +80,7 @@ export function LoginForm() {
       <Card className="border-none shadow-none bg-transparent p-0">
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-5 p-0">
-            {/* Error Alert */}
-            {error && (
-              <div className="flex items-center gap-3 rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/10 dark:text-red-400 animate-pulse">
-                <div className="h-2 w-2 rounded-full bg-red-500" />
-                <span className="font-medium">{error}</span>
-              </div>
-            )}
-
+            
             {/* Input Username */}
             <div className="space-y-2">
               <Label
