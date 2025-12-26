@@ -135,7 +135,7 @@ export default function LoginPage() {
                   Memproses...
                 </>
               ) : (
-                "Masuk Sistem"
+                "Login"
               )}
             </Button>
             
