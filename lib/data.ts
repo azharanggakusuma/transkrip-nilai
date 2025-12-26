@@ -8,22 +8,24 @@ import coursesDB from "./courses.json";
 
 export type CourseCategory = "Reguler" | "MBKM";
 
-// Data Mata Kuliah sekarang punya ID
+// Data Mata Kuliah
 export interface CourseData {
-  id: number;      // New: ID System
-  kode: string;    // Data yang bisa diedit
+  id: number;      
+  kode: string;    
   matkul: string;
   sks: number;
   smt_default: number;
   kategori: CourseCategory;
 }
 
+// Data Nilai Mentah (Grades JSON)
 export interface RawGrade {
-  kode: string;
+  course_id: number; // Relasi menggunakan ID Course
   hm: string;
   smt?: number;
 }
 
+// Data Mahasiswa Mentah (Students JSON)
 export interface RawStudentProfile {
   id: number;      
   nim: string;     
@@ -58,12 +60,12 @@ export interface StudentData {
 // 2. CONSTANTS & MAPPINGS
 // =========================================
 
-// --- PENTING: Konversi Array Courses ke Object Lookup ---
-// Agar kita bisa mencari detail mata kuliah berdasarkan "kode" dengan cepat (O(1))
+// --- PENTING: Lookup Course by ID ---
+// Key-nya sekarang number (ID Course), bukan kode lagi.
 const COURSES_LOOKUP = (coursesDB as CourseData[]).reduce((acc, course) => {
-  acc[course.kode] = course;
+  acc[course.id] = course;
   return acc;
-}, {} as Record<string, CourseData>);
+}, {} as Record<number, CourseData>);
 
 const GRADE_POINTS: Record<string, number> = {
   "A": 4, "B": 3, "C": 2, "D": 1, "E": 0
@@ -93,16 +95,21 @@ function createStudentData(rawStudent: RawStudentProfile): StudentData {
     prodi: fullProdi
   };
 
-  const allGrades = gradesDB as Record<string, RawGrade[]>;
-  const rawGrades = allGrades[rawStudent.nim] || [];
+  // --- LOGIC RELASI BARU ---
+  // 1. Ambil nilai berdasarkan Student ID (bukan NIM)
+  // Konversi studentsDB ID ke string karena JSON keys biasanya string, 
+  // atau casting gradesDB agar menerima number key.
+  const allGrades = gradesDB as unknown as Record<string, RawGrade[]>;
+  const rawGrades = allGrades[rawStudent.id.toString()] || [];
 
   const transcript: TranscriptItem[] = rawGrades.map((g, index) => {
-    // Lookup ke Object yang sudah kita buat
-    const course = COURSES_LOOKUP[g.kode];
+    // 2. Cari detail Course berdasarkan Course ID
+    const course = COURSES_LOOKUP[g.course_id];
 
     if (!course) {
+      // Fallback jika course_id di grades.json tidak ada di courses.json
       return {
-        no: index + 1, kode: g.kode, matkul: "UNKNOWN", smt: g.smt || 0,
+        no: index + 1, kode: "UNKNOWN", matkul: "UNKNOWN COURSE", smt: g.smt || 0,
         sks: 0, hm: g.hm, am: 0, nm: 0, kategori: "Reguler"
       };
     }
@@ -110,8 +117,8 @@ function createStudentData(rawStudent: RawStudentProfile): StudentData {
     const am = getAm(g.hm);
     return {
       no: index + 1,
-      kode: g.kode,
-      matkul: course.matkul,
+      kode: course.kode,      // Ambil kode terbaru dari database courses
+      matkul: course.matkul,  // Ambil nama matkul terbaru
       smt: g.smt || course.smt_default,
       sks: course.sks,
       hm: g.hm,
@@ -141,5 +148,4 @@ export function getStudentById(id: string | number): StudentData | null {
 
 export const students: StudentData[] = studentsDB.map((s) => createStudentData(s));
 
-// Export raw courses array untuk halaman Mata Kuliah
 export const coursesList: CourseData[] = coursesDB as CourseData[];
