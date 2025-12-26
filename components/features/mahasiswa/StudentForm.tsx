@@ -36,9 +36,27 @@ export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: Stud
   const [formData, setFormData] = useState<StudentFormValues>(defaultValues);
   const [errors, setErrors] = useState<Partial<Record<keyof StudentFormValues, boolean>>>({});
 
+  // --- PERBAIKAN DI SINI (useEffect) ---
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      // Kita lakukan normalisasi data agar prodi/jenjang pasti terpilih
+      // Cek variasi nama field yang mungkin dikirim dari backend/JSON
+      const rawData = initialData as any; 
+      
+      setFormData({
+        nim: rawData.nim || "",
+        nama: rawData.nama || "",
+        
+        // Cek 'prodi' atau 'program_studi' atau 'programStudi'
+        // Gunakan trim() untuk hapus spasi tidak sengaja
+        prodi: (rawData.prodi || rawData.program_studi || rawData.programStudi || "").trim(),
+        
+        // Cek 'jenjang' atau 'strata'
+        jenjang: (rawData.jenjang || rawData.strata || "").trim(),
+        
+        semester: rawData.semester || "",
+        alamat: rawData.alamat || ""
+      });
     } else {
       setFormData(defaultValues);
     }
@@ -129,10 +147,6 @@ export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: Stud
     }
   };
 
-  // Helper class untuk styling error:
-  // - border-red-500: Garis tepi merah
-  // - focus-visible:ring-0: Menghilangkan ring tebal saat diklik
-  // - focus-visible:border-red-500: Memastikan border tetap merah saat diklik (menggantikan border default focus)
   const getErrorClass = (isError?: boolean) => 
     isError ? "border-red-500 focus-visible:ring-0 focus-visible:border-red-500" : "";
 
@@ -202,6 +216,7 @@ export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: Stud
                <SelectValue placeholder="Pilih Prodi" />
             </SelectTrigger>
             <SelectContent>
+              {/* Pastikan value di sini sama persis dengan data dari database/json */}
               <SelectItem value="Teknik Informatika">Teknik Informatika</SelectItem>
               <SelectItem value="Sistem Informasi">Sistem Informasi</SelectItem>
               <SelectItem value="Manajemen Informatika">Manajemen Informatika</SelectItem>
@@ -236,7 +251,7 @@ export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: Stud
           value={formData.alamat}
           onChange={(e) => handleInputChange("alamat", e.target.value)}
           placeholder="Contoh: Jl. Perjuangan No. 1, Cirebon"
-          className={`min-h-[80px] ${getErrorClass(errors.alamat)}`} // Terapkan style error juga di sini jika mau
+          className={`min-h-[80px] ${getErrorClass(errors.alamat)}`}
         />
       </div>
 
