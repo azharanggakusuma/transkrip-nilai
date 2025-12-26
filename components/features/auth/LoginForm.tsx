@@ -37,7 +37,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-[380px] animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="w-full max-w-[460px] animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header Mobile (Logo & Judul) */}
       <div className="lg:hidden flex flex-col items-center space-y-4 mb-10">
         <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white shadow-lg border border-slate-100 p-3">
