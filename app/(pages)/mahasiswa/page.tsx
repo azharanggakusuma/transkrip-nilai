@@ -19,10 +19,9 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { FormModal } from "@/components/shared/FormModal";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import Tooltip from "@/components/shared/Tooltip";
-// Pastikan import path ini benar sesuai struktur foldermu
 import { StudentForm, type StudentFormValues } from "@/components/features/mahasiswa/StudentForm";
 
-import { students as initialData, type StudentData } from "@/lib/data";
+import { students as initialData, type StudentData, type StudentProfile } from "@/lib/data";
 
 export default function MahasiswaPage() {
   const [dataList, setDataList] = useState<StudentData[]>(initialData);
@@ -35,13 +34,15 @@ export default function MahasiswaPage() {
   // Modal States
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // State untuk Delete & Edit
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null); 
   
-  // State untuk data yang sedang diedit
   const [formData, setFormData] = useState<StudentFormValues | undefined>(undefined);
 
-  // --- LOGIC FILTER (Tetap sama) ---
+  // --- LOGIC FILTER ---
   const filteredData = useMemo(() => {
     return dataList.filter((student) => {
       const query = searchQuery.toLowerCase();
@@ -61,14 +62,14 @@ export default function MahasiswaPage() {
 
   // --- HANDLERS ---
   const handleOpenAdd = () => {
-    setFormData(undefined); // Reset data form
+    setFormData(undefined);
+    setEditId(null);
     setIsEditing(false);
     setIsFormOpen(true);
   };
 
   const handleOpenEdit = (student: StudentData) => {
-    // Siapkan data yang akan diedit
-    // Pastikan field sesuai dengan StudentFormValues
+    setEditId(student.id); 
     setFormData({
       nim: student.profile.nim,
       nama: student.profile.nama,
@@ -82,27 +83,50 @@ export default function MahasiswaPage() {
   };
 
   const handleFormSubmit = (values: StudentFormValues) => {
-    // Validasi sederhana sebelum simpan
     if (!values.nim || !values.nama || !values.prodi || !values.jenjang || values.semester === "") {
       toast.error("Gagal menyimpan", { description: "Data wajib belum lengkap." });
       return;
     }
 
-    const newProfile = {
-      ...values,
-      semester: Number(values.semester),
-    };
-
-    if (isEditing) {
-      setDataList((prev) => prev.map((item) => item.id === values.nim ? { ...item, profile: newProfile } : item));
+    if (isEditing && editId) {
+      // UPDATE EXISTING
+      setDataList((prev) => prev.map((item) => {
+        if (item.id === editId) {
+          const updatedProfile: StudentProfile = {
+             ...item.profile,
+             ...values,
+             semester: Number(values.semester),
+             id: Number(editId) 
+          };
+          return { ...item, profile: updatedProfile };
+        }
+        return item;
+      }));
       toast.success("Berhasil Update", { description: `Data ${values.nama} diperbarui.` });
     } else {
-      if (dataList.some((s) => s.id === values.nim)) {
+      // CREATE NEW
+      if (dataList.some((s) => s.profile.nim === values.nim)) {
         toast.error("Gagal", { description: "NIM sudah terdaftar." });
         return;
       }
-      // Tambah data baru
-      setDataList((prev) => [{ id: values.nim, profile: newProfile, transcript: [] }, ...prev]);
+
+      // Generate ID Baru (Simulasi Auto Increment)
+      const maxId = dataList.reduce((max, item) => Math.max(max, Number(item.id)), 0);
+      const newId = maxId + 1;
+
+      const newProfile: StudentProfile = {
+        id: newId,
+        ...values,
+        semester: Number(values.semester),
+      };
+
+      const newStudent: StudentData = {
+        id: newId.toString(),
+        profile: newProfile,
+        transcript: [] 
+      };
+
+      setDataList((prev) => [newStudent, ...prev]);
       toast.success("Berhasil", { description: `Mahasiswa ${values.nama} ditambahkan.` });
     }
     setIsFormOpen(false);
@@ -114,7 +138,7 @@ export default function MahasiswaPage() {
       if (currentData.length === 1 && currentPage > 1) setCurrentPage((p) => p - 1);
       toast.success("Dihapus", { description: "Data mahasiswa dihapus permanen." });
     }
-    setIsDeleteOpen(false); // Tutup modal delete setelah hapus
+    setIsDeleteOpen(false);
   };
 
   // --- COLUMNS ---
@@ -128,7 +152,8 @@ export default function MahasiswaPage() {
     },
     {
       header: "NIM",
-      accessorKey: "id",
+      // --- PERBAIKAN: accessorKey dihapus karena kita pakai render ---
+      // accessorKey: "profile.nim", <--- INI PENYEBAB ERROR
       className: "w-[120px]",
       render: (row: StudentData) => (
         <span className="font-mono font-medium text-gray-700">{row.profile.nim}</span>
@@ -239,9 +264,8 @@ export default function MahasiswaPage() {
         description={isEditing ? `Edit data untuk NIM ${formData?.nim}` : "Pastikan data mahasiswa yang dimasukkan sudah benar."}
         maxWidth="sm:max-w-[600px]"
       >
-        {/* 🔥 FIX: Tambahkan key di sini. Ini rahasianya agar form selalu 'fresh' saat dibuka */}
         <StudentForm 
-            key={isEditing && formData ? `edit-${formData.nim}` : "add-new"}
+            key={isEditing && editId ? `edit-${editId}` : "add-new"}
             initialData={formData}
             isEditing={isEditing}
             onSubmit={handleFormSubmit}
@@ -254,7 +278,7 @@ export default function MahasiswaPage() {
         onClose={setIsDeleteOpen}
         onConfirm={handleDelete}
         title="Hapus Data?"
-        description={`Yakin hapus NIM ${deleteId}?`}
+        description={`Yakin hapus data mahasiswa ini?`}
         confirmLabel="Hapus Permanen"
         variant="destructive"
       />

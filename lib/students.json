@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "nim": "41226142",
     "nama": "AZHARANGGA KUSUMA",
     "alamat": "Jl. Al hidayah, RT.002/RW.001 Desa Cipeujeuh Wetan, Kab. Cirebon",
@@ -8,6 +9,7 @@
     "semester": 8
   },
   {
+    "id": 2,
     "nim": "41226155",
     "nama": "JOHN DOE",
     "alamat": "Jl. Pemuda No. 10, Cirebon",

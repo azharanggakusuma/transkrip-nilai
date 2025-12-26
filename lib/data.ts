@@ -1,6 +1,6 @@
 import studentsDB from "./students.json";
 import gradesDB from "./grades.json";
-import coursesDB from "./courses.json"; // Import data baru
+import coursesDB from "./courses.json"; // Pastikan file ini sudah Anda buat sebelumnya
 
 // =========================================
 // 1. TYPE DEFINITIONS
@@ -8,7 +8,6 @@ import coursesDB from "./courses.json"; // Import data baru
 
 export type CourseCategory = "Reguler" | "MBKM";
 
-// Struktur data untuk mata kuliah (dari courses.json)
 export interface CourseData {
   matkul: string;
   sks: number;
@@ -16,16 +15,16 @@ export interface CourseData {
   kategori: CourseCategory;
 }
 
-// Struktur data mentah nilai (dari grades.json)
 export interface RawGrade {
   kode: string;
   hm: string;
-  smt?: number; // Opsional jika ingin override semester default
+  smt?: number;
 }
 
-// Struktur data mentah profil (dari students.json)
+// Interface untuk data mentah di students.json
 export interface RawStudentProfile {
-  nim: string;
+  id: number;      // ID Unik (Auto Increment)
+  nim: string;     // Kunci Relasi ke Grades
   nama: string;
   alamat: string;
   prodi: string;
@@ -33,10 +32,8 @@ export interface RawStudentProfile {
   semester: number;
 }
 
-// Hasil akhir data mahasiswa yang sudah diproses
 export interface StudentProfile extends RawStudentProfile {
-  // Anda bisa override tipe spesifik jika perlu, 
-  // tapi extend RawStudentProfile sudah cukup untuk sekarang.
+  // Extend jika perlu properti tambahan di masa depan
 }
 
 export interface TranscriptItem {
@@ -52,7 +49,7 @@ export interface TranscriptItem {
 }
 
 export interface StudentData {
-  id: string; 
+  id: string; // ID dikonversi ke string untuk konsistensi URL/State
   profile: StudentProfile;
   transcript: TranscriptItem[];
 }
@@ -61,7 +58,6 @@ export interface StudentData {
 // 2. CONSTANTS & MAPPINGS
 // =========================================
 
-// Cast coursesDB agar TypeScript mengenali strukturnya sebagai Record
 const COURSES_MASTER: Record<string, CourseData> = coursesDB as Record<string, CourseData>;
 
 const GRADE_POINTS: Record<string, number> = {
@@ -84,47 +80,35 @@ function getAm(hm: string): number {
   return GRADE_POINTS[hm] ?? 0;
 }
 
-function createStudent(
-  rawProfile: RawStudentProfile,
-  rawGrades: RawGrade[]
-): StudentData {
-  
+function createStudentData(rawStudent: RawStudentProfile): StudentData {
   // Normalisasi Prodi
-  const fullProdi = PRODI_FULL_NAMES[rawProfile.prodi] || rawProfile.prodi;
+  const fullProdi = PRODI_FULL_NAMES[rawStudent.prodi] || rawStudent.prodi;
 
-  // Buat Profile
   const profile: StudentProfile = {
-    ...rawProfile,
+    ...rawStudent,
     prodi: fullProdi
   };
 
-  // Proses Transkrip
+  // AMBIL NILAI BERDASARKAN NIM (Relasi: ID -> NIM -> Grades)
+  const allGrades = gradesDB as Record<string, RawGrade[]>;
+  const rawGrades = allGrades[rawStudent.nim] || [];
+
   const transcript: TranscriptItem[] = rawGrades.map((g, index) => {
     const course = COURSES_MASTER[g.kode];
 
-    // Fallback jika kode matkul tidak ditemukan di database
     if (!course) {
-      console.warn(`Warning: Course code '${g.kode}' not found for student ${rawProfile.nim}`);
       return {
-        no: index + 1,
-        kode: g.kode,
-        matkul: "UNKNOWN COURSE",
-        smt: g.smt || 0,
-        sks: 0,
-        hm: g.hm,
-        am: 0,
-        nm: 0,
-        kategori: "Reguler"
+        no: index + 1, kode: g.kode, matkul: "UNKNOWN", smt: g.smt || 0,
+        sks: 0, hm: g.hm, am: 0, nm: 0, kategori: "Reguler"
       };
     }
 
     const am = getAm(g.hm);
-    
     return {
       no: index + 1,
       kode: g.kode,
       matkul: course.matkul,
-      smt: g.smt || course.smt_default, // Gunakan semester dari grades.json jika ada, jika tidak pakai default
+      smt: g.smt || course.smt_default,
       sks: course.sks,
       hm: g.hm,
       am: am,
@@ -134,20 +118,22 @@ function createStudent(
   });
 
   return { 
-    id: profile.nim,
+    id: rawStudent.id.toString(), // Convert ID number ke string
     profile, 
     transcript 
   };
 }
 
 // =========================================
-// 4. MAIN EXPORT
+// 4. MAIN EXPORTS
 // =========================================
 
-// Casting gradesDB karena JSON keys bersifat dinamis (NIM)
-const allGrades = gradesDB as Record<string, RawGrade[]>;
+export function getStudentById(id: string | number): StudentData | null {
+  const targetId = Number(id);
+  const rawStudent = studentsDB.find((s) => s.id === targetId);
+  if (!rawStudent) return null;
+  return createStudentData(rawStudent);
+}
 
-export const students: StudentData[] = studentsDB.map((student) => {
-  const grades = allGrades[student.nim] || [];
-  return createStudent(student, grades);
-});
+// Export default list mahasiswa
+export const students: StudentData[] = studentsDB.map((s) => createStudentData(s));

@@ -33,16 +33,12 @@ const defaultValues: StudentFormValues = {
 };
 
 export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: StudentFormProps) {
-  // 🔥 FIX: Langsung inisialisasi state dari initialData. 
-  // Tidak butuh useEffect lagi karena 'key' di parent akan mereset komponen ini sepenuhnya.
   const [formData, setFormData] = useState<StudentFormValues>(() => {
     if (initialData) {
-      // Pastikan membersihkan data agar cocok dengan SelectItem
       const raw = initialData as any;
       return {
         nim: raw.nim || "",
         nama: raw.nama || "",
-        // Trim spasi agar cocok dengan value SelectItem
         prodi: (raw.prodi || raw.program_studi || "").toString().trim(),
         jenjang: (raw.jenjang || raw.strata || "").toString().trim(),
         semester: raw.semester || "",
@@ -134,7 +130,6 @@ export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: Stud
 
   const handleInputChange = (field: keyof StudentFormValues, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Hapus error jika user sudah mengetik/memilih
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -155,11 +150,12 @@ export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: Stud
             value={formData.nim}
             onChange={(e) => {
                const val = e.target.value;
+               // Validasi input hanya angka dan max 8 digit
                if (/^\d*$/.test(val) && val.length <= 8) {
                  handleInputChange("nim", val);
                }
             }}
-            disabled={isEditing}
+            // --- PERBAIKAN: disabled={isEditing} dihapus agar bisa diedit ---
             placeholder="Contoh: 4121001"
             className={getErrorClass(errors.nim)}
           />
@@ -201,7 +197,6 @@ export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: Stud
       <div className="grid grid-cols-5 gap-4">
         <div className="grid gap-2 col-span-3"> 
           <Label htmlFor="prodi">Program Studi</Label>
-          {/* Component Select Controlled */}
           <Select 
             value={formData.prodi} 
             onValueChange={(val) => handleInputChange("prodi", val)}
