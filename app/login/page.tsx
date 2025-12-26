@@ -77,7 +77,7 @@ export default function LoginPage() {
         {/* Footer Kiri */}
         <div className="relative z-10 flex items-center gap-2 text-sm text-blue-200/60">
           <div className="h-px w-8 bg-blue-200/30" />
-          <span>Academic Portal System v2.0</span>
+          <span>Academic Information System</span>
         </div>
       </div>
 
