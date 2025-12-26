@@ -65,7 +65,7 @@ export default function SuratKeteranganPage() {
         <div className="ml-4 mb-4">
           <table className="w-full" style={{ tableLayout: 'fixed' }}>
             <tbody>
-              <tr><td style={labelStyle}>Nama</td><td style={colonStyle}>:</td><td style={valueStyle} className="font-bold break-words">Yudhistira Arie Wijaya, M.Kom</td></tr>
+              <tr><td style={labelStyle}>Nama</td><td style={colonStyle}>:</td><td style={valueStyle} className="font-bold break-words">YUDHISTIRA ARIE WIJAYA, M.Kom</td></tr>
               <tr><td style={labelStyle}>NIDN</td><td style={colonStyle}>:</td><td style={valueStyle} className="break-words">0401047103</td></tr>
             </tbody>
           </table>
@@ -75,15 +75,15 @@ export default function SuratKeteranganPage() {
         <div className="ml-4 mb-4">
           <table className="w-full" style={{ tableLayout: 'fixed' }}>
             <tbody>
-              <tr><td style={labelStyle}>Nama</td><td style={colonStyle}>:</td><td style={valueStyle} className="font-bold uppercase break-words">{currentStudent.profile.nama}</td></tr>
+              <tr><td style={labelStyle}>Nama</td><td style={colonStyle}>:</td><td style={valueStyle} className="font-bold uppercase break-words">{currentStudent.profile.nama.toUpperCase()}</td></tr>
               <tr><td style={labelStyle}>NIM</td><td style={colonStyle}>:</td><td style={valueStyle} className="break-words">{currentStudent.profile.nim}</td></tr>
               <tr><td style={labelStyle}>Tempat, tanggal lahir</td><td style={colonStyle}>:</td><td style={valueStyle} className="capitalize break-words">{tempatLahir || "..."} , {tanggalLahir || "..."}</td></tr>
               <tr>
-                  <td style={labelStyle}>Jurusan</td>
-                  <td style={colonStyle}>:</td>
-                  <td style={valueStyle} className="break-words">
-                      {currentStudent.profile.prodi} {currentStudent.profile.jenjang ? `(${currentStudent.profile.jenjang})` : ""}
-                  </td>
+                <td style={labelStyle}>Jurusan</td>
+                <td style={colonStyle}>:</td>
+                <td style={valueStyle} className="break-words">
+                  {currentStudent.profile.prodi} {currentStudent.profile.jenjang ? `(${currentStudent.profile.jenjang})` : ""}
+                </td>
               </tr>
 
               <tr><td style={labelStyle}>Semester</td><td style={colonStyle}>:</td><td style={valueStyle} className="break-words">{currentStudent.profile.semester} ({terbilangSemester(currentStudent.profile.semester)})</td></tr>
