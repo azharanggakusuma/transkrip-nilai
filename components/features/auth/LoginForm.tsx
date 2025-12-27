@@ -17,6 +17,14 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const handleForgotPassword = (e: React.MouseEvent) => {
+    e.preventDefault(); 
+    toast.info("Lupa Kata Sandi?", {
+      description: "Silakan hubungi Administrator atau Bagian Akademik (BAAK) untuk mereset akun Anda.",
+      duration: 4000,
+    });
+  };
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -27,9 +35,7 @@ export function LoginForm() {
       const result = await authenticate(formData);
 
       if (result?.success) {
-        // === BAGIAN INI YANG DIUBAH ===
         toast.success("Login Berhasil", {
-            // Menggunakan nama dari result server action, atau fallback ke "Sobat"
             description: `Selamat datang kembali, ${result.name}! Semoga harimu menyenangkan.`,
             duration: 3000,
         });
@@ -53,7 +59,6 @@ export function LoginForm() {
 
   return (
     <div className="w-full max-w-[460px] animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* ... (SISA KODE UI KE BAWAH TETAP SAMA SEPERTI SEBELUMNYA) ... */}
       
       {/* Header Mobile */}
       <div className="lg:hidden flex flex-col items-center space-y-4 mb-10">
@@ -119,12 +124,16 @@ export function LoginForm() {
                 >
                   Password
                 </Label>
-                <a
-                  href="#"
-                  className="text-xs font-medium text-blue-600 hover:text-blue-500 hover:underline"
+                
+                {/* Link Lupa Password (Desktop) */}
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-500 hover:underline focus:outline-none"
                 >
                   Lupa password?
-                </a>
+                </button>
+
               </div>
               <div className="relative group transition-all duration-300">
                 <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-blue-600" />
@@ -149,11 +158,18 @@ export function LoginForm() {
                   )}
                 </button>
               </div>
+
+              {/* Link Lupa Password (Mobile) */}
               <div className="flex justify-end lg:hidden mt-1">
-                <a href="#" className="text-xs font-medium text-blue-600">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-500 hover:underline focus:outline-none"
+                >
                   Lupa password?
-                </a>
+                </button>
               </div>
+
             </div>
           </CardContent>
 
