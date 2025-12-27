@@ -18,14 +18,14 @@ import {
 import { updateUserSettings } from "@/app/actions/auth";
 
 interface ProfileFormProps {
-  user: any; // Anda bisa mengganti 'any' dengan tipe User yang sesuai jika ada
+  user: any;
   onUpdateSuccess: (newData: any) => void;
 }
 
 export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   
-  // UBAH: Menggunakan 'username' bukan 'nim'
+  // State form menggunakan 'username'
   const [formData, setFormData] = useState({
     nama: user.name || "",
     username: user.username || "", 
@@ -37,9 +37,10 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
     setIsSaving(true);
 
     try {
-      // UBAH: Mengirimkan formData.username ke action
-      await updateUserSettings(formData.username, {
+      // Kirim username LAMA (user.username) dan data BARU ke server
+      await updateUserSettings(user.username, {
         nama: formData.nama,
+        username: formData.username,
         alamat: formData.alamat,
         role: user.role,
       });
@@ -48,8 +49,11 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
         description: "Data identitas telah disimpan ke sistem.",
       });
 
-      // Update state di parent agar sinkron
-      onUpdateSuccess({ name: formData.nama, alamat: formData.alamat });
+      onUpdateSuccess({ 
+        name: formData.nama, 
+        username: formData.username, 
+        alamat: formData.alamat 
+      });
 
     } catch (error: any) {
       toast.error("Gagal menyimpan profil", {
@@ -86,16 +90,31 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
                 <Input
                   id="username"
                   value={formData.username}
-                  disabled
-                  className="pl-3 bg-slate-50 border-slate-200 text-slate-500"
+                  // Input aktif HANYA untuk Admin
+                  disabled={user.role !== "admin"} 
+                  onChange={(e) =>
+                    setFormData({ ...formData, username: e.target.value })
+                  }
+                  className={`pl-3 border-slate-200 ${
+                    user.role === "admin" 
+                      ? "bg-white text-slate-900" 
+                      : "bg-slate-50 text-slate-500"
+                  }`}
                 />
-                <div className="absolute right-3 top-2.5">
-                  <Lock size={14} className="text-slate-400" />
-                </div>
+                {/* Icon Gembok hanya untuk User Biasa */}
+                {user.role !== "admin" && (
+                  <div className="absolute right-3 top-2.5">
+                    <Lock size={14} className="text-slate-400" />
+                  </div>
+                )}
               </div>
-              <p className="text-[11px] text-slate-400 italic">
-                *Username dikelola oleh administrator dan tidak dapat diubah.
-              </p>
+              
+              {/* UPDATE: Keterangan hanya muncul jika BUKAN admin */}
+              {user.role !== "admin" && (
+                <p className="text-[11px] text-slate-400 italic">
+                  *Username dikelola oleh administrator dan tidak dapat diubah.
+                </p>
+              )}
             </div>
 
             {/* Nama Lengkap */}

@@ -11,13 +11,10 @@ export type UserSession = {
   role?: string;
 };
 
-// ... (authenticate, logout, getSession TETAP SAMA seperti sebelumnya) ...
-
 export async function authenticate(formData: FormData) {
   try {
     const data = Object.fromEntries(formData);
     const username = data.username as string;
-
     let name = "Pengguna";
 
     const { data: userFound } = await supabase
@@ -30,11 +27,7 @@ export async function authenticate(formData: FormData) {
       name = userFound.name;
     }
 
-    await signIn("credentials", { 
-      ...data, 
-      redirect: false 
-    });
-    
+    await signIn("credentials", { ...data, redirect: false });
     return { success: true, name: name };
 
   } catch (error) {
@@ -64,9 +57,7 @@ export async function getSession(): Promise<UserSession | null> {
   };
 }
 
-// === BARU: Ambil Data Lengkap User dari Tabel 'users' ===
 export async function getUserSettings(username: string) {
-  // 1. Ambil data akun (Nama, Password, Role) dari tabel 'users'
   const { data: user, error } = await supabase
     .from("users")
     .select("*")
@@ -74,54 +65,48 @@ export async function getUserSettings(username: string) {
     .single();
 
   if (error || !user) return null;
-
   let alamat = "";
 
-  // 2. Jika mahasiswa, ambil 'alamat' dari tabel 'students'
   if (user.role === "mahasiswa") {
     const { data: student } = await supabase
       .from("students")
       .select("alamat")
-      .eq("nim", username) // Asumsi username == NIM
+      .eq("nim", username)
       .single();
-    
-    if (student) {
-      alamat = student.alamat;
-    }
+    if (student) alamat = student.alamat;
   }
 
-  return {
-    ...user,
-    alamat, // Gabungkan alamat ke data user
-  };
+  return { ...user, alamat };
 }
 
-// === BARU: Update Data User ke Tabel 'users' ===
-export async function updateUserSettings(username: string, payload: any) {
-  const { nama, password, alamat, role } = payload;
+// === FUNGSI UPDATE USER ===
+export async function updateUserSettings(currentUsername: string, payload: any) {
+  const { nama, password, alamat, role, username: newUsername } = payload;
 
-  // 1. Update Tabel USERS (Nama & Password)
   const updates: any = {};
   if (nama) updates.name = nama;
-  if (password) updates.password = password; // Simpan password baru
+  if (password) updates.password = password; 
+  if (newUsername) updates.username = newUsername; // Update Username
 
+  // 1. Update tabel USERS
   const { error: userError } = await supabase
     .from("users")
     .update(updates)
-    .eq("username", username);
+    .eq("username", currentUsername); // Cari pakai username LAMA
 
   if (userError) throw new Error(userError.message);
 
-  // 2. Update Tabel STUDENTS (Hanya Alamat & Nama agar sinkron)
+  // 2. Update tabel STUDENTS (Jika Mahasiswa)
   if (role === "mahasiswa") {
     const studentUpdates: any = {};
     if (alamat !== undefined) studentUpdates.alamat = alamat;
     if (nama) studentUpdates.nama = nama;
+    if (newUsername) studentUpdates.nim = newUsername; // Sinkronkan NIM
 
     const { error: studentError } = await supabase
       .from("students")
       .update(studentUpdates)
-      .eq("nim", username);
+      .eq("nim", currentUsername); // Cari pakai NIM LAMA
 
     if (studentError) console.error("Gagal update tabel student:", studentError.message);
   }
