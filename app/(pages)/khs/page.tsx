@@ -53,19 +53,21 @@ export default function KhsPage() {
     return () => observer.disconnect();
   }, [currentStudent, selectedSemester]);
 
-  const availableSemesters = useMemo(() => {
-    if (!currentStudent) return [];
-    // @ts-ignore
-    const smts = currentStudent.transcript.map((t) => t.smt);
-    // @ts-ignore
-    return [...new Set(smts)].sort((a, b) => a - b);
+  // === PERBAIKAN DI SINI ===
+  // Menambahkan generic <number[]> pada useMemo dan casting yang lebih aman
+  const availableSemesters = useMemo<number[]>(() => {
+    if (!currentStudent || !currentStudent.transcript) return [];
+    
+    // Ambil semester dari transkrip dan pastikan tipenya number
+    const smts = (currentStudent.transcript as any[]).map((t) => Number(t.smt));
+    
+    // Filter unik dan sort
+    return Array.from(new Set(smts)).sort((a, b) => a - b);
   }, [currentStudent]);
 
   useEffect(() => {
     if (availableSemesters.length > 0) {
-      // @ts-ignore
       if (!availableSemesters.includes(selectedSemester)) {
-         // @ts-ignore
         setSelectedSemester(availableSemesters[0]);
       }
     }
@@ -121,35 +123,29 @@ export default function KhsPage() {
             `}>
             
             {loading ? (
-              // === CUSTOM SKELETON SESUAI BENTUK DOKUMEN ===
+              // === LOADING SKELETON ===
               <div className="animate-pulse flex flex-col h-full">
-                
-                {/* 1. Header Area (Logo Kiri, Alamat Kanan) */}
+                {/* Header Skeleton */}
                 <div className="grid grid-cols-[1fr_auto] gap-4 mb-1">
                     <div className="flex items-center gap-3">
-                        {/* Logo Skeleton */}
                         <Skeleton className="w-[80px] h-[80px]" /> 
-                        {/* Nama Kampus Skeleton */}
                         <div className="flex flex-col gap-2">
                             <Skeleton className="h-3 w-48" />
                             <Skeleton className="h-8 w-32" />
                             <Skeleton className="h-4 w-24" />
                         </div>
                     </div>
-                    {/* Alamat Skeleton (Kanan) */}
                     <Skeleton className="w-[250px] h-[78px]" />
                 </div>
 
-                {/* Bar Warna Skeleton */}
                 <Skeleton className="h-[26px] w-full mt-1" />
                 <Skeleton className="h-[26px] w-full mt-1" />
 
-                {/* Judul Dokumen Skeleton */}
                 <div className="flex justify-center my-6">
                     <Skeleton className="h-6 w-48" />
                 </div>
 
-                {/* 2. Info Mahasiswa Skeleton (Grid Layout) */}
+                {/* Info Mahasiswa Skeleton */}
                 <div className="grid grid-cols-[120px_10px_1fr] gap-y-2 mb-6">
                     <Skeleton className="h-3 w-full" /> <div/> <Skeleton className="h-3 w-48" />
                     <Skeleton className="h-3 w-full" /> <div/> <Skeleton className="h-3 w-32" />
@@ -157,15 +153,12 @@ export default function KhsPage() {
                     <Skeleton className="h-3 w-full" /> <div/> <Skeleton className="h-3 w-16" />
                 </div>
 
-                {/* 3. Tabel Skeleton */}
+                {/* Tabel Skeleton */}
                 <div className="space-y-1 mb-4">
-                    {/* Header Tabel */}
                     <Skeleton className="h-6 w-full bg-slate-200" />
-                    {/* Baris Data */}
                     {Array.from({ length: 12 }).map((_, i) => (
                         <Skeleton key={i} className="h-4 w-full" />
                     ))}
-                    {/* Footer Tabel (Jumlah/IPK) */}
                     <div className="pt-2 space-y-1">
                         <Skeleton className="h-4 w-full" />
                         <Skeleton className="h-4 w-full" />
@@ -173,26 +166,22 @@ export default function KhsPage() {
                     </div>
                 </div>
 
-                {/* 4. Footer Dokumen Skeleton (Keterangan & TTD) */}
+                {/* Footer Skeleton */}
                 <div className="flex justify-between items-start mt-8">
-                    {/* Kiri: Keterangan */}
                     <div className="space-y-2">
                          <Skeleton className="h-3 w-20 mb-2" />
                          <Skeleton className="h-2 w-32" />
                          <Skeleton className="h-2 w-32" />
                          <Skeleton className="h-2 w-32" />
                     </div>
-                    
-                    {/* Kanan: Tanda Tangan */}
                     <div className="flex flex-col items-center gap-1 w-[200px]">
-                         <Skeleton className="h-3 w-32" /> {/* Tanggal */}
-                         <Skeleton className="h-3 w-40" /> {/* Jabatan */}
-                         <Skeleton className="h-20 w-32 my-2" /> {/* Space TTD */}
-                         <Skeleton className="h-3 w-40" /> {/* Nama */}
-                         <Skeleton className="h-3 w-32" /> {/* NIDN */}
+                         <Skeleton className="h-3 w-32" />
+                         <Skeleton className="h-3 w-40" />
+                         <Skeleton className="h-20 w-32 my-2" />
+                         <Skeleton className="h-3 w-40" />
+                         <Skeleton className="h-3 w-32" />
                     </div>
                 </div>
-
               </div>
             ) : !currentStudent ? (
               <div className="flex flex-col h-full items-center justify-center text-slate-400">
