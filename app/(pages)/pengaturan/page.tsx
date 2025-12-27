@@ -15,6 +15,7 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { User, Lock, ShieldAlert, Save, AlertTriangle } from "lucide-react"; 
 import { getSession, getUserSettings, updateUserSettings } from "@/app/actions/auth";
@@ -23,14 +24,12 @@ export default function PengaturanPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   
-  // State loading saat menyimpan
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
-  // Data User saat ini (dari DB)
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // State Profil
+  // State Form Profil
   const [formData, setFormData] = useState({
     nama: "",
     nim: "",
@@ -69,7 +68,7 @@ export default function PengaturanPage() {
         console.error("Gagal memuat profil:", error);
         toast.error("Gagal memuat data pengguna.");
       } finally {
-        setIsLoading(false);
+        setTimeout(() => setIsLoading(false), 300);
       }
     };
 
@@ -93,7 +92,6 @@ export default function PengaturanPage() {
         description: "Data identitas telah disimpan ke sistem.",
       });
       
-      // Update state lokal
       setCurrentUser((prev: any) => ({ ...prev, name: formData.nama, alamat: formData.alamat }));
 
     } catch (error: any) {
@@ -142,20 +140,84 @@ export default function PengaturanPage() {
     }
   };
 
-  // === UI Loading Asli (Menggunakan animate-pulse sederhana) ===
+  // === 3. SKELETON LOADING ===
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-10 pb-10">
          <PageHeader title="Pengaturan" breadcrumb={["SIAKAD", "Pengaturan"]} />
-         <div className="grid gap-6 lg:grid-cols-2">
-            <div className="h-96 bg-slate-100 rounded-xl animate-pulse" />
-            <div className="h-96 bg-slate-100 rounded-xl animate-pulse" />
+         
+         <div className="grid gap-6 lg:grid-cols-2 items-stretch">
+            
+            {/* Skeleton Kartu Identitas */}
+            <Card className="flex flex-col h-full shadow-sm border-slate-200">
+                <CardHeader className="pb-4 pt-4">
+                    <div className="flex items-center gap-3 mb-1">
+                        <Skeleton className="h-9 w-9 rounded-lg" />
+                        <Skeleton className="h-6 w-40" />
+                    </div>
+                    <Skeleton className="h-4 w-64 mt-2" />
+                </CardHeader>
+                
+                <CardContent className="space-y-5 flex-1">
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-3 w-48" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-24 w-full" />
+                    </div>
+                </CardContent>
+
+                <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-4 mt-auto">
+                    <Skeleton className="h-10 w-36 ml-auto" />
+                </CardFooter>
+            </Card>
+
+            {/* Skeleton Kartu Password */}
+            <Card className="flex flex-col h-full shadow-sm border-slate-200">
+                <CardHeader className="pb-4 pt-4">
+                    <div className="flex items-center gap-3 mb-1">
+                        <Skeleton className="h-9 w-9 rounded-lg" />
+                        <Skeleton className="h-6 w-48" />
+                    </div>
+                    <Skeleton className="h-4 w-64 mt-2" />
+                </CardHeader>
+                
+                <CardContent className="space-y-5 flex-1">
+                     <div className="space-y-2">
+                        <Skeleton className="h-4 w-36" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="h-px bg-slate-100 my-2" />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                    </div>
+                    <Skeleton className="h-24 w-full rounded-lg" />
+                </CardContent>
+
+                <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-4 mt-auto">
+                    <Skeleton className="h-10 w-40 ml-auto" />
+                </CardFooter>
+            </Card>
          </div>
       </div>
     );
   }
 
-  // === UI Utama Asli ===
+  // === 4. UI ASLI ===
   return (
     <div className="flex flex-col gap-10 pb-10">
       <PageHeader 
@@ -199,8 +261,9 @@ export default function PengaturanPage() {
                       <Lock size={14} className="text-slate-400" />
                     </div>
                   </div>
-                  <p className="text-[11px] text-slate-400">
-                    ID Pengguna dikelola oleh administrator dan tidak dapat diubah.
+                  {/* PERBAIKAN: Teks Miring dan Pakai Bintang */}
+                  <p className="text-[11px] text-slate-400 italic">
+                    * ID Pengguna dikelola oleh administrator dan tidak dapat diubah.
                   </p>
                 </div>
 
@@ -272,8 +335,6 @@ export default function PengaturanPage() {
                     onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
                   />
                 </div>
-
-                <div className="h-px bg-slate-100 my-2" />
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
