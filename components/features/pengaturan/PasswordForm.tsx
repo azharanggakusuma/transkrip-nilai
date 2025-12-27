@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { updateUserSettings } from "@/app/actions/auth";
+import { updateUserSettings, logout } from "@/app/actions/auth";
 
 interface PasswordFormProps {
   user: any;
@@ -39,23 +39,26 @@ export default function PasswordForm({ user, onUpdateSuccess }: PasswordFormProp
       return;
     }
 
-    // Catatan: Idealnya validasi password lama dilakukan di server demi keamanan,
-    // tapi kita pertahankan logika yang ada sesuai permintaan refactor.
     if (passwordData.currentPassword !== user?.password) {
       toast.error("Gagal", { description: "Kata sandi saat ini salah." });
       return;
     }
 
     setIsSaving(true);
+    
+    // Flag untuk menandai apakah update berhasil
+    let updateSuccess = false;
 
     try {
+      // 1. Lakukan update password
       await updateUserSettings(user.username, {
         password: passwordData.newPassword,
         role: user.role,
       });
 
+      // 2. Jika sampai baris ini, berarti update SUKSES
       toast.success("Kata sandi berhasil diubah", {
-        description: "Silakan login ulang dengan kata sandi baru nanti.",
+        description: "Anda akan diarahkan ke halaman login...",
       });
       
       setPasswordData({
@@ -64,12 +67,22 @@ export default function PasswordForm({ user, onUpdateSuccess }: PasswordFormProp
         confirmPassword: "",
       });
 
+      // Tandai sukses agar logout dijalankan di luar catch
+      updateSuccess = true;
+
+      // Jalankan callback (opsional, mungkin tidak sempat terlihat karena redirect)
       onUpdateSuccess(passwordData.newPassword);
 
     } catch (error: any) {
+      // Hanya tangkap error jika updateUserSettings gagal
       toast.error("Gagal mengubah password", { description: error.message });
-    } finally {
       setIsSaving(false);
+    }
+
+    // 3. Jalankan Logout DI LUAR blok try-catch
+    // Ini mencegah "Redirect Error" dianggap sebagai error update
+    if (updateSuccess) {
+      await logout(); 
     }
   };
 
