@@ -15,22 +15,29 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton
 import { toast } from "sonner";
 import { User, Lock, ShieldAlert, Save, AlertTriangle } from "lucide-react"; 
 import { getSession } from "@/app/actions/auth";
-import { students } from "@/lib/data";
+
+// Import tipe data dan Server Actions
+import { type StudentData } from "@/lib/data";
+import { getStudents, updateStudent } from "@/app/actions/students";
 
 export default function PengaturanPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   
-  // State loading terpisah
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   const [userRole, setUserRole] = useState("mahasiswa");
+  
+  // State untuk menyimpan ID dan data lengkap mahasiswa
+  const [studentId, setStudentId] = useState<string | null>(null);
+  const [fullStudentProfile, setFullStudentProfile] = useState<any>(null);
 
-  // State Profil
+  // State Form Profil
   const [formData, setFormData] = useState({
     nama: "",
     nim: "",
@@ -44,7 +51,7 @@ export default function PengaturanPage() {
     confirmPassword: "",
   });
 
-  // === 1. Fetch Data User ===
+  // === 1. Fetch Data User dari Database ===
   useEffect(() => {
     const initData = async () => {
       try {
@@ -65,13 +72,22 @@ export default function PengaturanPage() {
             alamat: "",
           });
         } else {
+          // Ambil data dari Supabase via Server Action
+          const allStudents = await getStudents();
+          // Casting hasil fetch ke tipe StudentData[]
+          const students = allStudents as unknown as StudentData[];
+          
           const loggedInStudent = students.find((s) => s.profile.nim === session.username);
+
           if (loggedInStudent) {
             const p = loggedInStudent.profile;
+            setStudentId(loggedInStudent.id); 
+            setFullStudentProfile(p); 
+
             setFormData({
               nama: p.nama,
               nim: p.nim,
-              alamat: p.alamat
+              alamat: p.alamat || ""
             });
           } else {
             setFormData({
@@ -98,12 +114,37 @@ export default function PengaturanPage() {
     e.preventDefault();
     setIsSavingProfile(true); 
     
-    await new Promise((resolve) => setTimeout(resolve, 800)); 
-    
-    setIsSavingProfile(false);
-    toast.success("Profil berhasil diperbarui", {
-      description: "Data identitas telah disimpan ke sistem.",
-    });
+    try {
+      if (userRole === "admin") {
+        // Logika simpan admin (mockup)
+        await new Promise((resolve) => setTimeout(resolve, 800)); 
+      } else {
+        // Logika simpan mahasiswa ke Supabase
+        if (studentId && fullStudentProfile) {
+          const updatePayload = {
+            nim: formData.nim, 
+            nama: formData.nama,
+            alamat: formData.alamat,
+            prodi: fullStudentProfile.prodi,
+            jenjang: fullStudentProfile.jenjang,
+            semester: fullStudentProfile.semester
+          };
+
+          await updateStudent(studentId, updatePayload);
+        }
+      }
+
+      toast.success("Profil berhasil diperbarui", {
+        description: "Data identitas telah disimpan ke sistem.",
+      });
+
+    } catch (error: any) {
+      toast.error("Gagal menyimpan profil", {
+        description: error.message || "Terjadi kesalahan sistem"
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
@@ -118,7 +159,8 @@ export default function PengaturanPage() {
 
     setIsSavingPassword(true); 
     
-    await new Promise((resolve) => setTimeout(resolve, 800)); 
+    // Simulasi ganti password
+    await new Promise((resolve) => setTimeout(resolve, 1000)); 
     
     setIsSavingPassword(false);
     setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -127,18 +169,80 @@ export default function PengaturanPage() {
     });
   };
 
+  // === 3. Loading State dengan Skeleton ===
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-10 pb-10">
          <PageHeader title="Pengaturan" breadcrumb={["SIAKAD", "Pengaturan"]} />
-         <div className="grid gap-6 lg:grid-cols-2">
-            <div className="h-96 bg-slate-100 rounded-xl animate-pulse" />
-            <div className="h-96 bg-slate-100 rounded-xl animate-pulse" />
+         <div className="grid gap-6 lg:grid-cols-2 items-stretch">
+            
+            {/* Skeleton Kartu 1: Identitas */}
+            <Card className="flex flex-col h-full shadow-sm border-slate-200">
+                <CardHeader className="pb-4 pt-4">
+                    <div className="flex items-center gap-3 mb-1">
+                        <Skeleton className="h-9 w-9 rounded-lg" />
+                        <Skeleton className="h-6 w-40" />
+                    </div>
+                    <Skeleton className="h-4 w-full max-w-[250px]" />
+                </CardHeader>
+                <CardContent className="space-y-5 flex-1">
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-3 w-64" />
+                    </div>
+                    <div className="space-y-2">
+                         <Skeleton className="h-4 w-32" />
+                         <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                         <Skeleton className="h-4 w-28" />
+                         <Skeleton className="h-24 w-full" />
+                    </div>
+                </CardContent>
+                <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-4 mt-auto">
+                    <Skeleton className="h-10 w-36 ml-auto" />
+                </CardFooter>
+            </Card>
+
+            {/* Skeleton Kartu 2: Password */}
+            <Card className="flex flex-col h-full shadow-sm border-slate-200">
+                <CardHeader className="pb-4 pt-4">
+                    <div className="flex items-center gap-3 mb-1">
+                        <Skeleton className="h-9 w-9 rounded-lg" />
+                        <Skeleton className="h-6 w-48" />
+                    </div>
+                    <Skeleton className="h-4 w-full max-w-[300px]" />
+                </CardHeader>
+                <CardContent className="space-y-5 flex-1">
+                     <div className="space-y-2">
+                        <Skeleton className="h-4 w-36" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="h-px bg-slate-100 my-2" />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                    </div>
+                    <Skeleton className="h-24 w-full rounded-lg" />
+                </CardContent>
+                <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-4 mt-auto">
+                    <Skeleton className="h-10 w-40 ml-auto" />
+                </CardFooter>
+            </Card>
+
          </div>
       </div>
     );
   }
 
+  // === 4. Render Form Asli ===
   return (
     <div className="flex flex-col gap-10 pb-10">
       <PageHeader 
@@ -175,14 +279,8 @@ export default function PengaturanPage() {
                     <Input 
                       id="nim" 
                       value={formData.nim} 
-                      disabled={userRole !== "admin"} 
-                      onChange={(e) => setFormData({...formData, nim: e.target.value})}
-                      // PERBAIKAN DI SINI: 'font-mono' dihapus agar font sama dengan input lain
-                      className={`pl-3 ${
-                        userRole !== "admin" 
-                          ? "bg-slate-50 border-slate-200 text-slate-500" 
-                          : "" 
-                      }`}
+                      disabled={true} // NIM sebaiknya disable
+                      className="pl-3 bg-slate-50 border-slate-200 text-slate-500"
                     />
                     {userRole !== "admin" && (
                       <div className="absolute right-3 top-2.5">
@@ -190,11 +288,9 @@ export default function PengaturanPage() {
                       </div>
                     )}
                   </div>
-                  {userRole !== "admin" && (
-                    <p className="text-[11px] text-slate-400">
-                      ID Pengguna dikelola oleh administrator dan tidak dapat diubah.
-                    </p>
-                  )}
+                  <p className="text-[11px] text-slate-400">
+                    ID Pengguna dikelola oleh administrator dan tidak dapat diubah.
+                  </p>
                 </div>
 
                 {/* Nama Lengkap */}
