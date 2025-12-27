@@ -32,6 +32,7 @@ export default function PasswordForm({ user, onUpdateSuccess }: PasswordFormProp
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 1. Validasi: Password Baru vs Konfirmasi
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error("Gagal memperbarui kata sandi", {
         description: "Konfirmasi kata sandi tidak cocok.",
@@ -39,8 +40,17 @@ export default function PasswordForm({ user, onUpdateSuccess }: PasswordFormProp
       return;
     }
 
+    // 2. Validasi: Password Saat Ini Benar/Salah
     if (passwordData.currentPassword !== user?.password) {
       toast.error("Gagal", { description: "Kata sandi saat ini salah." });
+      return;
+    }
+
+    // 3. Validasi: Password Baru vs Password Lama
+    if (passwordData.newPassword === passwordData.currentPassword) {
+      toast.error("Gagal memperbarui kata sandi", {
+        description: "Kata sandi baru tidak boleh sama dengan kata sandi saat ini.",
+      });
       return;
     }
 
@@ -52,12 +62,12 @@ export default function PasswordForm({ user, onUpdateSuccess }: PasswordFormProp
         role: user.role,
       });
 
-      // Tentukan durasi toast (misalnya 2000ms / 2 detik)
       const TOAST_DURATION = 2000;
 
-      toast.success("Kata sandi berhasil diubah", {
-        description: "Sesi akan berakhir otomatis. Anda akan diarahkan ke halaman login...",
-        duration: TOAST_DURATION, // Atur durasi tampil toast
+      // REKOMENDASI OPSI 1: Lebih profesional dan jelas
+      toast.success("Kata sandi berhasil diperbarui", {
+        description: "Silakan login kembali demi keamanan. Mengalihkan...",
+        duration: TOAST_DURATION,
       });
       
       setPasswordData({
@@ -66,19 +76,15 @@ export default function PasswordForm({ user, onUpdateSuccess }: PasswordFormProp
         confirmPassword: "",
       });
 
-      // Jalankan callback (opsional)
       onUpdateSuccess(passwordData.newPassword);
 
-      // Gunakan setTimeout untuk menunda logout sampai toast selesai/hilang
       setTimeout(async () => {
         await logout();
       }, TOAST_DURATION);
 
-      // Catatan: isSaving dibiarkan true agar tombol tetap loading/disabled selama menunggu logout
-
     } catch (error: any) {
       toast.error("Gagal mengubah password", { description: error.message });
-      setIsSaving(false); // Matikan loading hanya jika terjadi error
+      setIsSaving(false);
     }
   };
 
