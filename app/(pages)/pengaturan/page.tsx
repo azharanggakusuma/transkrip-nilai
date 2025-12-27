@@ -169,22 +169,32 @@ export default function PengaturanPage() {
                 {/* NIM / Username */}
                 <div className="space-y-2">
                   <Label htmlFor="nim" className="text-slate-600">
-                    Username / NIM
+                    {userRole === "admin" ? "Username" : "Username / NIM"}
                   </Label>
                   <div className="relative">
                     <Input 
                       id="nim" 
                       value={formData.nim} 
-                      disabled 
-                      className="bg-slate-50 border-slate-200 text-slate-500 font-mono pl-3"
+                      disabled={userRole !== "admin"} 
+                      onChange={(e) => setFormData({...formData, nim: e.target.value})}
+                      // PERBAIKAN DI SINI: 'font-mono' dihapus agar font sama dengan input lain
+                      className={`pl-3 ${
+                        userRole !== "admin" 
+                          ? "bg-slate-50 border-slate-200 text-slate-500" 
+                          : "" 
+                      }`}
                     />
-                    <div className="absolute right-3 top-2.5">
-                      <Lock size={14} className="text-slate-400" />
-                    </div>
+                    {userRole !== "admin" && (
+                      <div className="absolute right-3 top-2.5">
+                        <Lock size={14} className="text-slate-400" />
+                      </div>
+                    )}
                   </div>
-                  <p className="text-[11px] text-slate-400">
-                    ID Pengguna dikelola oleh administrator dan tidak dapat diubah.
-                  </p>
+                  {userRole !== "admin" && (
+                    <p className="text-[11px] text-slate-400">
+                      ID Pengguna dikelola oleh administrator dan tidak dapat diubah.
+                    </p>
+                  )}
                 </div>
 
                 {/* Nama Lengkap */}
@@ -194,7 +204,6 @@ export default function PengaturanPage() {
                     id="nama" 
                     value={formData.nama} 
                     onChange={(e) => setFormData({...formData, nama: e.target.value})}
-                    // Class kustom warna biru dihapus agar default
                   />
                 </div>
 
@@ -202,11 +211,10 @@ export default function PengaturanPage() {
                 {userRole !== "admin" && (
                   <div className="space-y-2">
                     <Label htmlFor="alamat" className="text-slate-700">Alamat Domisili</Label>
-                    {/* Menggunakan komponen Textarea agar style konsisten */}
                     <Textarea 
                       id="alamat"
                       rows={3}
-                      className="resize-none" // Hanya sisa resize-none, warna ikut default
+                      className="resize-none"
                       value={formData.alamat} 
                       onChange={(e) => setFormData({...formData, alamat: e.target.value})}
                     />
@@ -284,7 +292,6 @@ export default function PengaturanPage() {
                   </div>
                 </div>
 
-                {/* Kotak Perhatian */}
                 <div className="rounded-lg bg-rose-50 p-4 border border-rose-200 mt-2 flex items-start gap-3">
                   <AlertTriangle className="text-rose-600 shrink-0 mt-0.5" size={18} />
                   <div className="space-y-1">
