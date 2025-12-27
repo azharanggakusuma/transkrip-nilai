@@ -24,9 +24,11 @@ interface ProfileFormProps {
 
 export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps) {
   const [isSaving, setIsSaving] = useState(false);
+  
+  // UBAH: Menggunakan 'username' bukan 'nim'
   const [formData, setFormData] = useState({
     nama: user.name || "",
-    nim: user.username || "",
+    username: user.username || "", 
     alamat: user.alamat || "",
   });
 
@@ -35,7 +37,8 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
     setIsSaving(true);
 
     try {
-      await updateUserSettings(formData.nim, {
+      // UBAH: Mengirimkan formData.username ke action
+      await updateUserSettings(formData.username, {
         nama: formData.nama,
         alamat: formData.alamat,
         role: user.role,
@@ -76,13 +79,13 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
           <CardContent className="space-y-5 flex-1">
             {/* Username */}
             <div className="space-y-2">
-              <Label htmlFor="nim" className="text-slate-600">
+              <Label htmlFor="username" className="text-slate-600">
                 Username
               </Label>
               <div className="relative">
                 <Input
-                  id="nim"
-                  value={formData.nim}
+                  id="username"
+                  value={formData.username}
                   disabled
                   className="pl-3 bg-slate-50 border-slate-200 text-slate-500"
                 />
