@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import Credentials from "next-auth/providers/credentials";
-import users from "@/lib/users.json";
+import { supabase } from "@/lib/supabase";
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -10,13 +10,24 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       async authorize(credentials) {
         const { username, password } = credentials;
 
-        // Logika pencarian user (sama seperti logika manual sebelumnya)
-        const user = users.find(
-          (u) => u.username === username && u.password === password
-        );
+        // Query ke database Supabase (tabel 'users')
+        // Menggunakan .single() karena username harus unik
+        const { data: user, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("username", username)
+          .single();
 
-        if (user) {
+        // Jika terjadi error (misal koneksi gagal) atau user tidak ditemukan
+        if (error || !user) {
+          return null;
+        }
+
+        // Validasi Password
+        // (Pastikan password di database tersimpan sebagai string biasa sesuai logika sebelumnya)
+        if (user.password === password) {
           // Return objek user untuk sesi
+          // Properti ini akan diteruskan ke callback jwt dan session di auth.config.ts
           return {
             id: String(user.id),
             name: user.name,

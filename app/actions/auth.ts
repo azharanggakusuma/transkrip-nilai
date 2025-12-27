@@ -2,7 +2,7 @@
 
 import { signIn, signOut, auth } from "@/auth";
 import { AuthError } from "next-auth";
-import users from "@/lib/users.json";
+import { supabase } from "@/lib/supabase";
 
 export type UserSession = {
   username: string;
@@ -15,15 +15,26 @@ export async function authenticate(formData: FormData) {
     const data = Object.fromEntries(formData);
     const username = data.username as string;
 
-    // Cari nama user untuk pesan sapaan
-    const userFound = users.find((u) => u.username === username);
-    const name = userFound?.name || "Pengguna";
+    // Cari nama user dari Supabase untuk pesan sapaan (Toast)
+    let name = "Pengguna";
 
+    const { data: userFound } = await supabase
+      .from("users")
+      .select("name")
+      .eq("username", username)
+      .single();
+
+    if (userFound?.name) {
+      name = userFound.name;
+    }
+
+    // Melakukan proses login dengan NextAuth
     await signIn("credentials", { 
       ...data, 
       redirect: false 
     });
     
+    // Mengembalikan sukses beserta nama untuk ditampilkan di UI
     return { success: true, name: name };
 
   } catch (error) {
@@ -48,12 +59,11 @@ export async function getSession(): Promise<UserSession | null> {
   
   if (!session?.user) return null;
   
-  // Mapping session NextAuth kembali ke struktur UserSession aplikasi Anda
+  // Mapping session NextAuth kembali ke struktur UserSession aplikasi
+  // Menggunakan 'as any' untuk menghindari error TypeScript jika type definition belum diupdate
   return {
-    // HAPUS @ts-expect-error DI SINI
-    username: session.user.username || "",
+    username: (session.user as any).username || "",
     name: session.user.name || "",
-    // HAPUS @ts-expect-error DI SINI
-    role: session.user.role || "mahasiswa",
+    role: (session.user as any).role || "mahasiswa",
   };
 }
