@@ -238,7 +238,7 @@ export default function PengaturanPage() {
                 <CardTitle className="text-lg">Identitas Pengguna</CardTitle>
               </div>
               <CardDescription>
-                Informasi dasar akun yang terdaftar dalam sistem akademik.
+                Informasi akun yang terdaftar dalam sistem.
               </CardDescription>
             </CardHeader>
             
@@ -263,7 +263,7 @@ export default function PengaturanPage() {
                   </div>
                   {/* PERBAIKAN: Teks Miring dan Pakai Bintang */}
                   <p className="text-[11px] text-slate-400 italic">
-                    * ID Pengguna dikelola oleh administrator dan tidak dapat diubah.
+                    *Username dikelola oleh administrator dan tidak dapat diubah.
                   </p>
                 </div>
 
@@ -314,10 +314,10 @@ export default function PengaturanPage() {
                 <div className="p-2 bg-rose-50 text-rose-600 rounded-lg">
                   <ShieldAlert size={20} />
                 </div>
-                <CardTitle className="text-lg">Keamanan & Password</CardTitle>
+                <CardTitle className="text-lg">Keamanan Akun</CardTitle>
               </div>
               <CardDescription>
-                Kelola keamanan akun Anda dengan memperbarui kata sandi secara berkala.
+                Perbarui kata sandi Anda secara berkala untuk melindungi akun.
               </CardDescription>
             </CardHeader>
             
