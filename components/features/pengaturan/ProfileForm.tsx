@@ -74,10 +74,10 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
 
         <form onSubmit={handleProfileUpdate} className="flex flex-col flex-1">
           <CardContent className="space-y-5 flex-1">
-            {/* NIM / Username */}
+            {/* Username */}
             <div className="space-y-2">
               <Label htmlFor="nim" className="text-slate-600">
-                Username / NIM
+                Username
               </Label>
               <div className="relative">
                 <Input
