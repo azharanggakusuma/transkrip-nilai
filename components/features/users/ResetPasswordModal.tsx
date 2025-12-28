@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Copy, Check, Wand2, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, Copy, Check, Wand2, ShieldCheck, Info } from "lucide-react";
 import { FormModal } from "@/components/shared/FormModal";
 import { updateUser, type UserData } from "@/app/actions/users";
 
@@ -152,12 +152,11 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
           </div>
         </div>
 
-        <div className="rounded-md bg-blue-50/50 border border-blue-100 p-3">
-           <p className="text-[11px] text-blue-700 leading-relaxed flex gap-2">
-             <span className="shrink-0 text-lg leading-none">💡</span>
-             <span>
-               Pastikan untuk <b>menyalin (Copy)</b> password baru sebelum menyimpan. Perubahan ini akan langsung menonaktifkan password lama user.
-             </span>
+        {/* INFO BOX STYLE HALAMAN PENGATURAN (Alert Style) */}
+        <div className="rounded-md bg-amber-50 border border-amber-200 p-3 flex items-start gap-3">
+           <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+           <p className="text-[12px] text-amber-800 leading-relaxed">
+             Pastikan untuk <span className="font-semibold text-amber-900">menyalin (Copy)</span> password baru sebelum menyimpan. Perubahan ini akan langsung menonaktifkan password lama user.
            </p>
         </div>
 
