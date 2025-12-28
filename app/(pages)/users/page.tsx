@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import { toast } from "sonner";
-import { Pencil, Trash2, ShieldCheck, User as UserIcon } from "lucide-react";
+import { Pencil, Trash2, ShieldCheck } from "lucide-react"; // UserIcon dihapus karena tidak dipakai
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -118,13 +118,9 @@ export default function UsersPage() {
     },
     {
       header: "Nama User",
+      // Render diubah: Menghapus icon, hanya menampilkan teks nama
       render: (row) => (
-        <div className="flex items-center gap-2">
-          <div className="bg-slate-100 p-1.5 rounded-full text-slate-500">
-             <UserIcon size={16} />
-          </div>
-          <span className="font-semibold text-slate-700">{row.name}</span>
-        </div>
+        <span className="font-semibold text-slate-700">{row.name}</span>
       ),
     },
     {
@@ -221,11 +217,11 @@ export default function UsersPage() {
           initialData={
             isEditing && selectedUser
               ? {
-                  id: selectedUser.id,           // Mengirim ID User
+                  id: selectedUser.id,
                   name: selectedUser.name,
                   username: selectedUser.username,
                   role: selectedUser.role,
-                  student_id: selectedUser.student_id, // Mengirim Student ID untuk validasi
+                  student_id: selectedUser.student_id,
                   password: "",
                 }
               : undefined
