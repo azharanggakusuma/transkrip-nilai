@@ -13,6 +13,7 @@ import {
   FileSpreadsheet, 
   Mail, 
   Settings, 
+  UserCog, // Import icon UserCog
   LogOut, 
   X 
 } from "lucide-react";
@@ -98,7 +99,12 @@ export default function Sidebar({ open, setOpen, isCollapsed = false }: SidebarP
           
           <div className="space-y-1">
             <SectionLabel label="Menu Utama" isCollapsed={isCollapsed} />
+            
             <NavItem href="/" label="Dashboard" icon={<LayoutDashboard size={20} />} active={isActive("/")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
+            
+            {/* Menu Data Pengguna Baru */}
+            <NavItem href="/users" label="Data Pengguna" icon={<UserCog size={20} />} active={isActive("/users")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
+            
             <NavItem href="/mahasiswa" label="Data Mahasiswa" icon={<Users size={20} />} active={isActive("/mahasiswa")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
             <NavItem href="/matakuliah" label="Mata Kuliah" icon={<BookOpen size={20} />} active={isActive("/matakuliah")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
             <NavItem href="/khs" label="Kartu Hasil Studi" icon={<FileSpreadsheet size={20} />} active={isActive("/khs")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
@@ -117,7 +123,7 @@ export default function Sidebar({ open, setOpen, isCollapsed = false }: SidebarP
         <div className="p-3 bg-white border-t border-slate-100 shrink-0 relative">
            <Tooltip content="Logout" enabled={isCollapsed} position="right">
               <button
-                onClick={handleLogout} // Memanggil fungsi async handleLogout
+                onClick={handleLogout} 
                 className={`
                   w-full flex items-center rounded-lg text-sm font-semibold transition-colors overflow-hidden group
                   text-rose-600 hover:bg-rose-50
