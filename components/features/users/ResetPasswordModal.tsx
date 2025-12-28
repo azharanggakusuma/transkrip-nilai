@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Copy, Check, Wand2, Key, Info } from "lucide-react";
 import { FormModal } from "@/components/shared/FormModal";
+import Tooltip from "@/components/shared/Tooltip"; // PERBAIKAN: Menggunakan default import (tanpa kurung kurawal)
 import { updateUser, type UserData } from "@/app/actions/users";
 
 interface ResetPasswordModalProps {
@@ -48,7 +49,6 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
     navigator.clipboard.writeText(newPassword);
     setIsCopied(true);
     
-    // Toast yang lebih bagus & informatif
     toast.success("Password Disalin", { 
       description: "Password telah disalin ke clipboard. Siap untuk digunakan." 
     });
@@ -101,18 +101,19 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
           <div className="flex justify-between items-end">
              <Label htmlFor="reset-pass" className="text-sm font-medium">Password Baru</Label>
              
-             {/* Tombol Acak Minimalis */}
-             <Button 
-               type="button" 
-               variant="ghost" 
-               size="sm" 
-               onClick={() => generatePassword(8)}
-               className="h-5 text-[10px] font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 px-2 gap-1.5 rounded-full transition-colors"
-               title="Generate password otomatis (8 karakter)"
-             >
-               <Wand2 className="h-3 w-3" />
-               Generate
-             </Button>
+             {/* Tombol Acak Minimalis dengan Tooltip */}
+             <Tooltip content="Generate password otomatis (8 karakter)">
+               <Button 
+                 type="button" 
+                 variant="ghost" 
+                 size="sm" 
+                 onClick={() => generatePassword(8)}
+                 className="h-5 text-[10px] font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 px-2 gap-1.5 rounded-full transition-colors"
+               >
+                 <Wand2 className="h-3 w-3" />
+                 Generate
+               </Button>
+             </Tooltip>
           </div>
           
           <div className="relative flex items-center gap-2">
@@ -142,18 +143,19 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
               </button>
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={copyToClipboard}
-              // Menghapus conditional coloring (hijau), hanya transisi icon saja
-              className="shrink-0 transition-all duration-300" 
-              title="Salin Password"
-              disabled={!newPassword}
-            >
-              {isCopied ? <Check size={16} /> : <Copy size={16} />}
-            </Button>
+            {/* Tombol Salin dengan Tooltip */}
+            <Tooltip content={isCopied ? "Berhasil disalin" : "Salin Password"}>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={copyToClipboard}
+                className="shrink-0 transition-all duration-300"
+                disabled={!newPassword}
+              >
+                {isCopied ? <Check size={16} /> : <Copy size={16} />}
+              </Button>
+            </Tooltip>
           </div>
         </div>
 
