@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Copy, Check, Wand2, Key, Info } from "lucide-react"; // Import Key
+import { Eye, EyeOff, Copy, Check, Wand2, Key, Info } from "lucide-react";
 import { FormModal } from "@/components/shared/FormModal";
 import { updateUser, type UserData } from "@/app/actions/users";
 
@@ -114,7 +114,7 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
           <div className="relative flex items-center gap-2">
             <div className="relative flex-1 group">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                <Key size={16} /> {/* Ikon diganti menjadi Key */}
+                <Key size={16} />
               </div>
               <Input
                 id="reset-pass"
@@ -162,10 +162,18 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
 
         {/* FOOTER */}
         <div className="flex justify-end gap-2 pt-2 border-t">
-          <Button type="button" variant="ghost" onClick={() => onClose(false)} disabled={isLoading}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => onClose(false)} 
+            disabled={isLoading}
+          >
             Batal
           </Button>
-          <Button type="submit" disabled={!newPassword || newPassword.length < 6 || isLoading}>
+          <Button 
+            type="submit" 
+            disabled={!newPassword || newPassword.length < 6 || isLoading}
+          >
             {isLoading ? "Menyimpan..." : "Simpan Password"}
           </Button>
         </div>
