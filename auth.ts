@@ -1,8 +1,9 @@
+// auth.ts
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import Credentials from "next-auth/providers/credentials";
-import { supabase } from "@/lib/supabase";
-import bcrypt from "bcryptjs"; // Menggunakan bcryptjs
+import { createClient } from "@supabase/supabase-js"; // Import createClient, bukan instance global
+import bcrypt from "bcryptjs";
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -11,20 +12,26 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       async authorize(credentials) {
         const { username, password } = credentials;
 
-        // 1. Ambil data user dari Supabase
+        // 1. Inisialisasi Supabase Client KHUSUS untuk Auth (pakai Service Role)
+        // Pastikan SUPABASE_SERVICE_ROLE_KEY ada di .env Anda
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+
+        // 2. Ambil data user dari Supabase (Bypass RLS karena pakai Service Role)
         const { data: user, error } = await supabase
           .from("users")
           .select("*")
           .eq("username", username)
           .single();
 
-        // 2. Jika user tidak ditemukan atau ada error database
+        // 3. Jika user tidak ditemukan atau ada error database
         if (error || !user) {
           return null;
         }
 
-        // 3. Cek password menggunakan bcryptjs
-        // Membandingkan password input (plain) dengan hash di database
+        // 4. Cek password menggunakan bcryptjs
         const passwordsMatch = await bcrypt.compare(
           password as string, 
           user.password
