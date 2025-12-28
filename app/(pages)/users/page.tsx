@@ -87,7 +87,7 @@ export default function UsersPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
-      <PageHeader title="Manajemen Pengguna" breadcrumb={["Sistem", "Users"]} />
+      <PageHeader title="Data Pengguna" breadcrumb={["SIAKAD", "Users"]} />
 
       {/* Area Tabel sekarang menggunakan komponen terpisah */}
       <UserTable 
