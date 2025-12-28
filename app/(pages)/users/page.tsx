@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { FormModal } from "@/components/shared/FormModal";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import { UserForm, type UserFormValues } from "@/components/features/users/UserForm";
-import UserTable from "@/components/features/users/UserTable"; // Import komponen baru
+import UserTable from "@/components/features/users/UserTable";
+import { ResetPasswordModal } from "@/components/features/users/ResetPasswordModal"; // Import komponen baru
 import { getUsers, createUser, updateUser, deleteUser, type UserData } from "@/app/actions/users";
 
 export default function UsersPage() {
@@ -18,6 +19,7 @@ export default function UsersPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
   // === FETCH DATA ===
@@ -56,6 +58,11 @@ export default function UsersPage() {
     setIsDeleteOpen(true);
   };
 
+  const handleOpenReset = (user: UserData) => {
+    setSelectedUser(user);
+    setIsResetOpen(true);
+  };
+
   const handleFormSubmit = async (values: UserFormValues) => {
     try {
       if (isEditing && selectedUser) {
@@ -89,16 +96,16 @@ export default function UsersPage() {
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
       <PageHeader title="Data Pengguna" breadcrumb={["SIAKAD", "Users"]} />
 
-      {/* Area Tabel sekarang menggunakan komponen terpisah */}
       <UserTable 
         data={dataList}
         isLoading={isLoading}
         onAdd={handleOpenAdd}
         onEdit={handleOpenEdit}
         onDelete={handleOpenDelete}
+        onResetPassword={handleOpenReset}
       />
 
-      {/* MODAL FORM */}
+      {/* MODAL ADD/EDIT */}
       <FormModal
         isOpen={isFormOpen}
         onClose={setIsFormOpen}
@@ -135,6 +142,13 @@ export default function UsersPage() {
         description={`Yakin ingin menghapus user "${selectedUser?.name}"? Akses login akan hilang permanen.`}
         confirmLabel="Hapus User"
         variant="destructive"
+      />
+
+      {/* MODAL RESET PASSWORD (KOMPONEN BARU) */}
+      <ResetPasswordModal 
+        isOpen={isResetOpen}
+        onClose={setIsResetOpen}
+        user={selectedUser}
       />
     </div>
   );

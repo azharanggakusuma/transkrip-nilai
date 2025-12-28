@@ -5,7 +5,7 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Pencil, Trash2, ShieldCheck, BookOpen } from "lucide-react";
+import { Pencil, Trash2, ShieldCheck, BookOpen, KeyRound } from "lucide-react";
 import { type UserData } from "@/app/actions/users";
 import {
   DropdownMenuLabel,
@@ -19,6 +19,7 @@ interface UserTableProps {
   isLoading: boolean;
   onEdit: (user: UserData) => void;
   onDelete: (user: UserData) => void;
+  onResetPassword: (user: UserData) => void;
   onAdd: () => void;
 }
 
@@ -27,11 +28,12 @@ export default function UserTable({
   isLoading, 
   onEdit, 
   onDelete, 
+  onResetPassword, 
   onAdd 
 }: UserTableProps) {
   
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("ALL"); // State untuk Filter Role
+  const [roleFilter, setRoleFilter] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -39,7 +41,6 @@ export default function UserTable({
   const filteredData = useMemo(() => {
     let result = data;
 
-    // 1. Filter Search
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
       result = result.filter(
@@ -49,7 +50,6 @@ export default function UserTable({
       );
     }
 
-    // 2. Filter Role
     if (roleFilter !== "ALL") {
       result = result.filter((user) => user.role === roleFilter);
     }
@@ -109,6 +109,21 @@ export default function UserTable({
       },
     },
     {
+      header: "Password",
+      className: "text-center",
+      render: (row) => (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="h-8 text-xs border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+          onClick={() => onResetPassword(row)}
+        >
+          <KeyRound className="mr-1.5 h-3 w-3" />
+          Reset
+        </Button>
+      ),
+    },
+    {
       header: "Aksi",
       className: "text-center w-[120px]",
       render: (row) => (
@@ -134,7 +149,7 @@ export default function UserTable({
     },
   ];
 
-  // === FILTER DROPDOWN CONTENT ===
+  // === FILTER DROPDOWN ===
   const filterContent = (
     <>
       <DropdownMenuLabel>Filter Peran (Role)</DropdownMenuLabel>
@@ -143,7 +158,7 @@ export default function UserTable({
         value={roleFilter} 
         onValueChange={(v) => { 
           setRoleFilter(v); 
-          setCurrentPage(1); // Reset ke halaman 1 saat filter berubah
+          setCurrentPage(1); 
         }}
       >
         <DropdownMenuRadioItem value="ALL">Semua</DropdownMenuRadioItem>
@@ -170,7 +185,6 @@ export default function UserTable({
           onAdd={onAdd}
           addLabel="Tambah User"
           
-          // Props Filter
           filterContent={filterContent}
           isFilterActive={roleFilter !== "ALL"}
           onResetFilter={() => {
