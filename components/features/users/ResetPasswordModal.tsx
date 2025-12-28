@@ -5,8 +5,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, Copy, Check, Wand2, ShieldCheck, RefreshCw } from "lucide-react";
+import { Eye, EyeOff, Copy, Check, Wand2, ShieldCheck } from "lucide-react";
 import { FormModal } from "@/components/shared/FormModal";
 import { updateUser, type UserData } from "@/app/actions/users";
 
@@ -31,23 +30,6 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
       setIsCopied(false);
     }
   }, [isOpen, user]);
-
-  // === LOGIC KEKUATAN PASSWORD ===
-  const getStrength = (pass: string) => {
-    if (!pass) return { score: 0, label: "", color: "bg-slate-200" };
-    let score = 0;
-    if (pass.length >= 6) score++;
-    if (pass.length >= 10) score++;
-    if (/[A-Z]/.test(pass)) score++;
-    if (/[0-9]/.test(pass)) score++;
-    if (/[^A-Za-z0-9]/.test(pass)) score++;
-
-    if (score <= 2) return { score, label: "Lemah", color: "bg-red-500" };
-    if (score <= 4) return { score, label: "Sedang", color: "bg-amber-500" };
-    return { score, label: "Kuat", color: "bg-green-500" };
-  };
-
-  const strength = getStrength(newPassword);
 
   // === GENERATE PASSWORD ===
   const generatePassword = (length: number) => {
@@ -112,13 +94,21 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
         
         {/* INPUT AREA */}
         <div className="space-y-3">
-          <div className="flex justify-between items-end">
+          <div className="flex justify-between items-center">
              <Label htmlFor="reset-pass" className="text-sm font-medium">Password Baru</Label>
-             {newPassword && (
-               <span className={`text-[10px] px-2 py-0.5 rounded-full text-white font-medium ${strength.color}`}>
-                 {strength.label}
-               </span>
-             )}
+             
+             {/* Tombol Acak */}
+             <Button 
+               type="button" 
+               variant="outline" 
+               size="sm" 
+               onClick={() => generatePassword(8)}
+               className="h-6 text-[10px] px-2 bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-600 gap-1.5"
+               title="Generate 8 Karakter"
+             >
+               <Wand2 className="h-3 w-3" />
+               Acak (8)
+             </Button>
           </div>
           
           <div className="relative flex items-center gap-2">
@@ -160,37 +150,6 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
             >
               {isCopied ? <Check size={16} /> : <Copy size={16} />}
             </Button>
-          </div>
-
-          {/* STRENGTH METER BAR */}
-          <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden flex gap-0.5">
-             <div className={`h-full transition-all duration-500 ${strength.score >= 1 ? strength.color : "bg-transparent"} w-1/5`} />
-             <div className={`h-full transition-all duration-500 ${strength.score >= 3 ? strength.color : "bg-transparent"} w-2/5`} />
-             <div className={`h-full transition-all duration-500 ${strength.score >= 5 ? strength.color : "bg-transparent"} w-2/5`} />
-          </div>
-
-          {/* QUICK ACTIONS */}
-          <div className="flex gap-2 pt-1">
-             <Button 
-               type="button" 
-               variant="secondary" 
-               size="sm" 
-               onClick={() => generatePassword(8)}
-               className="text-xs h-7 bg-slate-100 hover:bg-slate-200 text-slate-700"
-             >
-               <Wand2 className="mr-1.5 h-3 w-3" />
-               Acak (8 Karakter)
-             </Button>
-             <Button 
-               type="button" 
-               variant="secondary" 
-               size="sm" 
-               onClick={() => generatePassword(12)}
-               className="text-xs h-7 bg-slate-100 hover:bg-slate-200 text-slate-700"
-             >
-               <RefreshCw className="mr-1.5 h-3 w-3" />
-               Acak (12 Karakter)
-             </Button>
           </div>
         </div>
 
