@@ -4,6 +4,7 @@ import { signIn, signOut, auth } from "@/auth";
 import { AuthError } from "next-auth";
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs"; // Menggunakan bcryptjs
 
 export type UserSession = {
   username: string;
@@ -17,6 +18,7 @@ export async function authenticate(formData: FormData) {
     const username = data.username as string;
     let name = "Pengguna";
 
+    // Cek nama user untuk feedback UI (opsional)
     const { data: userFound } = await supabase
       .from("users")
       .select("name")
@@ -85,7 +87,13 @@ export async function updateUserSettings(currentUsername: string, payload: any) 
 
   const updates: any = {};
   if (nama) updates.name = nama;
-  if (password) updates.password = password; 
+  
+  // LOGIKA HASHING: Gunakan bcryptjs untuk hash password sebelum disimpan
+  if (password) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    updates.password = hashedPassword;
+  } 
+  
   if (newUsername) updates.username = newUsername; // Update Username
 
   // 1. Update tabel USERS
