@@ -94,20 +94,20 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
         
         {/* INPUT AREA */}
         <div className="space-y-3">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-end">
              <Label htmlFor="reset-pass" className="text-sm font-medium">Password Baru</Label>
              
-             {/* Tombol Acak */}
+             {/* Tombol Acak Minimalis */}
              <Button 
                type="button" 
-               variant="outline" 
+               variant="ghost" 
                size="sm" 
                onClick={() => generatePassword(8)}
-               className="h-6 text-[10px] px-2 bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-600 gap-1.5"
-               title="Generate 8 Karakter"
+               className="h-5 text-[10px] font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 px-2 gap-1.5 rounded-full transition-colors"
+               title="Generate password otomatis (8 karakter)"
              >
                <Wand2 className="h-3 w-3" />
-               Acak (8)
+               Generate
              </Button>
           </div>
           
