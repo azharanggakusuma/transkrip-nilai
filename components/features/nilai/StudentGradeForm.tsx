@@ -21,7 +21,7 @@ import { Card } from "@/components/ui/card";
 import { StudentData } from "@/lib/types";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
-import { RotateCcw } from "lucide-react"; // Ikon TrendingUp dihapus
+import { RotateCcw, Save, X, Loader2 } from "lucide-react"; // Tambah Loader2
 import { cn } from "@/lib/utils";
 
 interface CourseRaw {
@@ -106,22 +106,36 @@ export function StudentGradeForm({
   };
 
   const handleConfirmSave = async () => {
+    // 1. Langsung tutup modal konfirmasi
+    setShowConfirm(false);
+    
+    // 2. Set loading state (untuk disable tombol form)
     setLoading(true);
+
     try {
+      // Siapkan payload
       const payload = Object.entries(gradeChanges).map(([cId, hm]) => ({
         course_id: parseInt(cId),
         hm: hm,
       }));
 
-      await onSubmit(parseInt(student.id), payload);
-      toast.success(`Nilai mahasiswa ${student.profile.nama} berhasil diperbarui.`);
+      // 3. Gunakan toast.promise untuk indikator loading yang "bagus"
+      await toast.promise(
+        onSubmit(parseInt(student.id), payload),
+        {
+          loading: 'Menyimpan perubahan nilai...',
+          success: `Nilai mahasiswa atas nama ${student.profile.nama} berhasil diperbarui.`,
+          error: 'Gagal menyimpan perubahan nilai.',
+        }
+      );
+
+      // 4. Tutup form utama hanya jika sukses
       onCancel();
+
     } catch (error) {
-      toast.error("Gagal menyimpan perubahan nilai.");
       console.error(error);
-    } finally {
+      // Jika gagal, matikan loading agar user bisa coba lagi
       setLoading(false);
-      setShowConfirm(false);
     }
   };
 
@@ -143,7 +157,7 @@ export function StudentGradeForm({
               {student.profile.nama}
             </h2>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Badge variant="outline" className="font-mono text-xs font-normal px-2 py-0.5">
+              <Badge variant="outline" className="font-mono text-xs font-normal px-2 py-0.5 border-border">
                 {student.profile.nim}
               </Badge>
               <span>
@@ -152,7 +166,7 @@ export function StudentGradeForm({
             </div>
           </div>
 
-          {/* Widget IPK (Minimalis: Tanpa Background, Tanpa Icon) */}
+          {/* Widget IPK Clean */}
           <div className="flex flex-col items-end justify-center pt-0.5">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
               Proyeksi IPK
@@ -209,7 +223,7 @@ export function StudentGradeForm({
                             key={course.id}
                             className={cn(
                               "group relative flex items-center justify-between py-3 px-5 transition-colors duration-200",
-                              // Indikator Clean: Garis biru di kiri, background subtle saat diedit
+                              // Indikator Clean: Garis biru di kiri, background subtle
                               isModified
                                 ? "bg-muted/30 border-l-4 border-l-primary" 
                                 : "hover:bg-muted/20 border-l-4 border-l-transparent"
@@ -233,7 +247,7 @@ export function StudentGradeForm({
 
                             {/* Kontrol Nilai */}
                             <div className="flex items-center gap-3">
-                              {/* Tombol Reset (Muncul saat diedit) */}
+                              {/* Tombol Reset */}
                               {isModified && (
                                 <Button
                                   variant="ghost"
@@ -241,6 +255,7 @@ export function StudentGradeForm({
                                   className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
                                   onClick={() => handleResetRow(course.id)}
                                   title="Reset Nilai"
+                                  disabled={loading}
                                 >
                                   <RotateCcw className="h-3.5 w-3.5" />
                                 </Button>
@@ -249,6 +264,7 @@ export function StudentGradeForm({
                               <Select
                                 value={currentValue}
                                 onValueChange={(val) => handleGradeChange(course.id, val)}
+                                disabled={loading}
                               >
                                 <SelectTrigger
                                   className={cn(
@@ -288,8 +304,16 @@ export function StudentGradeForm({
           <Button 
             onClick={onSaveClick} 
             disabled={loading || Object.keys(gradeChanges).length === 0}
+            className="min-w-[100px]"
           >
-            {loading ? "Menyimpan..." : "Simpan"}
+            {loading ? (
+              // Loading Bagus: Spinner Icon Only
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" /> Simpan
+              </>
+            )}
           </Button>
         </div>
       </Card>
