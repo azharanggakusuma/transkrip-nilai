@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { FormModal } from "@/components/shared/FormModal";
-import { Badge } from "@/components/ui/badge";
+// Badge tidak lagi digunakan di kolom, tapi mungkin masih dipakai di tempat lain atau bisa dihapus jika tidak perlu
 import { PencilLine } from "lucide-react";
 
 // Imports
@@ -35,7 +35,6 @@ export default function NilaiPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      // Fetch students (sudah include transcript mereka) dan all courses
       const [students, courses] = await Promise.all([
         getStudents(),
         getAllCourses()
@@ -80,7 +79,7 @@ export default function NilaiPage() {
 
   const handleSaveGrades = async (studentId: number, grades: { course_id: number; hm: string }[]) => {
     await saveStudentGrades(studentId, grades);
-    await fetchData(); // Refresh data untuk update tampilan tabel/IPK jika ada
+    await fetchData(); 
     setIsFormOpen(false);
   };
 
@@ -115,7 +114,10 @@ export default function NilaiPage() {
     {
       header: "Semester",
       className: "w-[100px] text-center",
-      render: (row) => <Badge variant="outline">Smt {row.profile.semester}</Badge>
+      render: (row) => (
+        // UPDATE: Hapus Badge dan teks "Smt", hanya tampilkan angka
+        <span className="font-medium text-slate-700">{row.profile.semester}</span>
+      )
     },
     {
         header: "SKS Diambil",
@@ -131,11 +133,10 @@ export default function NilaiPage() {
       render: (row) => (
         <Button 
             size="sm" 
-            variant="default" 
-            className="h-8 bg-blue-600 hover:bg-blue-700"
+            className="h-8 w-full font-medium shadow-sm"
             onClick={() => handleOpenEdit(row)}
         >
-            <PencilLine className="w-3 h-3 mr-2" />
+            <PencilLine className="w-3.5 h-3.5 mr-2" />
             Kelola Nilai
         </Button>
       )
@@ -144,7 +145,6 @@ export default function NilaiPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
-      {/* UPDATE: Judul halaman diubah menjadi Data Mahasiswa */}
       <PageHeader title="Data Mahasiswa" breadcrumb={["SIAKAD", "Nilai"]} />
 
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
@@ -166,7 +166,6 @@ export default function NilaiPage() {
         </CardContent>
       </Card>
 
-      {/* Modal Kelola Nilai Bertingkat */}
       <FormModal
         isOpen={isFormOpen}
         onClose={setIsFormOpen}
