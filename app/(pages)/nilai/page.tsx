@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { PencilLine } from "lucide-react";
 
 // Imports
-import { getStudents } from "@/app/actions/students"; // Gunakan list mahasiswa
+import { getStudents } from "@/app/actions/students";
 import { getAllCourses, saveStudentGrades } from "@/app/actions/grades";
 import { StudentData } from "@/lib/types";
 import { StudentGradeForm } from "@/components/features/nilai/StudentGradeForm";
@@ -99,15 +99,18 @@ export default function NilaiPage() {
     {
       header: "Nama Mahasiswa",
       render: (row) => (
-        <div>
-           <p className="font-semibold text-slate-800">{row.profile.nama}</p>
-           <div className="flex gap-2 text-xs text-slate-500 mt-1">
-             <span>{row.profile.prodi}</span>
-             <span>•</span>
-             <span>{row.profile.jenjang}</span>
-           </div>
-        </div>
+         <p className="font-semibold text-slate-800">{row.profile.nama}</p>
       )
+    },
+    {
+      header: "Prodi",
+      className: "w-[180px]",
+      render: (row) => <span className="text-slate-600 text-sm">{row.profile.prodi}</span>
+    },
+    {
+      header: "Jenjang",
+      className: "w-[100px] text-center",
+      render: (row) => <span className="text-slate-600 text-sm">{row.profile.jenjang}</span>
     },
     {
       header: "Semester",
@@ -141,7 +144,8 @@ export default function NilaiPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
-      <PageHeader title="Input Nilai Mahasiswa" breadcrumb={["SIAKAD", "Nilai"]} />
+      {/* UPDATE: Judul halaman diubah menjadi Data Mahasiswa */}
+      <PageHeader title="Data Mahasiswa" breadcrumb={["SIAKAD", "Nilai"]} />
 
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-6">
@@ -152,7 +156,6 @@ export default function NilaiPage() {
             searchQuery={searchQuery}
             onSearchChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             searchPlaceholder="Cari Nama Mahasiswa / NIM..."
-            // Remove onAdd prop karena kita tidak tambah mahasiswa dari sini
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
