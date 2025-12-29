@@ -21,7 +21,7 @@ import { Card } from "@/components/ui/card";
 import { StudentData } from "@/lib/types";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
-import { Calculator, GraduationCap, RotateCcw } from "lucide-react";
+import { Calculator, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CourseRaw {
@@ -47,6 +47,8 @@ export function StudentGradeForm({
 }: StudentGradeFormProps) {
   const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  
+  // State perubahan nilai
   const [gradeChanges, setGradeChanges] = useState<Record<number, string>>({});
 
   // --- Helpers ---
@@ -72,6 +74,7 @@ export function StudentGradeForm({
     setGradeChanges(newChanges);
   };
 
+  // Kalkulasi IPK
   const projectedStats = useMemo(() => {
     const maxSemester = student.profile.semester;
     const relevantCourses = allCourses.filter((c) => c.smt_default <= maxSemester);
@@ -111,10 +114,7 @@ export function StudentGradeForm({
       }));
 
       await onSubmit(parseInt(student.id), payload);
-      
-      // PERBAIKAN: Pesan toast lebih personal
       toast.success(`Nilai mahasiswa ${student.profile.nama} berhasil diperbarui.`);
-      
       onCancel();
     } catch (error) {
       toast.error("Gagal menyimpan perubahan nilai.");
@@ -134,23 +134,25 @@ export function StudentGradeForm({
     <>
       <Card className="flex flex-col h-[75vh] w-full border bg-background overflow-hidden shadow-sm">
         
-        {/* HEADER */}
+        {/* === HEADER === */}
         <div className="flex-none px-6 py-5 border-b bg-background flex justify-between items-start z-10">
           <div className="space-y-1">
             <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
               {student.profile.nama}
             </h2>
+            
+            {/* INFO BARU: Tanpa separator |, NIM badge & Prodi */}
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Badge variant="outline" className="font-mono text-xs font-normal">
                 {student.profile.nim}
               </Badge>
-              <span className="flex items-center gap-1.5">
-                <GraduationCap className="h-4 w-4" />
-                {student.profile.prodi}
+              <span>
+                {student.profile.prodi} ({student.profile.jenjang})
               </span>
             </div>
           </div>
 
+          {/* Indikator IPK */}
           <div className="text-right">
             <p className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider mb-0.5">
               Proyeksi IPK
@@ -167,7 +169,7 @@ export function StudentGradeForm({
           </div>
         </div>
 
-        {/* CONTENT */}
+        {/* === CONTENT === */}
         <div className="flex-1 overflow-y-auto p-6 bg-muted/5">
           <Accordion
             type="multiple"
@@ -186,11 +188,9 @@ export function StudentGradeForm({
                   value={String(smt)}
                   className="border bg-background rounded-lg overflow-hidden shadow-sm"
                 >
+                  {/* UPDATE: Menghapus kotak nomor semester (1-8) */}
                   <AccordionTrigger className="hover:no-underline px-5 py-4 hover:bg-muted/30 transition-colors">
                     <div className="flex items-center gap-3 w-full">
-                      <div className="h-7 w-7 rounded-md bg-secondary flex items-center justify-center text-sm font-bold text-foreground">
-                        {smt}
-                      </div>
                       <span className="font-semibold text-sm">Semester {smt}</span>
                       <span className="ml-auto text-xs text-muted-foreground font-normal">
                         {coursesInSmt.length} Matkul • {semesterSks} SKS
@@ -210,27 +210,31 @@ export function StudentGradeForm({
                             key={course.id}
                             className={cn(
                               "group relative flex items-center justify-between py-3 px-5 transition-colors duration-200",
-                              // Indikator kiri (Garis Biru)
+                              // Styling: Hanya garis biru di kiri saat diedit
                               isModified
                                 ? "bg-muted/30 border-l-4 border-l-primary" 
                                 : "hover:bg-muted/20 border-l-4 border-l-transparent"
                             )}
                           >
+                            {/* Info Matkul */}
                             <div className="flex-1 pr-4 pl-1">
                               <p className={cn("text-sm font-medium", isModified ? "text-foreground" : "text-foreground/80")}>
                                 {course.matkul}
                               </p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                              <div className="flex items-center gap-2 mt-1.5">
+                                {/* UPDATE: Kode Mata Kuliah menggunakan Badge Outline (Rounded seperti NIM) */}
+                                <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal text-muted-foreground">
                                   {course.kode}
-                                </code>
+                                </Badge>
                                 <span className="text-[10px] text-muted-foreground">
                                   {course.sks} SKS
                                 </span>
                               </div>
                             </div>
 
+                            {/* Kontrol Nilai */}
                             <div className="flex items-center gap-3">
+                              {/* Tombol Reset */}
                               {isModified && (
                                 <Button
                                   variant="ghost"
@@ -277,7 +281,7 @@ export function StudentGradeForm({
           </Accordion>
         </div>
 
-        {/* FOOTER */}
+        {/* === FOOTER === */}
         <div className="flex-none p-4 border-t bg-background flex justify-end gap-2 z-10">
           <Button variant="outline" onClick={onCancel} disabled={loading}>
             Batal
@@ -291,7 +295,6 @@ export function StudentGradeForm({
         </div>
       </Card>
 
-      {/* PERBAIKAN: Modal dengan kata-kata lebih personal */}
       <ConfirmModal
         isOpen={showConfirm}
         onClose={setShowConfirm}
