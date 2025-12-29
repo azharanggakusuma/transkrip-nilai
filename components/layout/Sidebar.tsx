@@ -13,9 +13,10 @@ import {
   FileSpreadsheet, 
   Mail, 
   Settings, 
-  UserCog, // Import icon UserCog
+  UserCog, 
   LogOut, 
-  X 
+  X,
+  GraduationCap // [BARU] Import Icon untuk Nilai
 } from "lucide-react";
 // Import logout action
 import { logout } from "@/app/actions/auth";
@@ -102,11 +103,14 @@ export default function Sidebar({ open, setOpen, isCollapsed = false }: SidebarP
             
             <NavItem href="/" label="Dashboard" icon={<LayoutDashboard size={20} />} active={isActive("/")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
             
-            {/* Menu Data Pengguna Baru */}
             <NavItem href="/users" label="Data Pengguna" icon={<UserCog size={20} />} active={isActive("/users")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
             
             <NavItem href="/mahasiswa" label="Data Mahasiswa" icon={<Users size={20} />} active={isActive("/mahasiswa")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
             <NavItem href="/matakuliah" label="Mata Kuliah" icon={<BookOpen size={20} />} active={isActive("/matakuliah")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
+            
+            {/* [BARU] Menu Nilai Mahasiswa */}
+            <NavItem href="/nilai" label="Nilai Mahasiswa" icon={<GraduationCap size={20} />} active={isActive("/nilai")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
+            
             <NavItem href="/khs" label="Kartu Hasil Studi" icon={<FileSpreadsheet size={20} />} active={isActive("/khs")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
             <NavItem href="/transkrip" label="Transkrip Nilai" icon={<FileText size={20} />} active={isActive("/transkrip")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
             <NavItem href="/surat-keterangan" label="Surat Keterangan" icon={<Mail size={20} />} active={isActive("/surat-keterangan")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
