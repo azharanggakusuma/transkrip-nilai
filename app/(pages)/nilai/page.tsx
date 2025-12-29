@@ -4,18 +4,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { DataTable, type Column } from "@/components/ui/data-table";
 import { FormModal } from "@/components/shared/FormModal";
-// Badge tidak lagi digunakan di kolom, tapi mungkin masih dipakai di tempat lain atau bisa dihapus jika tidak perlu
-import { PencilLine } from "lucide-react";
 
 // Imports
 import { getStudents } from "@/app/actions/students";
 import { getAllCourses, saveStudentGrades } from "@/app/actions/grades";
 import { StudentData } from "@/lib/types";
 import { StudentGradeForm } from "@/components/features/nilai/StudentGradeForm";
+import { StudentTable } from "@/components/features/nilai/StudentTable"; // Pastikan komponen ini sudah dibuat
 
 export default function NilaiPage() {
   const [studentList, setStudentList] = useState<StudentData[]>([]);
@@ -65,7 +62,7 @@ export default function NilaiPage() {
     });
   }, [studentList, searchQuery]);
 
-  // Pagination
+  // Pagination Logic
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -83,85 +80,24 @@ export default function NilaiPage() {
     setIsFormOpen(false);
   };
 
-  // === COLUMNS ===
-  const columns: Column<StudentData>[] = [
-    {
-      header: "#",
-      className: "w-[50px] text-center",
-      render: (_, index) => <span className="text-muted-foreground">{startIndex + index + 1}</span>
-    },
-    {
-      header: "NIM",
-      className: "w-[120px]",
-      render: (row) => <span className="font-mono font-medium">{row.profile.nim}</span>
-    },
-    {
-      header: "Nama Mahasiswa",
-      render: (row) => (
-         <p className="font-semibold text-slate-800">{row.profile.nama}</p>
-      )
-    },
-    {
-      header: "Prodi",
-      className: "w-[180px]",
-      render: (row) => <span className="text-slate-600 text-sm">{row.profile.prodi}</span>
-    },
-    {
-      header: "Jenjang",
-      className: "w-[100px] text-center",
-      render: (row) => <span className="text-slate-600 text-sm">{row.profile.jenjang}</span>
-    },
-    {
-      header: "Semester",
-      className: "w-[100px] text-center",
-      render: (row) => (
-        // UPDATE: Hapus Badge dan teks "Smt", hanya tampilkan angka
-        <span className="font-medium text-slate-700">{row.profile.semester}</span>
-      )
-    },
-    {
-        header: "SKS Diambil",
-        className: "w-[100px] text-center",
-        render: (row) => {
-            const totalSKS = row.transcript.reduce((acc, curr) => acc + curr.sks, 0);
-            return <span className="font-medium">{totalSKS}</span>
-        }
-    },
-    {
-      header: "Aksi",
-      className: "text-center w-[120px]",
-      render: (row) => (
-        <Button 
-            size="sm" 
-            className="h-8 w-full font-medium shadow-sm"
-            onClick={() => handleOpenEdit(row)}
-        >
-            <PencilLine className="w-3.5 h-3.5 mr-2" />
-            Kelola Nilai
-        </Button>
-      )
-    }
-  ];
-
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
       <PageHeader title="Data Mahasiswa" breadcrumb={["SIAKAD", "Nilai"]} />
 
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-6">
-          <DataTable
+          {/* Menggunakan Komponen StudentTable yang sudah dipisah */}
+          <StudentTable 
             data={currentData}
-            columns={columns}
             isLoading={isLoading}
+            startIndex={startIndex}
             searchQuery={searchQuery}
             onSearchChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            searchPlaceholder="Cari Nama Mahasiswa / NIM..."
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
-            startIndex={startIndex}
-            endIndex={endIndex}
             totalItems={filteredData.length}
+            onEdit={handleOpenEdit}
           />
         </CardContent>
       </Card>
@@ -169,8 +105,9 @@ export default function NilaiPage() {
       <FormModal
         isOpen={isFormOpen}
         onClose={setIsFormOpen}
-        title="Input Kartu Hasil Studi"
-        description="Kelola nilai mahasiswa berdasarkan semester."
+        // UPDATE: Judul modal dibuat lebih general
+        title="Kelola Nilai Mahasiswa"
+        description="Input atau update nilai mata kuliah mahasiswa."
         maxWidth="sm:max-w-[600px]"
       >
         {selectedStudent && (
