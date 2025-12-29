@@ -1,60 +1,47 @@
+// app/(pages)/nilai/page.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { FormModal } from "@/components/shared/FormModal";
-import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { Badge } from "@/components/ui/badge";
+import { PencilLine } from "lucide-react";
 
-// Imports fitur baru
-import { GradeForm } from "@/components/features/nilai/GradeForm";
-import { type GradeData, type GradeFormValues } from "@/lib/types";
-import { 
-  getGrades, 
-  createGrade, 
-  updateGrade, 
-  deleteGrade,
-  getStudentsForSelect,
-  getCoursesForSelect
-} from "@/app/actions/grades";
+// Imports
+import { getStudents } from "@/app/actions/students"; // Gunakan list mahasiswa
+import { getAllCourses, saveStudentGrades } from "@/app/actions/grades";
+import { StudentData } from "@/lib/types";
+import { StudentGradeForm } from "@/components/features/nilai/StudentGradeForm";
 
 export default function NilaiPage() {
-  const [dataList, setDataList] = useState<GradeData[]>([]);
-  const [studentsList, setStudentsList] = useState<any[]>([]);
+  const [studentList, setStudentList] = useState<StudentData[]>([]);
   const [coursesList, setCoursesList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Pagination & Filter States
+  // Pagination & Filter
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Modal States
+  // Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  
-  const [selectedId, setSelectedId] = useState<number | string | null>(null);
-  const [formData, setFormData] = useState<GradeFormValues | undefined>(undefined);
+  const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(null);
 
   // === FETCH DATA ===
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      // Fetch semua data secara paralel agar cepat
-      const [grades, students, courses] = await Promise.all([
-        getGrades(),
-        getStudentsForSelect(),
-        getCoursesForSelect()
+      // Fetch students (sudah include transcript mereka) dan all courses
+      const [students, courses] = await Promise.all([
+        getStudents(),
+        getAllCourses()
       ]);
       
-      setDataList(grades);
-      setStudentsList(students || []);
+      setStudentList(students);
       setCoursesList(courses || []);
     } catch (error) {
       toast.error("Gagal Memuat Data", { description: "Terjadi kesalahan koneksi." });
@@ -69,75 +56,36 @@ export default function NilaiPage() {
 
   // === FILTERING ===
   const filteredData = useMemo(() => {
-    return dataList.filter((item) => {
+    return studentList.filter((s) => {
       const q = searchQuery.toLowerCase();
       return (
-        item.student.nama.toLowerCase().includes(q) ||
-        item.student.nim.toLowerCase().includes(q) ||
-        item.course.matkul.toLowerCase().includes(q)
+        s.profile.nama.toLowerCase().includes(q) ||
+        s.profile.nim.toLowerCase().includes(q) ||
+        s.profile.prodi.toLowerCase().includes(q)
       );
     });
-  }, [dataList, searchQuery]);
+  }, [studentList, searchQuery]);
 
-  // Pagination Logic
+  // Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
 
   // === HANDLERS ===
-  const handleOpenAdd = () => {
-    setFormData(undefined);
-    setSelectedId(null);
-    setIsEditing(false);
+  const handleOpenEdit = (student: StudentData) => {
+    setSelectedStudent(student);
     setIsFormOpen(true);
   };
 
-  const handleOpenEdit = (item: GradeData) => {
-    setSelectedId(item.id);
-    setFormData({
-      student_id: item.student_id.toString(),
-      course_id: item.course_id.toString(),
-      hm: item.hm,
-    });
-    setIsEditing(true);
-    setIsFormOpen(true);
+  const handleSaveGrades = async (studentId: number, grades: { course_id: number; hm: string }[]) => {
+    await saveStudentGrades(studentId, grades);
+    await fetchData(); // Refresh data untuk update tampilan tabel/IPK jika ada
+    setIsFormOpen(false);
   };
 
-  const handleFormSubmit = async (values: GradeFormValues) => {
-    try {
-      if (isEditing && selectedId) {
-        await updateGrade(selectedId, values);
-        toast.success("Berhasil Update", { description: "Data nilai berhasil diperbarui." });
-      } else {
-        await createGrade(values);
-        toast.success("Berhasil Tambah", { description: "Nilai berhasil ditambahkan." });
-      }
-      await fetchData();
-      setIsFormOpen(false);
-    } catch (error: any) {
-      toast.error("Gagal Menyimpan", { description: error.message });
-    }
-  };
-
-  const handleDelete = async () => {
-    if (selectedId) {
-      try {
-        await deleteGrade(selectedId);
-        toast.success("Berhasil Hapus", { description: "Data nilai telah dihapus." });
-        if (currentData.length === 1 && currentPage > 1) {
-          setCurrentPage((p) => p - 1);
-        }
-        await fetchData();
-      } catch (error: any) {
-        toast.error("Gagal Hapus", { description: error.message });
-      }
-    }
-    setIsDeleteOpen(false);
-  };
-
-  // === COLUMNS DEFINITION ===
-  const columns: Column<GradeData>[] = [
+  // === COLUMNS ===
+  const columns: Column<StudentData>[] = [
     {
       header: "#",
       className: "w-[50px] text-center",
@@ -145,53 +93,48 @@ export default function NilaiPage() {
     },
     {
       header: "NIM",
-      className: "w-[100px]",
-      render: (row) => <span className="font-mono font-medium">{row.student.nim}</span>
+      className: "w-[120px]",
+      render: (row) => <span className="font-mono font-medium">{row.profile.nim}</span>
     },
     {
       header: "Nama Mahasiswa",
       render: (row) => (
         <div>
-           <p className="font-semibold text-slate-800">{row.student.nama}</p>
-           <p className="text-xs text-slate-500">{row.student.prodi}</p>
+           <p className="font-semibold text-slate-800">{row.profile.nama}</p>
+           <div className="flex gap-2 text-xs text-slate-500 mt-1">
+             <span>{row.profile.prodi}</span>
+             <span>•</span>
+             <span>{row.profile.jenjang}</span>
+           </div>
         </div>
       )
     },
     {
-      header: "Mata Kuliah",
-      render: (row) => (
-        <div>
-           <p className="font-medium text-slate-700">{row.course.matkul}</p>
-           <p className="text-xs text-slate-500">{row.course.kode} • {row.course.sks} SKS</p>
-        </div>
-      )
+      header: "Semester",
+      className: "w-[100px] text-center",
+      render: (row) => <Badge variant="outline">Smt {row.profile.semester}</Badge>
     },
     {
-      header: "Nilai",
-      className: "text-center w-[80px]",
-      render: (row) => {
-        // Styling badge berdasarkan nilai
-        let colorClass = "bg-slate-100 text-slate-700";
-        if(row.hm === "A") colorClass = "bg-green-100 text-green-700 border-green-200";
-        else if(row.hm === "B") colorClass = "bg-blue-100 text-blue-700 border-blue-200";
-        else if(row.hm === "C") colorClass = "bg-yellow-100 text-yellow-700 border-yellow-200";
-        else if(row.hm === "D" || row.hm === "E") colorClass = "bg-red-100 text-red-700 border-red-200";
-        
-        return <Badge variant="outline" className={`${colorClass} font-bold`}>{row.hm}</Badge>;
-      }
+        header: "SKS Diambil",
+        className: "w-[100px] text-center",
+        render: (row) => {
+            const totalSKS = row.transcript.reduce((acc, curr) => acc + curr.sks, 0);
+            return <span className="font-medium">{totalSKS}</span>
+        }
     },
     {
       header: "Aksi",
-      className: "text-center w-[100px]",
+      className: "text-center w-[120px]",
       render: (row) => (
-        <div className="flex justify-center gap-2">
-          <Button variant="ghost" size="icon" className="text-yellow-600 hover:bg-yellow-50 h-8 w-8" onClick={() => handleOpenEdit(row)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-red-600 hover:bg-red-50 h-8 w-8" onClick={() => { setSelectedId(row.id); setIsDeleteOpen(true); }}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button 
+            size="sm" 
+            variant="default" 
+            className="h-8 bg-blue-600 hover:bg-blue-700"
+            onClick={() => handleOpenEdit(row)}
+        >
+            <PencilLine className="w-3 h-3 mr-2" />
+            Kelola Nilai
+        </Button>
       )
     }
   ];
@@ -208,9 +151,8 @@ export default function NilaiPage() {
             isLoading={isLoading}
             searchQuery={searchQuery}
             onSearchChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            searchPlaceholder="Cari Mahasiswa atau Matkul..."
-            onAdd={handleOpenAdd}
-            addLabel="Input Nilai"
+            searchPlaceholder="Cari Nama Mahasiswa / NIM..."
+            // Remove onAdd prop karena kita tidak tambah mahasiswa dari sini
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
@@ -221,35 +163,23 @@ export default function NilaiPage() {
         </CardContent>
       </Card>
 
-      {/* Modal Form (Add/Edit) */}
+      {/* Modal Kelola Nilai Bertingkat */}
       <FormModal
         isOpen={isFormOpen}
         onClose={setIsFormOpen}
-        title={isEditing ? "Edit Nilai" : "Input Nilai Baru"}
-        description={isEditing ? "Ubah data nilai mahasiswa." : "Masukkan nilai untuk mahasiswa."}
-        maxWidth="sm:max-w-[500px]"
+        title="Input Kartu Hasil Studi"
+        description="Kelola nilai mahasiswa berdasarkan semester."
+        maxWidth="sm:max-w-[600px]"
       >
-        <GradeForm
-          key={isEditing && selectedId ? `edit-${selectedId}` : "add-new"}
-          initialData={formData}
-          isEditing={isEditing}
-          onSubmit={handleFormSubmit}
-          onCancel={() => setIsFormOpen(false)}
-          studentsList={studentsList}
-          coursesList={coursesList}
-        />
+        {selectedStudent && (
+            <StudentGradeForm 
+                student={selectedStudent}
+                allCourses={coursesList}
+                onSubmit={handleSaveGrades}
+                onCancel={() => setIsFormOpen(false)}
+            />
+        )}
       </FormModal>
-
-      {/* Modal Konfirmasi Hapus */}
-      <ConfirmModal
-        isOpen={isDeleteOpen}
-        onClose={setIsDeleteOpen}
-        onConfirm={handleDelete}
-        title="Hapus Nilai?"
-        description="Data nilai ini akan dihapus permanen. Apakah Anda yakin?"
-        confirmLabel="Ya, Hapus"
-        variant="destructive"
-      />
     </div>
   );
 }

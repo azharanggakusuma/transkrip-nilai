@@ -1,10 +1,13 @@
+// app/actions/grades.ts
 "use server";
 
 import { supabase } from "@/lib/supabase";
 import { GradeData, GradeFormValues } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
-// --- FETCH DATA (dengan JOIN) ---
+// --- FETCH DATA ---
+
+// 1. Ambil semua grades (Masih dipakai jika butuh raw data)
 export async function getGrades(): Promise<GradeData[]> {
   const { data, error } = await supabase
     .from("grades")
@@ -19,7 +22,19 @@ export async function getGrades(): Promise<GradeData[]> {
   return data as GradeData[];
 }
 
-// --- Helper untuk Dropdown Form ---
+// 2. Ambil List Mata Kuliah LENGKAP untuk Form Bertingkat
+export async function getAllCourses() {
+  const { data, error } = await supabase
+    .from("courses")
+    .select("id, kode, matkul, sks, smt_default")
+    .order("smt_default", { ascending: true })
+    .order("matkul", { ascending: true });
+    
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+// 3. Helper Select (Legacy)
 export async function getStudentsForSelect() {
   const { data, error } = await supabase
     .from("students")
@@ -38,7 +53,48 @@ export async function getCoursesForSelect() {
   return data;
 }
 
-// --- CREATE ---
+// --- BATCH SAVE OPERATION (Fitur Baru) ---
+export async function saveStudentGrades(
+  studentId: number, 
+  grades: { course_id: number, hm: string }[]
+) {
+  // Kita lakukan operasi satu per satu untuk memastikan aman (cek exist -> update/insert)
+  // Ini mencegah duplikasi jika tidak ada unique constraint di database
+  
+  for (const item of grades) {
+    // 1. Cek apakah nilai sudah ada untuk mahasiswa & makul ini
+    const { data: existing } = await supabase
+      .from("grades")
+      .select("id")
+      .eq("student_id", studentId)
+      .eq("course_id", item.course_id)
+      .single();
+
+    if (existing) {
+      // UPDATE jika sudah ada
+      await supabase
+        .from("grades")
+        .update({ hm: item.hm })
+        .eq("id", existing.id);
+    } else {
+      // INSERT jika belum ada
+      if (item.hm) { // Hanya insert jika ada nilainya
+        await supabase
+          .from("grades")
+          .insert({
+            student_id: studentId,
+            course_id: item.course_id,
+            hm: item.hm
+          });
+      }
+    }
+  }
+
+  revalidatePath("/nilai");
+  revalidatePath("/mahasiswa"); // Revalidate profile juga jika perlu
+}
+
+// --- CRUD SINGLE (Legacy) ---
 export async function createGrade(formData: GradeFormValues) {
   const { error } = await supabase.from("grades").insert({
     student_id: parseInt(formData.student_id),
@@ -50,7 +106,6 @@ export async function createGrade(formData: GradeFormValues) {
   revalidatePath("/nilai");
 }
 
-// --- UPDATE ---
 export async function updateGrade(id: number | string, formData: GradeFormValues) {
   const { error } = await supabase
     .from("grades")
@@ -65,7 +120,6 @@ export async function updateGrade(id: number | string, formData: GradeFormValues
   revalidatePath("/nilai");
 }
 
-// --- DELETE ---
 export async function deleteGrade(id: number | string) {
   const { error } = await supabase.from("grades").delete().eq("id", id);
   if (error) throw new Error(error.message);
