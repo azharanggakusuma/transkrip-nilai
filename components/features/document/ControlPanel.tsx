@@ -1,6 +1,6 @@
 import React from "react";
-import { StudentData } from "@/lib/data";
-import { Printer } from "lucide-react"; // Import Icon Printer
+import { StudentData } from "@/lib/types";
+import { Printer } from "lucide-react"; 
 
 interface ControlPanelProps {
   students: StudentData[];
@@ -143,7 +143,7 @@ export default function ControlPanel(props: ControlPanelProps) {
           </div>
 
           <button onClick={onPrint} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#1B3F95] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900 active:translate-y-[1px]" > 
-             <Printer className="h-4 w-4" /> {/* Icon Printer Ditambahkan */}
+             <Printer className="h-4 w-4" /> {/* Icon Printer */}
              Cetak PDF 
           </button> 
           
