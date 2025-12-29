@@ -1,3 +1,4 @@
+// components/shared/ConfirmModal.tsx
 "use client";
 
 import React from "react";
@@ -45,13 +46,18 @@ export function ConfirmModal({
             )}
             <DialogTitle className="text-xl">{title}</DialogTitle>
           </div>
-          <DialogDescription className="pt-2">
+          <DialogDescription className="pt-2 text-slate-600">
             {description}
           </DialogDescription>
         </DialogHeader>
         
-        <DialogFooter className="mt-4 gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => onClose(false)}>
+        {/* PERBAIKAN: Menambahkan gap-2 dan menghapus sm:gap-0 agar tombol tidak dempet */}
+        <DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
+          <Button 
+            variant="outline" 
+            onClick={() => onClose(false)}
+            className="mt-2 sm:mt-0"
+          >
             {cancelLabel}
           </Button>
           <Button 
