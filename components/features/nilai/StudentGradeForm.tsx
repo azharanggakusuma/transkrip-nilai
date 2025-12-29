@@ -21,7 +21,7 @@ import { Card } from "@/components/ui/card";
 import { StudentData } from "@/lib/types";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
-import { Calculator, RotateCcw } from "lucide-react";
+import { TrendingUp, RotateCcw } from "lucide-react"; 
 import { cn } from "@/lib/utils";
 
 interface CourseRaw {
@@ -135,15 +135,15 @@ export function StudentGradeForm({
       <Card className="flex flex-col h-[75vh] w-full border bg-background overflow-hidden shadow-sm">
         
         {/* === HEADER === */}
-        <div className="flex-none px-6 py-5 border-b bg-background flex justify-between items-start z-10">
-          <div className="space-y-1">
-            <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+        <div className="flex-none px-6 py-4 border-b bg-background flex justify-between items-center z-10">
+          
+          {/* Info Mahasiswa */}
+          <div className="space-y-1.5">
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
               {student.profile.nama}
             </h2>
-            
-            {/* INFO BARU: Tanpa separator |, NIM badge & Prodi */}
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Badge variant="outline" className="font-mono text-xs font-normal">
+              <Badge variant="outline" className="font-mono text-xs font-normal px-2 py-0.5">
                 {student.profile.nim}
               </Badge>
               <span>
@@ -152,21 +152,26 @@ export function StudentGradeForm({
             </div>
           </div>
 
-          {/* Indikator IPK */}
-          <div className="text-right">
-            <p className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider mb-0.5">
-              Proyeksi IPK
-            </p>
-            <div className="flex items-baseline justify-end gap-1.5">
-              <Calculator className="h-4 w-4 text-primary opacity-80" />
-              <span className="text-3xl font-bold text-foreground tracking-tight">
-                {projectedStats.ipk}
-              </span>
-              <span className="text-sm font-medium text-muted-foreground">
-                / {projectedStats.totalSks} SKS
-              </span>
+          {/* Widget IPK (Clean KPI Style) */}
+          <div className="flex items-center gap-4 bg-primary/5 border border-primary/10 px-5 py-2.5 rounded-xl">
+            <div className="h-10 w-10 rounded-full bg-background border border-primary/10 flex items-center justify-center shadow-sm">
+              <TrendingUp className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                Proyeksi IPK
+              </p>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold text-primary tracking-tight leading-none">
+                  {projectedStats.ipk}
+                </span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  / {projectedStats.totalSks} SKS
+                </span>
+              </div>
             </div>
           </div>
+
         </div>
 
         {/* === CONTENT === */}
@@ -188,10 +193,9 @@ export function StudentGradeForm({
                   value={String(smt)}
                   className="border bg-background rounded-lg overflow-hidden shadow-sm"
                 >
-                  {/* UPDATE: Menghapus kotak nomor semester (1-8) */}
                   <AccordionTrigger className="hover:no-underline px-5 py-4 hover:bg-muted/30 transition-colors">
                     <div className="flex items-center gap-3 w-full">
-                      <span className="font-semibold text-sm">Semester {smt}</span>
+                      <span className="font-semibold text-sm text-foreground">Semester {smt}</span>
                       <span className="ml-auto text-xs text-muted-foreground font-normal">
                         {coursesInSmt.length} Matkul • {semesterSks} SKS
                       </span>
@@ -210,7 +214,7 @@ export function StudentGradeForm({
                             key={course.id}
                             className={cn(
                               "group relative flex items-center justify-between py-3 px-5 transition-colors duration-200",
-                              // Styling: Hanya garis biru di kiri saat diedit
+                              // Indikator Clean: Garis biru di kiri, background subtle
                               isModified
                                 ? "bg-muted/30 border-l-4 border-l-primary" 
                                 : "hover:bg-muted/20 border-l-4 border-l-transparent"
@@ -222,8 +226,8 @@ export function StudentGradeForm({
                                 {course.matkul}
                               </p>
                               <div className="flex items-center gap-2 mt-1.5">
-                                {/* UPDATE: Kode Mata Kuliah menggunakan Badge Outline (Rounded seperti NIM) */}
-                                <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal text-muted-foreground">
+                                {/* Kode Matkul Rounded Badge */}
+                                <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal text-muted-foreground border-border">
                                   {course.kode}
                                 </Badge>
                                 <span className="text-[10px] text-muted-foreground">
@@ -239,9 +243,9 @@ export function StudentGradeForm({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                  className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
                                   onClick={() => handleResetRow(course.id)}
-                                  title="Reset"
+                                  title="Reset Nilai"
                                 >
                                   <RotateCcw className="h-3.5 w-3.5" />
                                 </Button>
@@ -253,7 +257,7 @@ export function StudentGradeForm({
                               >
                                 <SelectTrigger
                                   className={cn(
-                                    "w-[70px] h-9 text-xs font-medium transition-all",
+                                    "w-[70px] h-9 text-xs font-medium transition-all bg-background",
                                     isModified
                                       ? "border-primary/50 ring-1 ring-primary/10 text-foreground"
                                       : "border-input text-muted-foreground"
