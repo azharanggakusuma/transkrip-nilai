@@ -56,7 +56,11 @@ export async function getStudents(): Promise<StudentData[]> {
     return [];
   }
 
-  // Casting data dari DB ke tipe internal
+  // PERBAIKAN: Safety check untuk 'data'
+  if (!data) return [];
+
+  // Casting yang lebih bersih.
+  // Kita memberitahu TypeScript bahwa 'data' strukturnya sesuai dengan DBResponseStudent[]
   const students = data as unknown as DBResponseStudent[];
 
   // Mapping ke tipe StudentData yang bersih
