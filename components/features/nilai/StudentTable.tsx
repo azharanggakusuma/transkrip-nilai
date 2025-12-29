@@ -1,39 +1,65 @@
 // components/features/nilai/StudentTable.tsx
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { PencilLine } from "lucide-react";
 import { StudentData } from "@/lib/types";
+import {
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
 
 interface StudentTableProps {
   data: StudentData[];
   isLoading: boolean;
-  startIndex: number;
-  searchQuery: string;
-  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  totalItems: number;
   onEdit: (student: StudentData) => void;
 }
 
 export function StudentTable({
   data,
   isLoading,
-  startIndex,
-  searchQuery,
-  onSearchChange,
-  currentPage,
-  totalPages,
-  onPageChange,
-  totalItems,
   onEdit,
 }: StudentTableProps) {
   
-  // Definisi Kolom dipindah ke sini
+  // === STATE INTERNAL ===
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterProdi, setFilterProdi] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // === FILTERING LOGIC ===
+  const filteredData = useMemo(() => {
+    let result = data;
+
+    // 1. Filter Pencarian
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      result = result.filter(
+        (student) =>
+          student.profile.nama.toLowerCase().includes(lowerQuery) ||
+          student.profile.nim.toLowerCase().includes(lowerQuery)
+      );
+    }
+
+    // 2. Filter Prodi
+    if (filterProdi !== "ALL") {
+      result = result.filter((student) => student.profile.prodi === filterProdi);
+    }
+
+    return result;
+  }, [data, searchQuery, filterProdi]);
+
+  // === PAGINATION LOGIC ===
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
+
+  // === DEFINISI KOLOM ===
   const columns: Column<StudentData>[] = [
     {
       header: "#",
@@ -78,8 +104,9 @@ export function StudentTable({
     },
     {
       header: "Aksi",
-      className: "text-center w-[120px]",
+      className: "text-center w-[130px]",
       render: (row) => (
+        // Button tetap Primary (Default)
         <Button 
             size="sm" 
             className="h-8 w-full font-medium shadow-sm"
@@ -92,25 +119,58 @@ export function StudentTable({
     }
   ];
 
-  // Hitung endIndex untuk tampilan pagination
-  // (opsional, tergantung implementasi DataTable Anda, tapi umumnya needed)
-  const itemsPerPage = 10; // Asumsi default, atau bisa dipass via props
-  const endIndex = startIndex + itemsPerPage;
+  // === KONTEN FILTER DROPDOWN ===
+  const filterContent = (
+    <>
+      <DropdownMenuLabel>Filter Program Studi</DropdownMenuLabel>
+      <DropdownMenuSeparator />
+      <DropdownMenuRadioGroup 
+        value={filterProdi} 
+        onValueChange={(v) => {
+             setFilterProdi(v);
+             setCurrentPage(1);
+        }}
+      >
+        <DropdownMenuRadioItem value="ALL">Semua Prodi</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Teknik Informatika">Teknik Informatika</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Sistem Informasi">Sistem Informasi</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Manajemen Informatika">Manajemen Informatika</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Komputerisasi Akuntansi">Komputerisasi Akuntansi</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
+    </>
+  );
 
   return (
     <DataTable
-      data={data}
+      data={currentData}
       columns={columns}
       isLoading={isLoading}
+      
+      // Props Pencarian Internal
       searchQuery={searchQuery}
-      onSearchChange={onSearchChange}
+      onSearchChange={(e) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+      }}
       searchPlaceholder="Cari Nama Mahasiswa / NIM..."
+      
+      // Props Pagination Internal
       currentPage={currentPage}
       totalPages={totalPages}
-      onPageChange={onPageChange}
+      onPageChange={setCurrentPage}
       startIndex={startIndex}
       endIndex={endIndex}
-      totalItems={totalItems}
+      totalItems={filteredData.length}
+      
+      // Props Filter
+      filterContent={filterContent}
+      isFilterActive={filterProdi !== "ALL"}
+      onResetFilter={() => {
+        setFilterProdi("ALL");
+        setSearchQuery("");
+        setCurrentPage(1);
+      }}
     />
   );
 }
