@@ -21,7 +21,7 @@ import { Card } from "@/components/ui/card";
 import { StudentData } from "@/lib/types";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
-import { TrendingUp, RotateCcw } from "lucide-react"; 
+import { RotateCcw } from "lucide-react"; // Ikon TrendingUp dihapus
 import { cn } from "@/lib/utils";
 
 interface CourseRaw {
@@ -135,10 +135,10 @@ export function StudentGradeForm({
       <Card className="flex flex-col h-[75vh] w-full border bg-background overflow-hidden shadow-sm">
         
         {/* === HEADER === */}
-        <div className="flex-none px-6 py-4 border-b bg-background flex justify-between items-center z-10">
+        <div className="flex-none px-6 py-5 border-b bg-background flex justify-between items-start z-10">
           
           {/* Info Mahasiswa */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
               {student.profile.nama}
             </h2>
@@ -152,23 +152,18 @@ export function StudentGradeForm({
             </div>
           </div>
 
-          {/* Widget IPK (Clean KPI Style) */}
-          <div className="flex items-center gap-4 bg-primary/5 border border-primary/10 px-5 py-2.5 rounded-xl">
-            <div className="h-10 w-10 rounded-full bg-background border border-primary/10 flex items-center justify-center shadow-sm">
-              <TrendingUp className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                Proyeksi IPK
-              </p>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold text-primary tracking-tight leading-none">
-                  {projectedStats.ipk}
-                </span>
-                <span className="text-xs font-medium text-muted-foreground">
-                  / {projectedStats.totalSks} SKS
-                </span>
-              </div>
+          {/* Widget IPK (Minimalis: Tanpa Background, Tanpa Icon) */}
+          <div className="flex flex-col items-end justify-center pt-0.5">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
+              Proyeksi IPK
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-primary tracking-tight leading-none">
+                {projectedStats.ipk}
+              </span>
+              <span className="text-sm font-medium text-muted-foreground">
+                / {projectedStats.totalSks} SKS
+              </span>
             </div>
           </div>
 
@@ -214,7 +209,7 @@ export function StudentGradeForm({
                             key={course.id}
                             className={cn(
                               "group relative flex items-center justify-between py-3 px-5 transition-colors duration-200",
-                              // Indikator Clean: Garis biru di kiri, background subtle
+                              // Indikator Clean: Garis biru di kiri, background subtle saat diedit
                               isModified
                                 ? "bg-muted/30 border-l-4 border-l-primary" 
                                 : "hover:bg-muted/20 border-l-4 border-l-transparent"
@@ -238,7 +233,7 @@ export function StudentGradeForm({
 
                             {/* Kontrol Nilai */}
                             <div className="flex items-center gap-3">
-                              {/* Tombol Reset */}
+                              {/* Tombol Reset (Muncul saat diedit) */}
                               {isModified && (
                                 <Button
                                   variant="ghost"
