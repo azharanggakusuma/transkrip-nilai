@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
+import { Official } from "@/lib/types";
 
 interface DocumentFooterProps {
   signatureType: "basah" | "digital" | "none";
   signatureBase64: string | null;
   mode?: "transkrip" | "khs" | "surat";
+  official?: Official | null; // Props baru untuk data pejabat
 }
 
 export default function DocumentFooter({ 
   signatureType, 
   signatureBase64, 
-  mode = "transkrip" 
+  mode = "transkrip",
+  official
 }: DocumentFooterProps) {
   const [tanggal, setTanggal] = useState("");
 
@@ -20,6 +23,11 @@ export default function DocumentFooter({
       year: "numeric",
     }).format(new Date()));
   }, []);
+
+  // Fallback jika data official belum ada/null
+  const namaPejabat = official?.nama || "...";
+  const nidnPejabat = official?.nidn || "...";
+  const jabatanPejabat = official?.jabatan || "Ketua Program Studi";
 
   return (
     <div className="flex justify-between items-start mt-6 text-[10px] w-full font-['Cambria']">
@@ -49,8 +57,8 @@ export default function DocumentFooter({
         <p className="mb-0 leading-tight">
           Cirebon, {tanggal || "..."}
         </p>
-        <p className="font-normal mb-1 leading-tight">
-          Ketua Program Studi Teknik Informatika (S1)
+        <p className="font-normal mb-1 leading-tight text-center max-w-[200px]">
+          {jabatanPejabat}
         </p>
 
         <div 
@@ -70,11 +78,11 @@ export default function DocumentFooter({
         </div>
 
         <div className="text-center z-20 mt-[-35px] relative">
-          <p className="font-bold underline text-[11px] leading-none">
-            YUDHISTIRA ARIE WIJAYA, M.Kom
+          <p className="font-bold underline text-[11px] leading-none uppercase">
+            {namaPejabat}
           </p>
           <p className="font-bold text-[10px] leading-tight">
-            NIDN. 0401047103
+            NIDN. {nidnPejabat}
           </p>
         </div>
       </div>

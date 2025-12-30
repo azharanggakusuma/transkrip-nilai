@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { getStudents } from "@/app/actions/students";
-// PERBAIKAN IMPORT: Ambil type dari lib/types
-import { type StudentData, type TranscriptItem } from "@/lib/types";
+// Import getActiveOfficial
+import { getStudents, getActiveOfficial } from "@/app/actions/students";
+import { type StudentData, type TranscriptItem, type Official } from "@/lib/types";
 import { useSignature } from "@/hooks/useSignature";
 import { useLayout } from "@/app/context/LayoutContext";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +19,9 @@ export default function KhsPage() {
   const [studentsData, setStudentsData] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
   
+  // State untuk Data Pejabat
+  const [official, setOfficial] = useState<Official | null>(null);
+
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedSemester, setSelectedSemester] = useState<number>(1);
   const { signatureType, setSignatureType, secureImage } = useSignature("none");
@@ -30,8 +33,14 @@ export default function KhsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getStudents();
+        // Ambil Data Mahasiswa & Pejabat secara paralel
+        const [data, activeOfficial] = await Promise.all([
+           getStudents(),
+           getActiveOfficial()
+        ]);
+        
         setStudentsData(data);
+        setOfficial(activeOfficial);
       } catch (err) {
         console.error(err);
       } finally {
@@ -58,10 +67,7 @@ export default function KhsPage() {
   // Logic Semesters
   const availableSemesters = useMemo<number[]>(() => {
     if (!currentStudent?.transcript) return [];
-    
-    // Explicit Type Casting untuk menghindari error 'unknown'
     const smts = currentStudent.transcript.map((t: TranscriptItem) => Number(t.smt));
-    
     return Array.from(new Set(smts)).sort((a: number, b: number) => a - b);
   }, [currentStudent]);
 
@@ -145,7 +151,13 @@ export default function KhsPage() {
                 <DocumentHeader title="KARTU HASIL STUDI" />
                 <StudentInfo profile={currentStudent.profile} displaySemester={selectedSemester} />
                 <GradeTable mode="khs" data={semesterData} ips={ips} ipk={ipk} />
-                <DocumentFooter signatureType={signatureType} signatureBase64={secureImage} mode="khs" />
+                
+                <DocumentFooter 
+                    signatureType={signatureType} 
+                    signatureBase64={secureImage} 
+                    mode="khs"
+                    official={official} // Pass data pejabat
+                />
               </>
             )}
           </div>

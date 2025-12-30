@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-// PERBAIKAN IMPORT
-import { getStudents } from "@/app/actions/students";
-import { type StudentData } from "@/lib/types";
+// Import getActiveOfficial
+import { getStudents, getActiveOfficial } from "@/app/actions/students";
+import { type StudentData, type Official } from "@/lib/types";
 
 import { useSignature } from "@/hooks/useSignature";
 import { useLayout } from "@/app/context/LayoutContext";
@@ -20,6 +20,9 @@ export default function TranskripPage() {
   const [studentsData, setStudentsData] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
   
+  // State Pejabat
+  const [official, setOfficial] = useState<Official | null>(null);
+
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { signatureType, setSignatureType, secureImage } = useSignature("none");
   const { isCollapsed } = useLayout();
@@ -30,8 +33,13 @@ export default function TranskripPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getStudents();
+        const [data, activeOfficial] = await Promise.all([
+           getStudents(),
+           getActiveOfficial()
+        ]);
+        
         setStudentsData(data);
+        setOfficial(activeOfficial);
       } catch (err) {
         console.error(err);
       } finally {
@@ -106,7 +114,13 @@ export default function TranskripPage() {
                  <DocumentHeader title="TRANSKRIP NILAI" />
                  <StudentInfo profile={currentStudent.profile} />
                  <GradeTable data={currentStudent.transcript} mode="transkrip" />
-                 <DocumentFooter signatureType={signatureType} signatureBase64={secureImage} mode="transkrip" />
+                 
+                 <DocumentFooter 
+                    signatureType={signatureType} 
+                    signatureBase64={secureImage} 
+                    mode="transkrip" 
+                    official={official} // Pass data pejabat
+                 />
               </>
             )}
           </div>
