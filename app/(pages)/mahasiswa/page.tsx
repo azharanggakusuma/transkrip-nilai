@@ -16,13 +16,14 @@ import {
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { FormModal } from "@/components/shared/FormModal";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import Tooltip from "@/components/shared/Tooltip"; // Import Tooltip
 import { StudentForm } from "@/components/features/mahasiswa/StudentForm";
-// PERBAIKAN IMPORT: Ambil type dari lib/types
-import { type StudentData, type StudentFormValues } from "@/lib/types";
-import { getStudents, createStudent, updateStudent, deleteStudent } from "@/app/actions/students";
+import { type StudentData, type StudentFormValues, type StudyProgram } from "@/lib/types";
+import { getStudents, getStudyPrograms, createStudent, updateStudent, deleteStudent } from "@/app/actions/students";
 
 export default function MahasiswaPage() {
   const [dataList, setDataList] = useState<StudentData[]>([]);
+  const [studyPrograms, setStudyPrograms] = useState<StudyProgram[]>([]); 
   const [isLoading, setIsLoading] = useState(true); 
   
   // Filters & Pagination
@@ -44,8 +45,12 @@ export default function MahasiswaPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const students = await getStudents();
-      setDataList(students); // Typescript sekarang sudah happy karena tipe cocok
+      const [students, programs] = await Promise.all([
+        getStudents(),
+        getStudyPrograms()
+      ]);
+      setDataList(students);
+      setStudyPrograms(programs);
     } catch (error) {
       toast.error("Gagal Memuat Data", { description: "Terjadi kesalahan koneksi ke server." });
     } finally {
@@ -65,7 +70,7 @@ export default function MahasiswaPage() {
         student.profile.nama.toLowerCase().includes(query) ||
         student.profile.nim.toLowerCase().includes(query);
       
-      const matchProdi = prodiFilter === "ALL" || student.profile.prodi === prodiFilter;
+      const matchProdi = prodiFilter === "ALL" || student.profile.study_program?.nama === prodiFilter;
       const matchSemester = semesterFilter === "ALL" || String(student.profile.semester) === semesterFilter;
       
       return matchSearch && matchProdi && matchSemester;
@@ -91,8 +96,7 @@ export default function MahasiswaPage() {
     setFormData({
       nim: student.profile.nim,
       nama: student.profile.nama,
-      prodi: student.profile.prodi,
-      jenjang: student.profile.jenjang,
+      study_program_id: student.profile.study_program_id ? String(student.profile.study_program_id) : "",
       semester: student.profile.semester,
       alamat: student.profile.alamat,
     });
@@ -151,18 +155,37 @@ export default function MahasiswaPage() {
     },
     { 
       header: "Program Studi", 
-      className: "w-[150px]",
-      render: (row) => <span className="text-gray-600">{row.profile.prodi}</span>
+      className: "w-[100px]",
+      render: (row) => (
+        <span className="text-gray-600">
+          {row.profile.study_program ? row.profile.study_program.nama : "-"}
+        </span>
+      )
     },
     {
       header: "Jenjang",
-      className: "text-center w-[150px]",
-      render: (row) => <Badge variant="outline" className="bg-slate-50 text-slate-700">{row.profile.jenjang}</Badge>
+      className: "text-center w-[100px]",
+      render: (row) => (
+        <Badge variant="outline" className="bg-slate-50 text-slate-700">
+          {row.profile.study_program ? row.profile.study_program.jenjang : "-"}
+        </Badge>
+      )
     },
     { 
       header: "Semester", 
-      className: "text-center w-[150px]", 
+      className: "text-center w-[100px]", 
       render: (row) => row.profile.semester 
+    },
+    {
+      header: "Alamat",
+      className: "w-[250px]",
+      render: (row) => (
+        <Tooltip content={row.profile.alamat || "Tidak ada data alamat"} position="top">
+          <span className="text-gray-600 truncate block max-w-[250px] cursor-help">
+            {row.profile.alamat || "-"}
+          </span>
+        </Tooltip>
+      )
     },
     {
       header: "Aksi",
@@ -185,8 +208,8 @@ export default function MahasiswaPage() {
       <DropdownMenuLabel>Program Studi</DropdownMenuLabel>
       <DropdownMenuRadioGroup value={prodiFilter} onValueChange={(v) => { setProdiFilter(v); setCurrentPage(1); }}>
         <DropdownMenuRadioItem value="ALL">Semua</DropdownMenuRadioItem>
-        {["Teknik Informatika", "Sistem Informasi", "Manajemen Informatika", "Komputerisasi Akuntansi", "Rekayasa Perangkat Lunak"].map(p => (
-           <DropdownMenuRadioItem key={p} value={p}>{p}</DropdownMenuRadioItem>
+        {studyPrograms.map(p => (
+           <DropdownMenuRadioItem key={p.id} value={p.nama}>{p.nama}</DropdownMenuRadioItem>
         ))}
       </DropdownMenuRadioGroup>
       <DropdownMenuSeparator />
@@ -236,6 +259,7 @@ export default function MahasiswaPage() {
         <StudentForm 
             key={isEditing && selectedId ? `edit-${selectedId}` : "add-new"}
             initialData={formData}
+            studyPrograms={studyPrograms} // Pass data prodi ke form
             isEditing={isEditing}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsFormOpen(false)}

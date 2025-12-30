@@ -6,6 +6,13 @@
 export type Role = "admin" | "dosen" | "mahasiswa";
 export type CourseCategory = "Reguler" | "MBKM";
 
+export interface StudyProgram {
+  id: number;
+  kode: string;
+  nama: string;
+  jenjang: string;
+}
+
 // =========================================
 // COURSE (MATA KULIAH)
 // =========================================
@@ -36,18 +43,19 @@ export interface StudentProfile {
   nim: string;
   nama: string;
   alamat: string;
-  prodi: string;
-  jenjang: string;
   semester: number;
+  // Perubahan: Menggunakan ID relasi ke tabel study_programs
+  study_program_id: number | null;
+  study_program?: StudyProgram | null;
 }
 
 export interface StudentFormValues {
   nim: string;
   nama: string;
-  prodi: string;
-  jenjang: string;
   semester: string | number;
   alamat: string;
+  // Perubahan: Input form menggunakan ID
+  study_program_id: string; 
 }
 
 // =========================================
@@ -126,12 +134,15 @@ export type Grade = {
   hm: string; // Huruf Mutu
 };
 
-// Tipe data untuk ditampilkan di Tabel (Join result)
 export type GradeData = Grade & {
   student: {
     nim: string;
     nama: string;
-    prodi: string;
+    // Prodi di sini bisa disesuaikan opsional jika diperlukan untuk tampilan nilai
+    study_program?: {
+        nama: string;
+        jenjang: string;
+    };
   };
   course: {
     kode: string;
@@ -141,7 +152,7 @@ export type GradeData = Grade & {
 };
 
 export type GradeFormValues = {
-  student_id: string; // Menggunakan string untuk value select
+  student_id: string; 
   course_id: string;
   hm: string;
 };

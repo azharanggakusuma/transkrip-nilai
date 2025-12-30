@@ -2,7 +2,7 @@
 
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
-import { StudentData, TranscriptItem, StudentFormValues } from "@/lib/types";
+import { StudentData, TranscriptItem, StudentFormValues, StudyProgram } from "@/lib/types";
 
 // Internal Interface untuk Response DB (Mapping hasil join)
 interface DBResponseStudent {
@@ -10,9 +10,10 @@ interface DBResponseStudent {
   nim: string;
   nama: string;
   alamat: string;
-  prodi: string;
-  jenjang: string;
   semester: number;
+  study_program_id: number | null;
+  // Join result dari supabase
+  study_programs: StudyProgram | null;
   grades: {
     id: number;
     hm: string;
@@ -26,17 +27,35 @@ interface DBResponseStudent {
   }[];
 }
 
-// Helper konversi nilai huruf ke angka
 const getAM = (hm: string): number => {
   const map: Record<string, number> = { 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
   return map[hm] || 0;
 };
+
+// --- READ OPERATIONS ---
+
+// Fungsi baru untuk mengambil daftar Program Studi
+export async function getStudyPrograms(): Promise<StudyProgram[]> {
+  const { data, error } = await supabase
+    .from('study_programs')
+    .select('*')
+    .order('nama', { ascending: true });
+  
+  if (error) return [];
+  return data as StudyProgram[];
+}
 
 export async function getStudents(): Promise<StudentData[]> {
   const { data, error } = await supabase
     .from('students')
     .select(`
       *,
+      study_programs (
+        id,
+        kode,
+        nama,
+        jenjang
+      ),
       grades (
         id,
         hm,
@@ -56,14 +75,10 @@ export async function getStudents(): Promise<StudentData[]> {
     return [];
   }
 
-  // PERBAIKAN: Safety check untuk 'data'
   if (!data) return [];
 
-  // Casting yang lebih bersih.
-  // Kita memberitahu TypeScript bahwa 'data' strukturnya sesuai dengan DBResponseStudent[]
   const students = data as unknown as DBResponseStudent[];
 
-  // Mapping ke tipe StudentData yang bersih
   return students.map((s) => {
     const transcript: TranscriptItem[] = (s.grades || [])
       .map((g, index) => {
@@ -93,9 +108,9 @@ export async function getStudents(): Promise<StudentData[]> {
         nim: s.nim,
         nama: s.nama,
         alamat: s.alamat,
-        prodi: s.prodi,
-        jenjang: s.jenjang,
-        semester: s.semester
+        semester: s.semester,
+        study_program_id: s.study_program_id,
+        study_program: s.study_programs // Data prodi dari relasi
       },
       transcript: transcript
     };
@@ -108,10 +123,10 @@ export async function createStudent(values: StudentFormValues) {
   const { error } = await supabase.from('students').insert([{
     nim: values.nim,
     nama: values.nama,
-    prodi: values.prodi,
-    jenjang: values.jenjang,
     semester: Number(values.semester),
-    alamat: values.alamat
+    alamat: values.alamat,
+    // Simpan ID program studi
+    study_program_id: values.study_program_id ? Number(values.study_program_id) : null
   }]);
   
   if (error) throw new Error(error.message);
@@ -122,10 +137,9 @@ export async function updateStudent(id: string | number, values: StudentFormValu
   const { error } = await supabase.from('students').update({
     nim: values.nim,
     nama: values.nama,
-    prodi: values.prodi,
-    jenjang: values.jenjang,
     semester: Number(values.semester),
-    alamat: values.alamat
+    alamat: values.alamat,
+    study_program_id: values.study_program_id ? Number(values.study_program_id) : null
   }).eq('id', Number(id));
 
   if (error) throw new Error(error.message);

@@ -7,6 +7,10 @@ interface StudentInfoProps {
 }
 
 export default function StudentInfo({ profile, displaySemester }: StudentInfoProps) {
+  // Ambil data dari relasi jika ada
+  const prodiNama = profile.study_program?.nama || "-";
+  const prodiJenjang = profile.study_program?.jenjang || "";
+
   return (
     <div className="mb-4 text-[11px] font-bold grid grid-cols-[120px_10px_1fr] gap-y-1 font-['Cambria']">
       <div className="font-bold">Nama Mahasiswa</div><div className="font-bold">:</div><div className="font-bold uppercase">{profile.nama.toUpperCase()}</div>
@@ -15,7 +19,7 @@ export default function StudentInfo({ profile, displaySemester }: StudentInfoPro
       
       <div className="font-bold">Program Studi</div><div className="font-bold">:</div>
       <div className="font-normal">
-        {profile.prodi} {profile.jenjang ? `(${profile.jenjang})` : ""}
+        {prodiNama} {prodiJenjang ? `(${prodiJenjang})` : ""}
       </div>
       
       <div className="font-bold">Semester</div><div className="font-bold">:</div><div className="font-normal">{displaySemester ?? profile.semester}</div>

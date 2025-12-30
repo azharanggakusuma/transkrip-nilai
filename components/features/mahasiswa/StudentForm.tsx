@@ -11,20 +11,21 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { StudentFormValues } from "@/lib/types";
+import { StudentFormValues, StudyProgram } from "@/lib/types";
 
 interface StudentFormProps {
   initialData?: StudentFormValues;
+  studyPrograms: StudyProgram[]; // Menerima data program studi
   isEditing: boolean;
   onSubmit: (data: StudentFormValues) => void;
   onCancel: () => void;
 }
 
 const defaultValues: StudentFormValues = {
-  nim: "", nama: "", prodi: "", jenjang: "", semester: "", alamat: ""
+  nim: "", nama: "", study_program_id: "", semester: "", alamat: ""
 };
 
-export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: StudentFormProps) {
+export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, onCancel }: StudentFormProps) {
   const [formData, setFormData] = useState<StudentFormValues>(defaultValues);
   const [errors, setErrors] = useState<Partial<Record<keyof StudentFormValues, boolean>>>({});
 
@@ -34,8 +35,7 @@ export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: Stud
       setFormData({
         nim: initialData.nim || "",
         nama: initialData.nama || "",
-        prodi: String(initialData.prodi || "").trim(),
-        jenjang: String(initialData.jenjang || "").trim(),
+        study_program_id: initialData.study_program_id || "",
         semester: initialData.semester || "",
         alamat: initialData.alamat || ""
       });
@@ -93,8 +93,10 @@ export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: Stud
     }
 
     // 4. Lainnya
-    if (!formData.prodi) { newErrors.prodi = true; errorMessages.push("Prodi wajib dipilih."); }
-    if (!formData.jenjang) { newErrors.jenjang = true; errorMessages.push("Jenjang wajib dipilih."); }
+    if (!formData.study_program_id) { 
+      newErrors.study_program_id = true; 
+      errorMessages.push("Prodi wajib dipilih."); 
+    }
 
     if (errorMessages.length > 0) {
       setErrors(newErrors);
@@ -154,35 +156,24 @@ export function StudentForm({ initialData, isEditing, onSubmit, onCancel }: Stud
         />
       </div>
 
-      {/* Baris 3: Prodi & Jenjang */}
-      <div className="grid grid-cols-5 gap-4">
-        <div className="grid gap-2 col-span-3"> 
-          <Label htmlFor="prodi">Program Studi</Label>
-          <Select value={formData.prodi} onValueChange={(v) => handleInputChange("prodi", v)}>
-
-            <SelectTrigger className={`w-full ${errorClass("prodi")}`}>
-              <SelectValue placeholder="Pilih Prodi" />
+      {/* Baris 3: Prodi (Select ID) */}
+      <div className="grid gap-2"> 
+          <Label htmlFor="study_program_id">Program Studi</Label>
+          <Select 
+            value={formData.study_program_id} 
+            onValueChange={(v) => handleInputChange("study_program_id", v)}
+          >
+            <SelectTrigger className={`w-full ${errorClass("study_program_id")}`}>
+              <SelectValue placeholder="Pilih Program Studi" />
             </SelectTrigger>
             <SelectContent>
-              {["Teknik Informatika", "Sistem Informasi", "Manajemen Informatika", "Komputerisasi Akuntansi", "Rekayasa Perangkat Lunak"].map(p => (
-                <SelectItem key={p} value={p}>{p}</SelectItem>
+              {studyPrograms.map(p => (
+                <SelectItem key={p.id} value={String(p.id)}>
+                  {p.nama} ({p.jenjang})
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="grid gap-2 col-span-2">
-          <Label htmlFor="jenjang">Jenjang</Label>
-          <Select value={formData.jenjang} onValueChange={(v) => handleInputChange("jenjang", v)}>
-
-            <SelectTrigger className={`w-full ${errorClass("jenjang")}`}>
-              <SelectValue placeholder="Pilih" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="D3">D3</SelectItem>
-              <SelectItem value="S1">S1</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       {/* Baris 4: Alamat */}
