@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { getStudents } from "@/app/actions/students";
+// Import getActiveAcademicYear
+import { getStudents, getActiveAcademicYear } from "@/app/actions/students";
 import { type StudentData } from "@/lib/types";
 
 import { useSignature } from "@/hooks/useSignature";
@@ -18,9 +19,9 @@ export default function SuratKeteranganPage() {
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
   
-  // State Form lainnya...
+  // State Form
   const [nomorSurat, setNomorSurat] = useState(""); 
-  const [tahunAkademik, setTahunAkademik] = useState("");
+  const [tahunAkademik, setTahunAkademik] = useState(""); // Akan otomatis terisi
   const [tempatLahir, setTempatLahir] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
   const [alamat, setAlamat] = useState("");
@@ -35,8 +36,18 @@ export default function SuratKeteranganPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getStudents();
-        setStudentsData(data);
+        // Fetch Students & Active Academic Year secara paralel
+        const [students, activeYear] = await Promise.all([
+            getStudents(),
+            getActiveAcademicYear()
+        ]);
+
+        setStudentsData(students);
+
+        // Otomatis set tahun akademik jika ada yang aktif
+        if (activeYear) {
+            setTahunAkademik(activeYear.nama);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -110,7 +121,7 @@ export default function SuratKeteranganPage() {
         );
       }
 
-      // PERBAIKAN: Ambil data dari relasi study_program
+      // Ambil data prodi & jenjang dari relasi
       const prodiNama = currentStudent.profile.study_program?.nama || "-";
       const prodiJenjang = currentStudent.profile.study_program?.jenjang || "";
 
@@ -141,7 +152,7 @@ export default function SuratKeteranganPage() {
                     <tr><td style={labelStyle}>NIM</td><td style={colonStyle}>:</td><td style={valueStyle} className="break-words">{currentStudent.profile.nim}</td></tr>
                     <tr><td style={labelStyle}>Tempat, tanggal lahir</td><td style={colonStyle}>:</td><td style={valueStyle} className="capitalize break-words">{tempatLahir || "..."} , {tanggalLahir || "..."}</td></tr>
                     
-                    {/* PERBAIKAN: Menampilkan Jurusan dari variabel prodiNama & prodiJenjang */}
+                    {/* Jurusan dari relasi */}
                     <tr>
                     <td style={labelStyle}>Jurusan</td>
                     <td style={colonStyle}>:</td>

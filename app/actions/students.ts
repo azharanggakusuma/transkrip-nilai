@@ -2,7 +2,7 @@
 
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
-import { StudentData, TranscriptItem, StudentFormValues, StudyProgram } from "@/lib/types";
+import { StudentData, TranscriptItem, StudentFormValues, StudyProgram, AcademicYear } from "@/lib/types";
 
 // Internal Interface untuk Response DB (Mapping hasil join)
 interface DBResponseStudent {
@@ -12,7 +12,6 @@ interface DBResponseStudent {
   alamat: string;
   semester: number;
   study_program_id: number | null;
-  // Join result dari supabase
   study_programs: StudyProgram | null;
   grades: {
     id: number;
@@ -34,7 +33,7 @@ const getAM = (hm: string): number => {
 
 // --- READ OPERATIONS ---
 
-// Fungsi baru untuk mengambil daftar Program Studi
+// Ambil Daftar Program Studi
 export async function getStudyPrograms(): Promise<StudyProgram[]> {
   const { data, error } = await supabase
     .from('study_programs')
@@ -43,6 +42,21 @@ export async function getStudyPrograms(): Promise<StudyProgram[]> {
   
   if (error) return [];
   return data as StudyProgram[];
+}
+
+// Fungsi BARU: Ambil Tahun Akademik Aktif
+export async function getActiveAcademicYear(): Promise<AcademicYear | null> {
+  const { data, error } = await supabase
+    .from('academic_years')
+    .select('*')
+    .eq('is_active', true)
+    .single();
+
+  if (error) {
+    console.error("Error fetching active academic year:", error.message);
+    return null;
+  }
+  return data as AcademicYear;
 }
 
 export async function getStudents(): Promise<StudentData[]> {
@@ -110,7 +124,7 @@ export async function getStudents(): Promise<StudentData[]> {
         alamat: s.alamat,
         semester: s.semester,
         study_program_id: s.study_program_id,
-        study_program: s.study_programs // Data prodi dari relasi
+        study_program: s.study_programs 
       },
       transcript: transcript
     };
@@ -125,7 +139,6 @@ export async function createStudent(values: StudentFormValues) {
     nama: values.nama,
     semester: Number(values.semester),
     alamat: values.alamat,
-    // Simpan ID program studi
     study_program_id: values.study_program_id ? Number(values.study_program_id) : null
   }]);
   

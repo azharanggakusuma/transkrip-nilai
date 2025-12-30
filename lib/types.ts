@@ -13,6 +13,14 @@ export interface StudyProgram {
   jenjang: string;
 }
 
+// Interface baru untuk Tahun Akademik
+export interface AcademicYear {
+  id: number;
+  nama: string;      // Contoh: "2023/2024"
+  semester: string;  // Contoh: "Ganjil"
+  is_active: boolean;
+}
+
 // =========================================
 // COURSE (MATA KULIAH)
 // =========================================
@@ -44,7 +52,6 @@ export interface StudentProfile {
   nama: string;
   alamat: string;
   semester: number;
-  // Perubahan: Menggunakan ID relasi ke tabel study_programs
   study_program_id: number | null;
   study_program?: StudyProgram | null;
 }
@@ -54,7 +61,6 @@ export interface StudentFormValues {
   nama: string;
   semester: string | number;
   alamat: string;
-  // Perubahan: Input form menggunakan ID
   study_program_id: string; 
 }
 
@@ -138,7 +144,6 @@ export type GradeData = Grade & {
   student: {
     nim: string;
     nama: string;
-    // Prodi di sini bisa disesuaikan opsional jika diperlukan untuk tampilan nilai
     study_program?: {
         nama: string;
         jenjang: string;
