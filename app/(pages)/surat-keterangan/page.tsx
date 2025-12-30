@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-// PERBAIKAN IMPORT
 import { getStudents } from "@/app/actions/students";
 import { type StudentData } from "@/lib/types";
 
@@ -111,6 +110,10 @@ export default function SuratKeteranganPage() {
         );
       }
 
+      // PERBAIKAN: Ambil data dari relasi study_program
+      const prodiNama = currentStudent.profile.study_program?.nama || "-";
+      const prodiJenjang = currentStudent.profile.study_program?.jenjang || "";
+
       return (
         <>
             <DocumentHeader title="" />
@@ -137,13 +140,16 @@ export default function SuratKeteranganPage() {
                     <tr><td style={labelStyle}>Nama</td><td style={colonStyle}>:</td><td style={valueStyle} className="font-bold uppercase break-words">{currentStudent.profile.nama.toUpperCase()}</td></tr>
                     <tr><td style={labelStyle}>NIM</td><td style={colonStyle}>:</td><td style={valueStyle} className="break-words">{currentStudent.profile.nim}</td></tr>
                     <tr><td style={labelStyle}>Tempat, tanggal lahir</td><td style={colonStyle}>:</td><td style={valueStyle} className="capitalize break-words">{tempatLahir || "..."} , {tanggalLahir || "..."}</td></tr>
+                    
+                    {/* PERBAIKAN: Menampilkan Jurusan dari variabel prodiNama & prodiJenjang */}
                     <tr>
                     <td style={labelStyle}>Jurusan</td>
                     <td style={colonStyle}>:</td>
                     <td style={valueStyle} className="break-words">
-                        {currentStudent.profile.prodi} {currentStudent.profile.jenjang ? `(${currentStudent.profile.jenjang})` : ""}
+                        {prodiNama} {prodiJenjang ? `(${prodiJenjang})` : ""}
                     </td>
                     </tr>
+                    
                     <tr><td style={labelStyle}>Semester</td><td style={colonStyle}>:</td><td style={valueStyle} className="break-words">{currentStudent.profile.semester} ({terbilangSemester(currentStudent.profile.semester)})</td></tr>
                     <tr><td style={labelStyle}>Tahun Akademik</td><td style={colonStyle}>:</td><td style={valueStyle} className="break-words">{tahunAkademik || "..."}</td></tr>
                     <tr><td style={labelStyle}>Alamat</td><td style={colonStyle}>:</td><td style={valueStyle} className="break-words whitespace-pre-wrap text-justify">{alamat || "..."}</td></tr>
