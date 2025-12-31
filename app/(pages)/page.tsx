@@ -180,7 +180,7 @@ export default function DashboardPage() {
         {
           label: "Rata-rata IPK",
           value: avgIPK,
-          description: "Rata-rata Seluruh Angkatan",
+          description: "Skala Indeks 4.00",
           icon: <TrendingUpIcon className="w-6 h-6" />, 
           themeColor: "chart-4",
         },
