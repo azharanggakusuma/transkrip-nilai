@@ -47,9 +47,9 @@ export function LoginForm() {
         // Mengecek kode error yang dikirim dari server action
         if (result?.error === "InactiveAccount") {
            // Kasus Akun Non-Aktif (KUNING)
-           toast.warning("Akun Tidak Aktif", {
-             description: "Akun Anda dinonaktifkan. Silahkan hubungi bagian akademik.", 
-             duration: 5000,
+           toast.warning("Akun Non-Aktif", {
+             description: "Silakan hubungi Admin atau Bagian Akademik.",
+             duration: 4000,
            });
         } else if (result?.error === "CredentialsSignin") {
            // Kasus Salah Password/Username (MERAH)
