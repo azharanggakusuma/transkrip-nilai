@@ -34,7 +34,7 @@ export async function authenticate(formData: FormData) {
 
   } catch (error) {
     if (error instanceof AuthError) {
-      // Cek apakah error disebabkan oleh Akun Non-Aktif
+      // Menangkap error "InactiveAccount" dari auth.ts
       const cause = error.cause as any;
       
       if (cause?.err?.message === "InactiveAccount" || error.message.includes("InactiveAccount")) {
@@ -43,7 +43,7 @@ export async function authenticate(formData: FormData) {
 
       switch (error.type) {
         case "CredentialsSignin":
-          // Mengembalikan kode error, bukan pesan teks
+          // Kode error untuk username/password salah
           return { success: false, error: "CredentialsSignin" };
         case "CallbackRouteError":
            if (cause?.err?.message === "InactiveAccount") {
@@ -55,7 +55,7 @@ export async function authenticate(formData: FormData) {
       }
     }
     
-    // Cek untuk error generic (jika tidak terbungkus AuthError)
+    // Fallback error generic
     if ((error as Error).message.includes("InactiveAccount")) {
         return { success: false, error: "InactiveAccount" };
     }

@@ -20,8 +20,8 @@ export function LoginForm() {
   const handleForgotPassword = (e: React.MouseEvent) => {
     e.preventDefault(); 
     toast.info("Lupa Kata Sandi?", {
-      description: "Silakan hubungi Administrator atau Bagian Akademik (BAAK) untuk mereset akun Anda.",
-      duration: 4000,
+      description: "Demi keamanan, pemulihan akun hanya dapat dilakukan melalui Bagian Akademik (BAAK).",
+      duration: 5000,
     });
   };
 
@@ -36,38 +36,37 @@ export function LoginForm() {
 
       if (result?.success) {
         toast.success("Login Berhasil", {
-            description: `Selamat datang kembali, ${result.name}! Semoga harimu menyenangkan.`,
+            description: `Selamat datang, ${result.name}. Mengalihkan ke dashboard...`,
             duration: 3000,
         });
         
         router.push("/");
         router.refresh();
       } else {
-        // [LOGIKA ERROR CLIENT-SIDE]
-        // Mengecek kode error yang dikirim dari server action
+        // [LOGIKA ERROR CLIENT-SIDE DENGAN PESAN YANG LEBIH BAGUS]
         if (result?.error === "InactiveAccount") {
-           // Kasus Akun Non-Aktif (KUNING)
-           toast.warning("Akun Non-Aktif", {
-             description: "Silakan hubungi Admin atau Bagian Akademik.",
-             duration: 4000,
+           // 1. Kasus Akun Non-Aktif (KUNING)
+           toast.warning("Akses Akun Ditangguhkan", {
+             description: "Status akun Anda saat ini tidak aktif. Harap hubungi Bagian Akademik untuk penyelesaian.", 
+             duration: 6000,
            });
         } else if (result?.error === "CredentialsSignin") {
-           // Kasus Salah Password/Username (MERAH)
-           toast.error("Login Gagal", {
-             description: "Periksa kembali username dan password Anda.",
+           // 2. Kasus Salah Password/Username (MERAH)
+           toast.error("Kredensial Tidak Valid", {
+             description: "Username atau kata sandi yang Anda masukkan tidak sesuai. Mohon periksa kembali.",
            });
         } else {
-           // Error Default
-           toast.error("Terjadi Kesalahan", {
-             description: "Gagal memverifikasi akun. Silakan coba lagi.",
+           // 3. Error Lainnya
+           toast.error("Gagal Masuk", {
+             description: "Terjadi kendala saat menghubungi server. Silakan coba beberapa saat lagi.",
            });
         }
         setLoading(false);
       }
     } catch (err) {
       console.error(err);
-      toast.error("Terjadi Kesalahan Sistem", {
-        description: "Silakan coba lagi beberapa saat lagi.",
+      toast.error("Kesalahan Sistem", {
+        description: "Layanan sedang sibuk. Silakan muat ulang halaman atau coba lagi nanti.",
       });
       setLoading(false);
     }
