@@ -11,11 +11,12 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Lock } from "lucide-react"; 
 import { StudentFormValues, StudyProgram } from "@/lib/types";
 
 interface StudentFormProps {
   initialData?: StudentFormValues;
-  studyPrograms: StudyProgram[]; // Menerima data program studi
+  studyPrograms: StudyProgram[]; 
   isEditing: boolean;
   onSubmit: (data: StudentFormValues) => void;
   onCancel: () => void;
@@ -123,23 +124,27 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
       {/* Baris 1: NIM, Status (Edit), & Semester */}
       <div className="grid grid-cols-12 gap-4">
         
-        {/* NIM: 
-            - Edit: 6/12 (50%) 
-            - Add:  9/12 (75%) 
-        */}
+        {/* NIM: 6/12 (Edit) atau 9/12 (Add) */}
         <div className={`grid gap-2 ${isEditing ? "col-span-6" : "col-span-9"}`}>
           <Label htmlFor="nim">NIM</Label>
-          <Input
-            id="nim"
-            value={formData.nim}
-            onChange={(e) => handleNumericInput("nim", e.target.value, 8)}
-            placeholder="Contoh: 4121001"
-            className={errorClass("nim")}
-            disabled={isEditing} 
-          />
+          <div className="relative">
+            <Input
+              id="nim"
+              value={formData.nim}
+              onChange={(e) => handleNumericInput("nim", e.target.value, 8)}
+              placeholder="Contoh: 4121001"
+              // [MODIFIKASI] Tambah pr-8 (padding right) agar teks tidak tertutup ikon
+              className={`${errorClass("nim")} ${isEditing ? "bg-muted text-muted-foreground opacity-100 pr-8" : ""}`}
+              disabled={isEditing} 
+            />
+            {/* [MODIFIKASI] Icon Lock Absolute di dalam Input */}
+            {isEditing && (
+              <Lock className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            )}
+          </div>
         </div>
 
-        {/* Status: 3/12 (25%) - Sama dengan Semester, hanya saat Edit */}
+        {/* Status: 3/12 - Hanya muncul saat Edit */}
         {isEditing && (
           <div className="grid gap-2 col-span-3">
             <Label htmlFor="status">Status</Label>
@@ -158,7 +163,7 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
           </div>
         )}
 
-        {/* Semester: 3/12 (25%) - Ukuran sama dengan Status */}
+        {/* Semester: 3/12 */}
         <div className="grid gap-2 col-span-3">
           <Label htmlFor="semester">Semester</Label>
           <Input
@@ -171,7 +176,7 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
         </div>
       </div>
 
-      {/* Baris 2: Nama Lengkap (Full Width) */}
+      {/* Baris 2: Nama Lengkap */}
       <div className="grid gap-2">
         <Label htmlFor="nama">Nama Lengkap</Label>
         <Input
@@ -183,7 +188,7 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
         />
       </div>
 
-      {/* Baris 3: Prodi (Select ID) */}
+      {/* Baris 3: Prodi */}
       <div className="grid gap-2"> 
           <Label htmlFor="study_program_id">Program Studi</Label>
           <Select 
