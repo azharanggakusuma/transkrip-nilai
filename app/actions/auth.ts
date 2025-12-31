@@ -34,30 +34,30 @@ export async function authenticate(formData: FormData) {
 
   } catch (error) {
     if (error instanceof AuthError) {
-      // [LOGIKA BARU] Cek apakah error disebabkan oleh Akun Non-Aktif
-      // NextAuth membungkus error dari authorize() ke dalam 'cause'
+      // Cek apakah error disebabkan oleh Akun Non-Aktif
       const cause = error.cause as any;
+      
       if (cause?.err?.message === "InactiveAccount" || error.message.includes("InactiveAccount")) {
-        return { success: false, error: "Akun Anda dinonaktifkan. Silakan hubungi Administrator." };
+        return { success: false, error: "InactiveAccount" };
       }
 
       switch (error.type) {
         case "CredentialsSignin":
-          return { success: false, error: "Username atau Password salah." };
+          // Mengembalikan kode error, bukan pesan teks
+          return { success: false, error: "CredentialsSignin" };
         case "CallbackRouteError":
-           // Fallback tambahan jika error tertangkap sebagai CallbackRouteError
            if (cause?.err?.message === "InactiveAccount") {
-              return { success: false, error: "Akun Anda dinonaktifkan. Silakan hubungi Administrator." };
+              return { success: false, error: "InactiveAccount" };
            }
-           return { success: false, error: "Gagal memverifikasi akun." };
+           return { success: false, error: "CallbackError" };
         default:
-          return { success: false, error: "Terjadi kesalahan sistem." };
+          return { success: false, error: "SystemError" };
       }
     }
     
     // Cek untuk error generic (jika tidak terbungkus AuthError)
     if ((error as Error).message.includes("InactiveAccount")) {
-        return { success: false, error: "Akun Anda dinonaktifkan. Silakan hubungi Administrator." };
+        return { success: false, error: "InactiveAccount" };
     }
 
     throw error;

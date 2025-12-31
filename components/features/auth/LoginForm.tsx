@@ -43,24 +43,30 @@ export function LoginForm() {
         router.push("/");
         router.refresh();
       } else {
-        // [LOGIKA BARU] Cek pesan error khusus untuk Non-Aktif
-        if (result?.error && result.error.toLowerCase().includes("dinonaktifkan")) {
-           // Gunakan toast.warning agar warnanya KUNING
+        // [LOGIKA ERROR CLIENT-SIDE]
+        // Mengecek kode error yang dikirim dari server action
+        if (result?.error === "InactiveAccount") {
+           // Kasus Akun Non-Aktif (KUNING)
            toast.warning("Akun Tidak Aktif", {
-             description: result.error, // "Akun Anda dinonaktifkan. Silahkan hubungi bagian akademik."
+             description: "Akun Anda dinonaktifkan. Silahkan hubungi bagian akademik.", 
              duration: 5000,
            });
-        } else {
-           // Error biasa tetap MERAH
+        } else if (result?.error === "CredentialsSignin") {
+           // Kasus Salah Password/Username (MERAH)
            toast.error("Login Gagal", {
-             description: result?.error || "Periksa kembali username dan password Anda.",
+             description: "Periksa kembali username dan password Anda.",
+           });
+        } else {
+           // Error Default
+           toast.error("Terjadi Kesalahan", {
+             description: "Gagal memverifikasi akun. Silakan coba lagi.",
            });
         }
         setLoading(false);
       }
     } catch (err) {
       console.error(err);
-      toast.error("Terjadi Kesalahan", {
+      toast.error("Terjadi Kesalahan Sistem", {
         description: "Silakan coba lagi beberapa saat lagi.",
       });
       setLoading(false);
