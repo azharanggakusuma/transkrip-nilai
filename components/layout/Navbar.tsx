@@ -1,20 +1,37 @@
 "use client";
 
 import React from "react";
+import Link from "next/link"; // Import Link
 import Tooltip from "@/components/shared/Tooltip";
-import { Menu, Search, User, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-// Import tipe jika perlu, atau definisikan inline
-import { UserSession } from "@/app/actions/auth";
+import { 
+  Menu, 
+  Search, 
+  User, 
+  PanelLeftClose, 
+  PanelLeftOpen,
+  LogOut,       // Icon Logout
+  Settings      // Icon Pengaturan
+} from "lucide-react";
+import { UserSession, logout } from "@/app/actions/auth"; // Import logout action
+
+// Import komponen Dropdown
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type NavbarProps = {
   onOpenSidebar?: () => void;
   onToggleCollapse?: () => void;
   isCollapsed?: boolean;
-  user?: UserSession | null; // Tambahkan prop user
+  user?: UserSession | null;
 };
 
 export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed, user }: NavbarProps) {
-  // Gunakan data user dari props, atau fallback default
   const displayName = user?.name || user?.username || "Pengguna";
   const displayRole = user?.role || "Mahasiswa";
 
@@ -68,20 +85,49 @@ export default function Navbar({ onOpenSidebar, onToggleCollapse, isCollapsed, u
             <Search className="h-5 w-5" />
           </button>
 
-          <button type="button" className="group flex items-center gap-2 rounded-full p-1.5 transition-colors duration-200 hover:bg-slate-100/60 focus:outline-none focus:ring-0 active:ring-0">
-            <div className="hidden sm:flex flex-col text-right leading-tight">
-              {/* TAMPILKAN NAMA DINAMIS */}
-              <span className="text-xs font-semibold text-slate-700 transition-colors duration-200 group-hover:text-slate-900">
-                {displayName}
-              </span>
-              <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">
-                {displayRole}
-              </span>
-            </div>
-            <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center transition-all duration-200 group-hover:from-white group-hover:to-slate-100 border border-slate-200 group-hover:border-slate-300">
-              <User className="h-5 w-5 text-slate-500" />
-            </div>
-          </button>
+          {/* USER DROPDOWN */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className="group flex items-center gap-2 rounded-full p-1.5 transition-colors duration-200 hover:bg-slate-100/60 focus:outline-none focus:ring-0 active:ring-0">
+                <div className="hidden sm:flex flex-col text-right leading-tight">
+                  <span className="text-xs font-semibold text-slate-700 transition-colors duration-200 group-hover:text-slate-900">
+                    {displayName}
+                  </span>
+                  <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">
+                    {displayRole}
+                  </span>
+                </div>
+                <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center transition-all duration-200 group-hover:from-white group-hover:to-slate-100 border border-slate-200 group-hover:border-slate-300">
+                  <User className="h-5 w-5 text-slate-500" />
+                </div>
+              </button>
+            </DropdownMenuTrigger>
+            
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              {/* Menu Pengaturan */}
+              <DropdownMenuItem asChild>
+                <Link href="/pengaturan" className="cursor-pointer w-full flex items-center">
+                  <Settings className="mr-2 h-4 w-4 text-slate-500" />
+                  <span>Pengaturan</span>
+                </Link>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              {/* Menu Logout */}
+              <DropdownMenuItem 
+                onClick={() => logout()} 
+                className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Keluar</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
         </div>
       </div>
     </nav>
