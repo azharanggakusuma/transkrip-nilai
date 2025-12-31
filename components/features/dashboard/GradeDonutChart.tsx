@@ -1,67 +1,170 @@
-// components/features/dashboard/GradeDonutChart.tsx
+import React, { useState } from "react";
 import { ChartPieIcon } from "./DashboardIcons";
+import { cn } from "@/lib/utils"; 
 
 type Counts = { A: number; B: number; C: number; D: number; E: number };
 
+// Konfigurasi Warna & Label
+const CHART_CONFIG = [
+  { key: "A", label: "A (Sangat Baik)", colorVar: "var(--color-chart-2)", colorClass: "bg-chart-2" },
+  { key: "B", label: "B (Baik)", colorVar: "var(--color-chart-3)", colorClass: "bg-chart-3" },
+  { key: "C", label: "C (Cukup)", colorVar: "var(--color-chart-5)", colorClass: "bg-chart-5" },
+  { key: "D", label: "D/E (Kurang)", colorVar: "var(--color-chart-1)", colorClass: "bg-chart-1" },
+];
+
 export function GradeDonutChart({ counts, total }: { counts: Counts; total: number }) {
-  const pA = total > 0 ? (counts.A / total) * 100 : 0;
-  const pB = total > 0 ? (counts.B / total) * 100 : 0;
-  const pC = total > 0 ? (counts.C / total) * 100 : 0;
-  const pD = total > 0 ? (counts.D / total) * 100 : 0;
-  
-  const stopA = pA;
-  const stopB = stopA + pB;
-  const stopC = stopB + pC;
-  const stopD = stopC + pD;
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  // A: Hijau (chart-2), B: Biru (chart-3), C: Kuning (chart-5), D/E: Merah (chart-1)
-  const gradient = `conic-gradient(
-    var(--color-chart-2) 0% ${stopA}%, 
-    var(--color-chart-3) ${stopA}% ${stopB}%, 
-    var(--color-chart-5) ${stopB}% ${stopC}%, 
-    var(--color-chart-1) ${stopC}% ${stopD}%,
-    var(--color-muted) ${stopD}% 100%
-  )`;
-
-  const legend = [
-    { label: "A (Sangat Baik)", colorClass: "bg-chart-2", val: `${Math.round(pA)}%` },
-    { label: "B (Baik)", colorClass: "bg-chart-3", val: `${Math.round(pB)}%` },
-    { label: "C (Cukup)", colorClass: "bg-chart-5", val: `${Math.round(pC)}%` },
-    { label: "D/E (Kurang)", colorClass: "bg-chart-1", val: `${Math.round(100 - stopC)}%` },
+  // --- 1. Persiapan Data ---
+  // Gabungkan D dan E
+  const dataValues = [
+    counts.A,
+    counts.B,
+    counts.C,
+    counts.D + counts.E
   ];
+
+  // --- 2. Konfigurasi SVG ---
+  const size = 200;
+  const strokeWidth = 20;
+  const center = size / 2;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  
+  // [UBAH] Gap diset ke 0 agar menyatu tanpa jarak
+  const gapAngle = 0; 
+  const gapLength = (gapAngle / 360) * circumference;
+
+  let currentAngle = -90; // Mulai dari atas (jam 12)
+
+  // --- 3. Generate Segments ---
+  const segments = dataValues.map((val, index) => {
+    const percentage = total > 0 ? val / total : 0;
+    
+    // Hitung panjang stroke
+    // Karena gap 0, strokeLength akan penuh sesuai persentase
+    const hasMultipleSegments = dataValues.filter(v => v > 0).length > 1;
+    const strokeLength = (percentage * circumference) - (hasMultipleSegments ? gapLength : 0);
+    
+    // Sudut putar
+    const angle = (percentage * 360);
+    const startAngle = currentAngle;
+    currentAngle += angle;
+
+    return {
+      index,
+      value: val,
+      percentage: Math.round(percentage * 100),
+      strokeLength: Math.max(0, strokeLength), 
+      rotation: startAngle,
+      config: CHART_CONFIG[index],
+      isVisible: val > 0
+    };
+  });
 
   return (
     <section className="lg:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-sm flex flex-col overflow-hidden">
-      <header className="px-6 py-5 border-b border-border bg-muted/40">
+      <header className="px-6 py-5 border-b border-border bg-muted/40 flex items-center justify-between">
         <h3 className="font-semibold tracking-tight text-foreground flex items-center gap-2">
           <ChartPieIcon className="w-4 h-4 text-chart-2" />
-          Distribusi Nilai Mata Kuliah
+          Distribusi Nilai
         </h3>
       </header>
 
       <div className="p-6 flex-1 flex flex-col items-center justify-center min-h-[300px]">
         {total === 0 ? (
-          <div className="text-sm text-muted-foreground">Belum ada data nilai.</div>
+          <div className="flex flex-col items-center gap-3 text-muted-foreground">
+             <div className="bg-muted p-4 rounded-full">
+               <ChartPieIcon className="w-8 h-8 opacity-50" />
+             </div>
+             <p className="text-sm font-medium">Belum ada data nilai.</p>
+          </div>
         ) : (
-          <div className="flex flex-col items-center w-full">
-            <div 
-              className="relative w-52 h-52 rounded-full shadow-lg border-card/50"
-              style={{ background: gradient }}
-            >
-              <div className="absolute inset-6 bg-card rounded-full flex items-center justify-center flex-col shadow-inner">
-                <span className="text-3xl font-extrabold text-card-foreground tracking-tight">{total}</span>
-                <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest mt-1">Total Nilai</span>
+          <div className="flex flex-col items-center w-full animate-in fade-in zoom-in duration-500">
+            {/* SVG DONUT */}
+            <div className="relative group">
+              <svg 
+                width={size} 
+                height={size} 
+                viewBox={`0 0 ${size} ${size}`} 
+                className="transform transition-all duration-300"
+              >
+                {/* Background Track */}
+                <circle
+                  cx={center}
+                  cy={center}
+                  r={radius}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={strokeWidth}
+                  className="text-muted/20"
+                />
+
+                {/* Data Segments */}
+                {segments.map((seg) => {
+                  if (!seg.isVisible) return null;
+                  
+                  const isHovered = hoveredIndex === seg.index;
+                  const isDimmed = hoveredIndex !== null && hoveredIndex !== seg.index;
+
+                  return (
+                    <circle
+                      key={seg.index}
+                      cx={center}
+                      cy={center}
+                      r={radius}
+                      fill="none"
+                      stroke={seg.config.colorVar}
+                      strokeWidth={isHovered ? strokeWidth + 6 : strokeWidth} 
+                      strokeDasharray={`${seg.strokeLength} ${circumference}`}
+                      strokeDashoffset={0}
+                      // Tetap 'butt' agar ujungnya rata dan menyatu sempurna
+                      strokeLinecap="butt"
+                      transform={`rotate(${seg.rotation} ${center} ${center})`}
+                      className={cn(
+                        "transition-all duration-300 ease-out cursor-pointer",
+                        isDimmed ? "opacity-30 blur-[1px]" : "opacity-100"
+                      )}
+                      onMouseEnter={() => setHoveredIndex(seg.index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                    />
+                  );
+                })}
+              </svg>
+
+              {/* Center Text */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-4xl font-extrabold text-foreground tracking-tighter">
+                  {hoveredIndex !== null ? segments[hoveredIndex].value : total}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">
+                  {hoveredIndex !== null ? "Mata Kuliah" : "Total Nilai"}
+                </span>
               </div>
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-x-12 gap-y-4 w-full px-4">
-              {legend.map((l, i) => (
-                <div key={i} className="flex items-center justify-between text-sm group cursor-default">
-                  <div className="flex items-center gap-3">
-                    <span className={`w-3 h-3 rounded-full ${l.colorClass} ring-2 ring-card shadow-sm group-hover:scale-125 transition-transform`} />
-                    <span className="text-muted-foreground font-medium text-xs sm:text-sm group-hover:text-foreground transition-colors">{l.label}</span>
+            {/* Modern Legend Grid */}
+            <div className="mt-8 grid grid-cols-2 gap-x-8 gap-y-3 w-full px-2">
+              {segments.map((seg) => (
+                <div 
+                  key={seg.index} 
+                  className={cn(
+                    "flex items-center justify-between p-2 rounded-lg transition-all duration-200 cursor-default border border-transparent",
+                    hoveredIndex === seg.index ? "bg-muted border-border shadow-sm" : "hover:bg-muted/50"
+                  )}
+                  onMouseEnter={() => setHoveredIndex(seg.index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span 
+                      className={cn("w-3 h-3 rounded-sm shadow-sm ring-1 ring-background", seg.config.colorClass)} 
+                    />
+                    <span className="text-muted-foreground font-medium text-xs">
+                      {seg.config.label.split(" (")[0]} 
+                      <span className="text-[10px] opacity-70 ml-1">({seg.config.label.split(" (")[1].replace(")", "")})</span>
+                    </span>
                   </div>
-                  <span className="font-bold text-foreground text-xs sm:text-sm">{l.val}</span>
+                  <span className="font-bold text-foreground text-xs">{seg.percentage}%</span>
                 </div>
               ))}
             </div>
