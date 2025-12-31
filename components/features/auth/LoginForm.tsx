@@ -20,7 +20,7 @@ export function LoginForm() {
   const handleForgotPassword = (e: React.MouseEvent) => {
     e.preventDefault(); 
     toast.info("Lupa Kata Sandi?", {
-      description: "Silakan hubungi Biro Administrasi Akademik (BAAK) untuk mereset akun Anda.",
+      description: "Silakan hubungi Biro Administrasi Akademik dan Kemahasiswaan (BAAK) untuk mereset akun Anda.",
       duration: 5000,
     });
   };
