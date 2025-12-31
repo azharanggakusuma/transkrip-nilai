@@ -260,8 +260,8 @@ export default function MahasiswaPage() {
       <FormModal
         isOpen={isFormOpen}
         onClose={setIsFormOpen}
-        title={isEditing ? "Edit Data Mahasiswa" : "Tambah Mahasiswa Baru"}
-        description={isEditing ? `Perbarui data mahasiswa atas nama ${formData?.nama}.` : "Lengkapi form di bawah untuk menambah mahasiswa baru."}
+        title={isEditing ? "Edit Data Mahasiswa" : "Tambah Data Mahasiswa"}
+        description={isEditing ? `Perbarui data mahasiswa atas nama ${formData?.nama}.` : "Lengkapi form di bawah untuk menambah data mahasiswa."}
         maxWidth="sm:max-w-[600px]"
       >
         <StudentForm 
