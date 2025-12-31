@@ -38,7 +38,7 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
         study_program_id: initialData.study_program_id || "",
         semester: initialData.semester || "",
         alamat: initialData.alamat || "",
-        is_active: initialData.is_active ?? true // [BARU]
+        is_active: initialData.is_active ?? true // Default true
       });
     } else {
       setFormData(defaultValues);
@@ -147,7 +147,7 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
 
       {/* Baris 2: Nama & Status */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="grid gap-2 col-span-3">
+        <div className={`grid gap-2 ${isEditing ? "col-span-3" : "col-span-4"}`}>
             <Label htmlFor="nama">Nama Lengkap</Label>
             <Input
             id="nama"
@@ -158,22 +158,24 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
             />
         </div>
         
-        {/* [BARU] Input Status */}
-        <div className="grid gap-2 col-span-1">
-            <Label htmlFor="status">Status</Label>
-            <Select 
-                value={formData.is_active ? "active" : "inactive"}
-                onValueChange={(val) => setFormData(prev => ({ ...prev, is_active: val === "active" }))}
-            >
-                <SelectTrigger>
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="active">Aktif</SelectItem>
-                    <SelectItem value="inactive">Tidak Aktif</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
+        {/* [MODIFIKASI] Input Status Hanya muncul jika sedang Edit */}
+        {isEditing && (
+          <div className="grid gap-2 col-span-1">
+              <Label htmlFor="status">Status</Label>
+              <Select 
+                  value={formData.is_active ? "active" : "inactive"}
+                  onValueChange={(val) => setFormData(prev => ({ ...prev, is_active: val === "active" }))}
+              >
+                  <SelectTrigger>
+                      <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="active">Aktif</SelectItem>
+                      <SelectItem value="inactive">Tidak Aktif</SelectItem>
+                  </SelectContent>
+              </Select>
+          </div>
+        )}
       </div>
 
       {/* Baris 3: Prodi (Select ID) */}
