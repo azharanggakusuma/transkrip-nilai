@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner"; // <--- 1. Import Toaster
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,21 +15,21 @@ const geistMono = Geist_Mono({
 
 // --- KONFIGURASI SEO & METADATA ---
 export const metadata: Metadata = {
-  title: "SIAKAD STMIK IKMI Cirebon | Transkrip Nilai Digital",
-  description: "Sistem Informasi Akademik STMIK IKMI Cirebon. Layanan cetak dan validasi transkrip nilai mahasiswa secara digital.",
+  title: "SIAKAD STMIK IKMI Cirebon",
+  description: "Sistem Informasi Akademik STMIK IKMI Cirebon",
   keywords: [
     "SIAKAD",
     "STMIK IKMI",
     "IKMI Cirebon",
-    "Transkrip Nilai",
+    "SIAKAD IKMI",
     "Akademik",
     "Kampus Cirebon",
     "Teknik Informatika",
     "Rekayasa Perangkat Lunak"
   ],
-  authors: [{ name: "Bagian Administrasi Akademik (BAA) STMIK IKMI" }],
-  creator: "STMIK IKMI Cirebon",
-  publisher: "STMIK IKMI Cirebon",
+  authors: [{ name: "Azharangga Kusuma" }],
+  creator: "Azharangga Kusuma",
+  publisher: "Azharangga Kusuma",
   
   icons: {
     icon: "/img/logo-ikmi.png", 
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 
   openGraph: {
     title: "SIAKAD STMIK IKMI Cirebon",
-    description: "Cetak Transkrip Nilai Mahasiswa & Layanan Akademik Digital.",
+    description: "Sistem Informasi Akademik STMIK IKMI Cirebon.",
     url: "https://ikmi.ac.id",
     siteName: "SIAKAD IKMI",
     images: [
