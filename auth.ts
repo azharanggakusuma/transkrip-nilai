@@ -4,21 +4,21 @@ import { authConfig } from "./auth.config";
 import Credentials from "next-auth/providers/credentials";
 import { createClient } from "@supabase/supabase-js"; 
 import bcrypt from "bcryptjs";
+import { User } from "next-auth"; // Import tipe User
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
   providers: [
     Credentials({
-      async authorize(credentials) {
+      async authorize(credentials): Promise<User | null> {
         const { username, password } = credentials;
 
-        // 1. Inisialisasi Supabase Client
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
-        // 2. Ambil data user
+        // Ambil data user
         const { data: user, error } = await supabase
           .from("users")
           .select("*")
@@ -29,24 +29,25 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           return null;
         }
 
-        // [LOGIKA BARU] 3. Cek Status Aktif
-        // Jika status false, LEMPAR ERROR agar bisa ditangkap sebagai pesan khusus
+        // Cek Status Aktif
         if (user.is_active === false) {
            throw new Error("InactiveAccount");
         }
 
-        // 4. Cek Password
+        // Cek Password
         const passwordsMatch = await bcrypt.compare(
           password as string, 
           user.password
         );
 
         if (passwordsMatch) {
+          // PENTING: Kembalikan objek yang lengkap sesuai tipe User
           return {
-            id: String(user.id),
+            id: String(user.id), // Konversi ke string agar aman
             name: user.name,
             username: user.username,
             role: user.role,
+            // Anda bisa tambahkan field lain jika perlu, tapi pastikan ada di next-auth.d.ts
           };
         }
 

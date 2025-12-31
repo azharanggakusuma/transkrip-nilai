@@ -8,12 +8,15 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnLogin = nextUrl.pathname.startsWith("/login");
+      
+      // Definisikan public asset agar tidak terblokir middleware
       const isPublicAsset = 
         nextUrl.pathname.startsWith("/img") || 
         nextUrl.pathname.startsWith("/public") ||
         nextUrl.pathname.endsWith(".png") ||
         nextUrl.pathname.endsWith(".jpg") ||
-        nextUrl.pathname.endsWith(".svg");
+        nextUrl.pathname.endsWith(".svg") ||
+        nextUrl.pathname.endsWith(".ico");
 
       if (isPublicAsset) return true;
 
@@ -24,22 +27,27 @@ export const authConfig = {
 
       return isLoggedIn;
     },
-    async session({ session, token }) {
-      if (token.sub && session.user) {
-        // Assign data ke session user (sudah type-safe berkat next-auth.d.ts)
-        session.user.role = token.role;
-        session.user.username = token.username;
-        session.user.id = token.sub;
-      }
-      return session;
-    },
+    // Callback JWT: Berjalan saat token dibuat (login) atau diperbarui (akses halaman)
     async jwt({ token, user }) {
+      // Jika 'user' ada, berarti ini saat LOGIN PERTAMA KALI
       if (user) {
+        token.id = user.id; // Pastikan ID tersimpan di token
         token.role = user.role;
         token.username = user.username;
-        token.sub = user.id;
+        token.name = user.name;
       }
       return token;
+    },
+    // Callback Session: Berjalan saat useSession() atau auth() dipanggil
+    async session({ session, token }) {
+      // Pindahkan data dari TOKEN ke SESSION agar bisa dibaca di client/server component
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.username = token.username as string;
+        session.user.name = token.name as string;
+      }
+      return session;
     },
   },
   providers: [], 
