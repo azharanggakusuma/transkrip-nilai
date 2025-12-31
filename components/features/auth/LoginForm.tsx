@@ -20,7 +20,7 @@ export function LoginForm() {
   const handleForgotPassword = (e: React.MouseEvent) => {
     e.preventDefault(); 
     toast.info("Lupa Kata Sandi?", {
-      description: "Demi keamanan, pemulihan akun hanya dapat dilakukan melalui Bagian Akademik (BAAK).",
+      description: "Silakan hubungi Biro Administrasi Akademik (BAAK) untuk mereset akun Anda.",
       duration: 5000,
     });
   };
@@ -36,7 +36,7 @@ export function LoginForm() {
 
       if (result?.success) {
         toast.success("Login Berhasil", {
-            description: `Selamat datang, ${result.name}. Mengalihkan ke dashboard...`,
+            description: `Selamat datang kembali, ${result.name}! Semoga harimu menyenangkan.`,
             duration: 3000,
         });
         
