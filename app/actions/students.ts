@@ -12,6 +12,7 @@ interface DBResponseStudent {
   alamat: string;
   semester: number;
   study_program_id: number | null;
+  is_active: boolean; // [BARU]
   study_programs: StudyProgram | null;
   grades: {
     id: number;
@@ -137,7 +138,8 @@ export async function getStudents(): Promise<StudentData[]> {
         alamat: s.alamat,
         semester: s.semester,
         study_program_id: s.study_program_id,
-        study_program: s.study_programs 
+        study_program: s.study_programs,
+        is_active: s.is_active ?? true // [BARU] Default true jika null
       },
       transcript: transcript
     };
@@ -152,7 +154,8 @@ export async function createStudent(values: StudentFormValues) {
     nama: values.nama,
     semester: Number(values.semester),
     alamat: values.alamat,
-    study_program_id: values.study_program_id ? Number(values.study_program_id) : null
+    study_program_id: values.study_program_id ? Number(values.study_program_id) : null,
+    is_active: values.is_active // [BARU]
   }]);
   
   if (error) throw new Error(error.message);
@@ -165,7 +168,8 @@ export async function updateStudent(id: string | number, values: StudentFormValu
     nama: values.nama,
     semester: Number(values.semester),
     alamat: values.alamat,
-    study_program_id: values.study_program_id ? Number(values.study_program_id) : null
+    study_program_id: values.study_program_id ? Number(values.study_program_id) : null,
+    is_active: values.is_active // [BARU]
   }).eq('id', Number(id));
 
   if (error) throw new Error(error.message);

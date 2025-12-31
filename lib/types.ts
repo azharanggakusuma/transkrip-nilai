@@ -62,6 +62,7 @@ export interface StudentProfile {
   semester: number;
   study_program_id: number | null;
   study_program?: StudyProgram | null;
+  is_active: boolean; // [BARU]
 }
 
 export interface StudentFormValues {
@@ -70,6 +71,7 @@ export interface StudentFormValues {
   semester: string | number;
   alamat: string;
   study_program_id: string; 
+  is_active: boolean; // [BARU]
 }
 
 // =========================================
@@ -103,6 +105,7 @@ export interface UserData {
   username: string;
   role: Role | string;
   student_id?: number | null;
+  is_active: boolean; // [BARU]
 }
 
 export interface UserPayload {
@@ -111,6 +114,7 @@ export interface UserPayload {
   password?: string;
   role: string;
   student_id?: number | null;
+  is_active?: boolean; // [BARU]
 }
 
 export interface UserFormValues {
@@ -120,6 +124,7 @@ export interface UserFormValues {
   password?: string;
   role: string;
   student_id?: number | null;
+  is_active: boolean; // [BARU]
 }
 
 export interface StudentOption {

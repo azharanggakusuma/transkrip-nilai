@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pencil, Trash2, ShieldCheck, BookOpen, KeyRound } from "lucide-react";
-import { UserData } from "@/lib/types"; // Import diperbarui
+import { UserData } from "@/lib/types"; 
 import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -107,6 +107,19 @@ export default function UserTable({
           </Badge>
         );
       },
+    },
+    // [BARU] Kolom Status User
+    {
+        header: "Status",
+        className: "text-center w-[100px]",
+        render: (row) => (
+          <Badge 
+            variant={row.is_active ? "default" : "destructive"} 
+            className={`font-normal ${row.is_active ? "bg-green-600 hover:bg-green-700" : ""}`}
+          >
+            {row.is_active ? "Aktif" : "Non-Aktif"}
+          </Badge>
+        )
     },
     {
       header: "Password",

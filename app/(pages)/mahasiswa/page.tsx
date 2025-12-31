@@ -16,7 +16,7 @@ import {
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { FormModal } from "@/components/shared/FormModal";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
-import Tooltip from "@/components/shared/Tooltip"; // Import Tooltip
+import Tooltip from "@/components/shared/Tooltip"; 
 import { StudentForm } from "@/components/features/mahasiswa/StudentForm";
 import { type StudentData, type StudentFormValues, type StudyProgram } from "@/lib/types";
 import { getStudents, getStudyPrograms, createStudent, updateStudent, deleteStudent } from "@/app/actions/students";
@@ -99,6 +99,7 @@ export default function MahasiswaPage() {
       study_program_id: student.profile.study_program_id ? String(student.profile.study_program_id) : "",
       semester: student.profile.semester,
       alamat: student.profile.alamat,
+      is_active: student.profile.is_active // Ambil status existing
     });
     setIsEditing(true);
     setIsFormOpen(true);
@@ -173,19 +174,21 @@ export default function MahasiswaPage() {
     },
     { 
       header: "Semester", 
-      className: "text-center w-[100px]", 
+      className: "text-center w-[80px]", 
       render: (row) => row.profile.semester 
     },
+    // [BARU] Kolom Status
     {
-      header: "Alamat",
-      className: "w-[250px]",
-      render: (row) => (
-        <Tooltip content={row.profile.alamat || "Tidak ada data alamat"} position="top">
-          <span className="text-gray-600 truncate block max-w-[250px] cursor-help">
-            {row.profile.alamat || "-"}
-          </span>
-        </Tooltip>
-      )
+        header: "Status",
+        className: "text-center w-[100px]",
+        render: (row) => (
+          <Badge 
+            variant={row.profile.is_active ? "default" : "destructive"} 
+            className={`font-normal ${row.profile.is_active ? "bg-green-600 hover:bg-green-700" : ""}`}
+          >
+            {row.profile.is_active ? "Aktif" : "Non-Aktif"}
+          </Badge>
+        )
     },
     {
       header: "Aksi",
@@ -259,7 +262,7 @@ export default function MahasiswaPage() {
         <StudentForm 
             key={isEditing && selectedId ? `edit-${selectedId}` : "add-new"}
             initialData={formData}
-            studyPrograms={studyPrograms} // Pass data prodi ke form
+            studyPrograms={studyPrograms} 
             isEditing={isEditing}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsFormOpen(false)}

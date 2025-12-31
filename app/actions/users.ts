@@ -21,7 +21,7 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 export async function getUsers() {
   const { data, error } = await supabaseAdmin
     .from("users")
-    .select("id, name, username, role, student_id")
+    .select("id, name, username, role, student_id, is_active") // [BARU] Tambahkan is_active
     .order("name", { ascending: true });
 
   if (error) {
@@ -62,7 +62,7 @@ export async function getStudentsForSelection(excludeUserId?: string) {
 
 // === CREATE USER ===
 export async function createUser(values: UserPayload) {
-  const { name, username, password, role, student_id } = values;
+  const { name, username, password, role, student_id, is_active } = values; // [BARU] destructure is_active
 
   // Validasi password wajib ada saat create
   if (!password) throw new Error("Password wajib diisi untuk user baru.");
@@ -74,7 +74,8 @@ export async function createUser(values: UserPayload) {
     username,
     password: hashedPassword,
     role: role || "mahasiswa",
-    student_id: (role === "mahasiswa" && student_id) ? Number(student_id) : null
+    student_id: (role === "mahasiswa" && student_id) ? Number(student_id) : null,
+    is_active: is_active ?? true // [BARU] Default true
   };
 
   const { error } = await supabaseAdmin.from("users").insert([payload]);
@@ -89,14 +90,15 @@ export async function createUser(values: UserPayload) {
 
 // === UPDATE USER ===
 export async function updateUser(id: string, values: UserPayload) {
-  const { name, username, password, role, student_id } = values;
+  const { name, username, password, role, student_id, is_active } = values; // [BARU] destructure is_active
 
   const updates: Partial<UserPayload> = {
     name,
     username,
     role,
     // Jika role bukan mahasiswa, hapus relasi student_id
-    student_id: (role === "mahasiswa" && student_id) ? Number(student_id) : null
+    student_id: (role === "mahasiswa" && student_id) ? Number(student_id) : null,
+    is_active: is_active // [BARU] update status
   };
 
   // Hanya update password jika diisi

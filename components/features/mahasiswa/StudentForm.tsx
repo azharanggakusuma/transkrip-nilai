@@ -22,7 +22,7 @@ interface StudentFormProps {
 }
 
 const defaultValues: StudentFormValues = {
-  nim: "", nama: "", study_program_id: "", semester: "", alamat: ""
+  nim: "", nama: "", study_program_id: "", semester: "", alamat: "", is_active: true
 };
 
 export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, onCancel }: StudentFormProps) {
@@ -37,7 +37,8 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
         nama: initialData.nama || "",
         study_program_id: initialData.study_program_id || "",
         semester: initialData.semester || "",
-        alamat: initialData.alamat || ""
+        alamat: initialData.alamat || "",
+        is_active: initialData.is_active ?? true // [BARU]
       });
     } else {
       setFormData(defaultValues);
@@ -144,16 +145,35 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
         </div>
       </div>
 
-      {/* Baris 2: Nama */}
-      <div className="grid gap-2">
-        <Label htmlFor="nama">Nama Lengkap</Label>
-        <Input
-          id="nama"
-          value={formData.nama}
-          onChange={(e) => handleInputChange("nama", e.target.value)}
-          placeholder="Contoh: Budi Santoso"
-          className={errorClass("nama")}
-        />
+      {/* Baris 2: Nama & Status */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="grid gap-2 col-span-3">
+            <Label htmlFor="nama">Nama Lengkap</Label>
+            <Input
+            id="nama"
+            value={formData.nama}
+            onChange={(e) => handleInputChange("nama", e.target.value)}
+            placeholder="Contoh: Budi Santoso"
+            className={errorClass("nama")}
+            />
+        </div>
+        
+        {/* [BARU] Input Status */}
+        <div className="grid gap-2 col-span-1">
+            <Label htmlFor="status">Status</Label>
+            <Select 
+                value={formData.is_active ? "active" : "inactive"}
+                onValueChange={(val) => setFormData(prev => ({ ...prev, is_active: val === "active" }))}
+            >
+                <SelectTrigger>
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="active">Aktif</SelectItem>
+                    <SelectItem value="inactive">Tidak Aktif</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
       </div>
 
       {/* Baris 3: Prodi (Select ID) */}
