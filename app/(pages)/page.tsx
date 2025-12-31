@@ -14,16 +14,18 @@ import {
 import { getStudents } from "@/app/actions/students";
 import { getCourses } from "@/app/actions/courses";
 
-// [!code ++] Import Icon dari Lucide React langsung
+// [1] Icon dari DashboardIcons (Digunakan untuk Admin & Mahasiswa)
+import {
+  UsersIcon,
+  LibraryIcon,
+  AwardIcon,
+  TrendingUpIcon,
+} from "@/components/features/dashboard/DashboardIcons";
+
+// [2] Icon Tambahan dari Lucide (Khusus Mahasiswa)
 import { 
-  Users, 
-  Library, 
-  Award, 
-  TrendingUp, 
-  GraduationCap, 
-  BookOpen, 
-  BookCheck, 
-  CalendarClock 
+  Activity,     // Untuk Total SKS (Garis Naik Turun)
+  CalendarDays  // Untuk Semester (Tetap)
 } from "lucide-react";
 
 // Import Components
@@ -97,37 +99,37 @@ export default function DashboardPage() {
         const myIPK = calculateIPK(myData.transcript).toFixed(2);
         const totalSKS = calculateTotalSKS(myData.transcript);
         
-        // Ambil semester langsung dari profil
+        // Ambil data semester langsung dari Profile
         const currentSmt = myData.profile.semester; 
         const totalMK = myData.transcript.length;
 
         stats = [
           {
-            label: "Indeks Prestasi (IPK)",
+            label: "Total IPK",
             value: myIPK,
             description: "Skala Indeks 4.00", 
-            icon: <GraduationCap className="w-6 h-6" />, // Icon Topi Toga (Prestasi Akademik)
+            icon: <AwardIcon className="w-6 h-6" />,
             themeColor: "chart-1",
           },
           {
             label: "Total SKS",
             value: totalSKS.toString(),
             description: "Akumulasi Kredit Lulus", 
-            icon: <BookOpen className="w-6 h-6" />, // Icon Buku Terbuka (Kredit Belajar)
+            icon: <Activity className="w-6 h-6" />, 
             themeColor: "chart-2",
           },
           {
             label: "Mata Kuliah",
             value: totalMK.toString(),
-            description: "Total MK Diambil", 
-            icon: <BookCheck className="w-6 h-6" />, // Icon Buku Centang (MK Selesai/Ambil)
+            description: "Total Mata Kuliah Diambil", 
+            icon: <LibraryIcon className="w-6 h-6" />,
             themeColor: "chart-3",
           },
           {
             label: "Semester",
-            value: `Smt ${currentSmt}`,
+            value: `${currentSmt}`,
             description: "Periode Akademik Aktif", 
-            icon: <CalendarClock className="w-6 h-6" />, // Icon Kalender Waktu (Progres Semester)
+            icon: <CalendarDays className="w-6 h-6" />,
             themeColor: "chart-4",
           },
         ];
@@ -136,7 +138,7 @@ export default function DashboardPage() {
         dist = calculateGradeDistribution([myData]);
       } else {
         stats = [
-            { label: "Data Tidak Ditemukan", value: "-", description: "Hubungi Bagian Akademik", icon: <Users className="w-6 h-6"/>, themeColor: "chart-1" },
+            { label: "Data Tidak Ditemukan", value: "-", description: "Hubungi Bagian Akademik", icon: <UsersIcon className="w-6 h-6"/>, themeColor: "chart-1" },
         ];
       }
     } else {
@@ -165,28 +167,28 @@ export default function DashboardPage() {
           label: "Total Mahasiswa",
           value: currentStudentCount.toLocaleString(),
           description: "Mahasiswa Terdaftar",
-          icon: <Users className="w-6 h-6" />, // Icon User Group (Populasi)
+          icon: <UsersIcon className="w-6 h-6" />, 
           themeColor: "chart-1",
         },
         {
           label: "Total Mata Kuliah",
           value: courseCount.toString(),
           description: "MK Dalam Kurikulum",
-          icon: <Library className="w-6 h-6" />, // Icon Perpustakaan (Koleksi MK)
+          icon: <LibraryIcon className="w-6 h-6" />, 
           themeColor: "chart-2",
         },
         {
           label: "Rata-rata Nilai",
           value: avgGradePoint,
           description: "Skala Indeks 4.00",
-          icon: <Award className="w-6 h-6" />, // Icon Penghargaan (Kualitas Nilai)
+          icon: <AwardIcon className="w-6 h-6" />, 
           themeColor: "chart-3",
         },
         {
           label: "Rata-rata IPK",
           value: avgIPK,
           description: "Rata-rata Seluruh Angkatan",
-          icon: <TrendingUp className="w-6 h-6" />, // Icon Grafik Naik (Tren Performa)
+          icon: <TrendingUpIcon className="w-6 h-6" />, 
           themeColor: "chart-4",
         },
       ];
