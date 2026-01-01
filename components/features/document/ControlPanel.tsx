@@ -1,12 +1,26 @@
 import React from "react";
 import { StudentData } from "@/lib/types";
-import { Printer } from "lucide-react";
+import { Printer, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils"; // Pastikan Anda punya utilitas ini (bawaan shadcn)
 
 // Shadcn UI Components
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface ControlPanelProps {
   students: StudentData[];
@@ -36,10 +50,13 @@ interface ControlPanelProps {
 
 export default function ControlPanel(props: ControlPanelProps) {
   const { students, selectedIndex, onSelect, signatureType, onSignatureChange, onPrint, totalPages } = props;
+  const [open, setOpen] = React.useState(false); // State untuk Combobox
   
-  // Style asli dipertahankan
   const labelClass = "text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block";
   const sectionClass = "flex flex-col gap-2 rounded-xl border border-gray-100 bg-gray-50/60 p-3";
+
+  // Mendapatkan nama mahasiswa yang sedang dipilih untuk ditampilkan di trigger
+  const selectedStudentName = students[selectedIndex]?.profile.nama || "Pilih Mahasiswa...";
 
   return (
     <aside className="w-full print:hidden xl:sticky xl:top-24 h-fit">
@@ -63,27 +80,57 @@ export default function ControlPanel(props: ControlPanelProps) {
 
         <div className="p-5 flex flex-col gap-4">
           
-          {/* Pilih Mahasiswa */}
+          {/* Pilih Mahasiswa (SEARCHABLE COMBOBOX) */}
           <div className={sectionClass}>
             <div className="flex items-baseline justify-between">
               <label className={labelClass}>Mahasiswa</label>
               <p className="text-[11px] text-gray-400">{selectedIndex + 1}/{students.length}</p>
             </div>
-            <Select 
-              value={String(selectedIndex)} 
-              onValueChange={(val) => onSelect(Number(val))}
-            >
-              <SelectTrigger className="w-full h-9 bg-white text-xs rounded-xl border-gray-200">
-                <SelectValue placeholder="Pilih Mahasiswa" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                {students.map((student, index) => (
-                  <SelectItem key={student.id} value={String(index)} className="text-xs rounded-lg cursor-pointer">
-                    {student.profile.nama}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between h-9 bg-white text-xs rounded-xl border-gray-200 font-normal text-left px-3 hover:bg-white hover:text-gray-900"
+                >
+                  <span className="truncate">{selectedStudentName}</span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-xl shadow-lg" align="start">
+                <Command className="rounded-xl">
+                  <CommandInput placeholder="Cari nama mahasiswa..." className="text-xs h-9" />
+                  <CommandList>
+                    <CommandEmpty className="py-2 text-center text-xs text-gray-500">
+                      Tidak ditemukan.
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {students.map((student, index) => (
+                        <CommandItem
+                          key={student.id}
+                          value={student.profile.nama}
+                          onSelect={() => {
+                            onSelect(index); // Set index mahasiswa
+                            setOpen(false);
+                          }}
+                          className="text-xs rounded-lg cursor-pointer aria-selected:bg-gray-100"
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-3 w-3",
+                              selectedIndex === index ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {student.profile.nama}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Pilih Semester (KHS) */}
