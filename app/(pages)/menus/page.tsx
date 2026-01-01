@@ -87,7 +87,7 @@ export default function MenusPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
-      <PageHeader title="Manajemen Menu" breadcrumb={["SIAKAD", "Pengaturan", "Menu"]} />
+      <PageHeader />
 
       <MenuTable 
         data={dataList}

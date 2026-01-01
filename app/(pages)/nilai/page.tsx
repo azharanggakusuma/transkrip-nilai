@@ -60,7 +60,7 @@ export default function NilaiPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
-      <PageHeader title="Data Mahasiswa" breadcrumb={["SIAKAD", "Nilai"]} />
+      <PageHeader />
 
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-6">

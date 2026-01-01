@@ -68,7 +68,7 @@ export default function TranskripPage() {
   return (
     <div className="flex flex-col gap-6 w-full">
       <div className="print:hidden">
-        <PageHeader title="Transkrip Nilai" breadcrumb={["SIAKAD", "Transkrip"]} />
+        <PageHeader />
       </div>
 
       <div className="flex flex-col xl:flex-row items-stretch justify-start gap-6 min-h-screen">

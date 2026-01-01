@@ -47,7 +47,7 @@ export default function PengaturanPage() {
 
   return (
     <div className="flex flex-col gap-10 pb-10 animate-in fade-in duration-500">
-      <PageHeader title="Pengaturan" breadcrumb={["SIAKAD", "Pengaturan"]} />
+      <PageHeader />
       
       <div className="grid gap-6 lg:grid-cols-2 items-stretch">
         <ProfileForm 
