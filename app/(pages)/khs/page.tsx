@@ -104,7 +104,7 @@ export default function KhsPage() {
   return (
     <div className="flex flex-col gap-6 w-full">
       <div className="print:hidden">
-        <PageHeader />
+        <PageHeader title="Kartu Hasil Studi" breadcrumb={["Beranda", "KHS"]} />
       </div>
 
       <div className="flex flex-col xl:flex-row items-stretch justify-start gap-6 min-h-screen">

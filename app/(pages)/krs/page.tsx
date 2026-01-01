@@ -7,7 +7,7 @@ export default function KrsPage() {
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* Header Halaman */}
-      <PageHeader />
+      <PageHeader title="Kartu Rencana Studi" breadcrumb={["Beranda", "KRS"]} />
 
       {/* Konten Halaman Kosong */}
       <div className="w-full bg-white p-8 rounded-xl border border-slate-200 shadow-sm min-h-[50vh] flex items-center justify-center">

@@ -204,7 +204,7 @@ export default function MataKuliahPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
-      <PageHeader />
+      <PageHeader title="Mata Kuliah" breadcrumb={["Beranda", "Mata Kuliah"]} />
 
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-6">
