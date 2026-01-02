@@ -20,7 +20,6 @@ export default function MenusPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
 
-  // === FETCH DATA ===
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -38,7 +37,6 @@ export default function MenusPage() {
     fetchData();
   }, []);
 
-  // === HANDLERS ===
   const handleOpenAdd = () => {
     setSelectedMenu(null);
     setIsEditing(false);
@@ -118,9 +116,11 @@ export default function MenusPage() {
                   allowed_roles: selectedMenu.allowed_roles,
                   sequence: selectedMenu.sequence,
                   is_active: selectedMenu.is_active,
+                  parent_id: selectedMenu.parent_id, // [BARU] Pass parent_id
                 }
               : undefined
           }
+          availableMenus={dataList} // [BARU] Pass semua data menu untuk opsi parent
           isEditing={isEditing}
           onSubmit={handleFormSubmit}
           onCancel={() => setIsFormOpen(false)}
@@ -133,7 +133,7 @@ export default function MenusPage() {
         onClose={setIsDeleteOpen}
         onConfirm={handleDelete}
         title="Hapus Menu?"
-        description={`Yakin ingin menghapus menu "${selectedMenu?.label}"? Menu ini akan hilang dari sidebar semua user.`}
+        description={`Yakin ingin menghapus menu "${selectedMenu?.label}"?`}
         confirmLabel="Hapus Menu"
         variant="destructive"
       />

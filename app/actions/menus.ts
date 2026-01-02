@@ -4,24 +4,26 @@ import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { Menu, MenuFormValues } from "@/lib/types";
 
-// Gunakan Service Key untuk akses Admin (bypass RLS jika perlu, atau gunakan client biasa jika RLS sudah diatur)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
+  auth: { autoRefreshToken: false, persistSession: false },
 });
 
 // === GET MENUS ===
 export async function getMenus() {
+  // Select parent(label) untuk ditampilkan di tabel
   const { data, error } = await supabaseAdmin
     .from("menus")
-    .select("*")
-    .order("section", { ascending: true }) // Kelompokkan by section dulu
-    .order("sequence", { ascending: true }); // Lalu urutkan sequence
+    .select(`
+      *,
+      parent:parent_id (
+        label
+      )
+    `)
+    .order("section", { ascending: true })
+    .order("sequence", { ascending: true });
 
   if (error) {
     console.error("Error fetching menus:", error.message);
@@ -32,33 +34,39 @@ export async function getMenus() {
 
 // === CREATE MENU ===
 export async function createMenu(values: MenuFormValues) {
-  const { label, href, icon, section, allowed_roles, sequence, is_active } = values;
+  const { label, href, icon, section, allowed_roles, sequence, is_active, parent_id } = values;
+
+  // Konversi parent_id: jika string kosong/"0" maka null
+  const formattedParentId = (!parent_id || parent_id === "0") ? null : Number(parent_id);
 
   const payload = {
     label,
     href,
     icon,
     section: section || "Menu Utama",
+    parent_id: formattedParentId, // [BARU]
     allowed_roles,
     sequence: Number(sequence) || 0,
     is_active,
   };
 
   const { error } = await supabaseAdmin.from("menus").insert([payload]);
-
   if (error) throw new Error(error.message);
   revalidatePath("/menus");
 }
 
 // === UPDATE MENU ===
 export async function updateMenu(id: number, values: MenuFormValues) {
-  const { label, href, icon, section, allowed_roles, sequence, is_active } = values;
+  const { label, href, icon, section, allowed_roles, sequence, is_active, parent_id } = values;
+
+  const formattedParentId = (!parent_id || parent_id === "0") ? null : Number(parent_id);
 
   const payload = {
     label,
     href,
     icon,
     section,
+    parent_id: formattedParentId, // [BARU]
     allowed_roles,
     sequence: Number(sequence),
     is_active,

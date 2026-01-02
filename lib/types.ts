@@ -178,12 +178,16 @@ export type GradeFormValues = {
 // =========================================
 // MENUS (MANAJEMEN MENU)
 // =========================================
+// lib/types.ts (Bagian Menu Saja)
+
 export interface Menu {
   id: number;
   label: string;
   href: string;
   icon: string;
   section: string;
+  parent_id?: number | null;
+  parent?: { label: string } | null;
   allowed_roles: string[];
   sequence: number;
   is_active: boolean;
@@ -197,6 +201,7 @@ export interface MenuFormValues {
   href: string;
   icon: string;
   section: string;
+  parent_id?: number | string | null;
   allowed_roles: string[];
   sequence: number | string;
   is_active: boolean;
