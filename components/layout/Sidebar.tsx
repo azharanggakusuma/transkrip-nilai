@@ -105,10 +105,7 @@ export default function Sidebar({ open, setOpen, isCollapsed = false }: SidebarP
         </div>
 
         {/* === MENU NAVIGATION === */}
-        {/* jarak antar section */}
-        <nav className="flex-1 px-3 py-4 space-y-3 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-200">
-          
-          {/* jarak antar item */}
+        <nav className="flex-1 px-3 py-4 space-y-3 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-200">S
           <div className="space-y-1">
             <SectionLabel label="Menu Utama" isCollapsed={isCollapsed} />
             
@@ -123,12 +120,11 @@ export default function Sidebar({ open, setOpen, isCollapsed = false }: SidebarP
             <NavItem href="/surat-keterangan" label="Surat Keterangan" icon={<Mail size={20} />} active={isActive("/surat-keterangan")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
           </div>
 
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <SectionLabel label="Sistem" isCollapsed={isCollapsed} />
             <NavItem href="/menus" label="Manajemen Menu" icon={<LayoutList size={20} />} active={isActive("/menus")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
             <NavItem href="/pengaturan" label="Pengaturan" icon={<Settings size={20} />} active={isActive("/pengaturan")} onClick={() => setOpen(false)} isCollapsed={isCollapsed} />
           </div>
-
         </nav>
 
         {/* === FOOTER === */}
@@ -139,11 +135,10 @@ export default function Sidebar({ open, setOpen, isCollapsed = false }: SidebarP
                 className={`
                   w-full flex items-center rounded-lg text-sm font-semibold transition-colors overflow-hidden group
                   text-rose-600 hover:bg-rose-50
-                  gap-3 px-3 py-2 
+                  gap-3 px-3 py-2
                   ${isCollapsed ? "lg:justify-center lg:px-0 lg:py-3 lg:gap-0" : ""}
                 `}
               >
-                {/* py-2.5 diubah jadi py-2 pada tombol logout juga */}
                 <div className="shrink-0"><LogOut size={20} /></div>
                 
                 <span className={`transition-all duration-300 whitespace-nowrap 
@@ -173,7 +168,6 @@ function NavItem({ href, icon, label, active, onClick, isCollapsed }: any) {
             ${active ? "bg-blue-50 text-[#1B3F95]" : "text-slate-600 hover:bg-slate-50"}
           `}
         >
-          {/* py-2.5 diubah jadi py-2 agar item lebih ramping */}
           {active && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#1B3F95]" />}
           <span className={`transition-colors shrink-0 ${active ? "text-[#1B3F95]" : "text-slate-400 group-hover:text-slate-600"}`}>
             {icon}
