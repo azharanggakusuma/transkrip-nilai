@@ -3,10 +3,13 @@
 import React, { useState, useEffect } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button"; 
+import { ArrowUpDown } from "lucide-react";    
 import { FormModal } from "@/components/shared/FormModal";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import MenuTable from "@/components/features/menus/MenuTable";
 import { MenuForm } from "@/components/features/menus/MenuForm";
+import MenuReorderList from "@/components/features/menus/MenuReorderList"; 
 import { Menu, MenuFormValues } from "@/lib/types";
 import { getMenus, createMenu, updateMenu, deleteMenu } from "@/app/actions/menus";
 
@@ -16,6 +19,7 @@ export default function MenusPage() {
 
   // Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isReorderOpen, setIsReorderOpen] = useState(false); 
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
@@ -85,7 +89,18 @@ export default function MenusPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
-      <PageHeader title="Manajemen Menu" breadcrumb={["Beranda", "Menus"]} />
+      
+      {/* HEADER DENGAN TOMBOL REORDER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <PageHeader title="Manajemen Menu" breadcrumb={["Beranda", "Menus"]} />
+          
+          <div className="flex gap-2">
+             <Button variant="outline" onClick={() => setIsReorderOpen(true)}>
+                <ArrowUpDown className="w-4 h-4 mr-2" />
+                Atur Urutan
+             </Button>
+          </div>
+      </div>
 
       <MenuTable 
         data={dataList}
@@ -116,15 +131,33 @@ export default function MenusPage() {
                   allowed_roles: selectedMenu.allowed_roles,
                   sequence: selectedMenu.sequence,
                   is_active: selectedMenu.is_active,
-                  parent_id: selectedMenu.parent_id, // [BARU] Pass parent_id
+                  parent_id: selectedMenu.parent_id,
                 }
               : undefined
           }
-          availableMenus={dataList} // [BARU] Pass semua data menu untuk opsi parent
+          availableMenus={dataList}
           isEditing={isEditing}
           onSubmit={handleFormSubmit}
           onCancel={() => setIsFormOpen(false)}
         />
+      </FormModal>
+
+      {/* MODAL REORDER */}
+      <FormModal
+        isOpen={isReorderOpen}
+        onClose={setIsReorderOpen}
+        title="Atur Urutan Menu"
+        description="Drag dan drop item di bawah ini untuk mengatur posisi sidebar."
+        // UPDATE: Ukuran dikembalikan ke normal (500px)
+        maxWidth="sm:max-w-[500px]"
+      >
+        {isReorderOpen && (
+           <MenuReorderList 
+              initialItems={dataList} 
+              onClose={() => setIsReorderOpen(false)}
+              onSuccess={fetchData} 
+           />
+        )}
       </FormModal>
 
       {/* MODAL DELETE */}

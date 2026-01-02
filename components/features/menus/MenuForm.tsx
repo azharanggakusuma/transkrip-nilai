@@ -18,7 +18,7 @@ import { IconPicker } from "@/components/shared/IconPicker";
 
 interface MenuFormProps {
   initialData?: MenuFormValues;
-  availableMenus?: Menu[]; // [BARU] Daftar menu untuk opsi parent
+  availableMenus?: Menu[]; // Data untuk opsi Parent
   isEditing: boolean;
   onSubmit: (data: MenuFormValues) => void;
   onCancel: () => void;
@@ -47,9 +47,7 @@ export function MenuForm({ initialData, availableMenus = [], isEditing, onSubmit
   );
   const [errors, setErrors] = useState<Partial<Record<keyof MenuFormValues, boolean>>>({});
 
-  // Logic: Filter menu yang valid untuk jadi Parent
-  // 1. Harus Root (parent_id == null)
-  // 2. Bukan dirinya sendiri (jika sedang edit)
+  // Filter Parent yang valid: Hanya menu root (parent_id null) & bukan diri sendiri
   const validParents = availableMenus.filter(m => 
     m.parent_id === null && m.id !== initialData?.id
   );
@@ -58,7 +56,7 @@ export function MenuForm({ initialData, availableMenus = [], isEditing, onSubmit
     const newErrors: Partial<Record<keyof MenuFormValues, boolean>> = {};
     let isValid = true;
     if (!formData.label.trim()) newErrors.label = true;
-    // Jika punya parent, href wajib. Jika parent (dropdown), href boleh #
+    // Href wajib, tapi bisa '#' jika dropdown
     if (!formData.href.trim()) newErrors.href = true; 
     if (!formData.icon.trim()) newErrors.icon = true;
     if (formData.allowed_roles.length === 0) newErrors.allowed_roles = true;
@@ -112,6 +110,7 @@ export function MenuForm({ initialData, availableMenus = [], isEditing, onSubmit
             type="number"
             value={formData.sequence}
             onChange={(e) => handleInputChange("sequence", e.target.value)}
+            placeholder="0"
           />
         </div>
       </div>
@@ -136,7 +135,7 @@ export function MenuForm({ initialData, availableMenus = [], isEditing, onSubmit
                     ))}
                 </SelectContent>
             </Select>
-            <p className="text-[10px] text-muted-foreground">Pilih jika ingin membuat Sub-menu.</p>
+            <p className="text-[10px] text-muted-foreground">Pilih menu lain jika ini adalah sub-menu.</p>
         </div>
 
         <div className="grid gap-2">
