@@ -83,12 +83,14 @@ export default function MenuTable({ data, isLoading, onEdit, onDelete, onAdd }: 
             )}
             
             <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground mt-1">
+               {/* Label Section */}
                <span className="bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
                   {row.section}
                </span>
+               
+               {/* Label Induk (Sekarang styling-nya SAMA PERSIS dengan Section) */}
                {row.parent && (
-                  /* UPDATE: Warna Biru diganti jadi Slate (Abu-abu) netral */
-                  <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 font-medium">
+                  <span className="bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
                     Induk: {row.parent.label}
                   </span>
                )}
