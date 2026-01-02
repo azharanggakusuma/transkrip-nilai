@@ -176,21 +176,22 @@ export function MenuForm({
           </div>
         </div>
 
-        {/* Urutan */}
-        <div className="space-y-2">
-          <Label htmlFor="sequence">Urutan</Label>
+        {/* Urutan (HIDDEN) */}
+        {/* Disembunyikan karena sudah ada fitur Drag & Drop di halaman utama.
+            Tetap dirender sebagai hidden input agar nilai existing tidak hilang saat edit. */}
+        <div className="hidden">
           <Input
             id="sequence"
-            type="number"
+            type="hidden"
             value={formData.sequence}
             onChange={(e) => handleInputChange("sequence", e.target.value)}
-            placeholder="0"
           />
         </div>
 
         {/* --- SECTION 3: STATUS & PERMISSIONS (Full Width) --- */}
 
         {/* Status Aktif */}
+        {/* Menggunakan col-span-2 agar layout tetap rapih setelah urutan di-hide */}
         <div className="md:col-span-2 space-y-2">
             <Label htmlFor="status">Status Aktif</Label>
             <Select
