@@ -62,7 +62,6 @@ export function MenuForm({
     const newErrors: Partial<Record<keyof MenuFormValues, boolean>> = {};
     let isValid = true;
     if (!formData.label.trim()) newErrors.label = true;
-    // Href wajib, tapi bisa '#' jika dropdown
     if (!formData.href.trim()) newErrors.href = true;
     if (!formData.icon.trim()) newErrors.icon = true;
     if (formData.allowed_roles.length === 0) newErrors.allowed_roles = true;
@@ -96,13 +95,24 @@ export function MenuForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 py-4">
-      {/* Container Grid: Default 1 kolom, Layar medium ke atas 2 kolom */}
+      {/* Container Grid: 1 Kolom di HP, 2 Kolom di Tablet/Desktop */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
-        {/* --- SECTION 1: INFORMASI UTAMA (Full Width) --- */}
+        {/* === BARIS 1 === */}
         
-        {/* Label Menu */}
-        <div className="md:col-span-2 space-y-2">
+        {/* KIRI: Section Group */}
+        <div className="space-y-2">
+          <Label htmlFor="section">Section Group</Label>
+          <Input
+            id="section"
+            placeholder="Contoh: Menu Utama"
+            value={formData.section}
+            onChange={(e) => handleInputChange("section", e.target.value)}
+          />
+        </div>
+
+        {/* KANAN: Label Menu */}
+        <div className="space-y-2">
           <Label htmlFor="label">Label Menu <span className="text-red-500">*</span></Label>
           <Input
             id="label"
@@ -113,11 +123,13 @@ export function MenuForm({
           />
         </div>
 
-        {/* Path / URL */}
-        <div className="md:col-span-2 space-y-2">
-          <div className="flex justify-between">
+
+        {/* === BARIS 2 === */}
+
+        {/* KIRI: Path / URL */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
             <Label htmlFor="href">Path / Link URL <span className="text-red-500">*</span></Label>
-            <span className="text-[10px] text-muted-foreground">Gunakan <b>#</b> jika ini Parent Dropdown</span>
           </div>
           <Input
             id="href"
@@ -126,11 +138,10 @@ export function MenuForm({
             onChange={(e) => handleInputChange("href", e.target.value)}
             className={errors.href ? "border-red-500" : ""}
           />
+          <p className="text-[10px] text-muted-foreground">Gunakan <b>#</b> jika ini Parent Dropdown</p>
         </div>
 
-        {/* --- SECTION 2: STRUKTUR & TAMPILAN (2 Kolom) --- */}
-
-        {/* Parent ID */}
+        {/* KANAN: Menu Induk */}
         <div className="space-y-2">
           <Label htmlFor="parent_id">Menu Induk (Opsional)</Label>
           <Select
@@ -153,18 +164,10 @@ export function MenuForm({
           </Select>
         </div>
 
-        {/* Section Group */}
-        <div className="space-y-2">
-          <Label htmlFor="section">Section Group</Label>
-          <Input
-            id="section"
-            placeholder="Contoh: Menu Utama"
-            value={formData.section}
-            onChange={(e) => handleInputChange("section", e.target.value)}
-          />
-        </div>
 
-        {/* Icon */}
+        {/* === BARIS 3 === */}
+
+        {/* KIRI: Icon */}
         <div className="space-y-2">
           <Label>Icon <span className="text-red-500">*</span></Label>
           <div className="w-full">
@@ -176,23 +179,8 @@ export function MenuForm({
           </div>
         </div>
 
-        {/* Urutan (HIDDEN) */}
-        {/* Disembunyikan karena sudah ada fitur Drag & Drop di halaman utama.
-            Tetap dirender sebagai hidden input agar nilai existing tidak hilang saat edit. */}
-        <div className="hidden">
-          <Input
-            id="sequence"
-            type="hidden"
-            value={formData.sequence}
-            onChange={(e) => handleInputChange("sequence", e.target.value)}
-          />
-        </div>
-
-        {/* --- SECTION 3: STATUS & PERMISSIONS (Full Width) --- */}
-
-        {/* Status Aktif */}
-        {/* Menggunakan col-span-2 agar layout tetap rapih setelah urutan di-hide */}
-        <div className="md:col-span-2 space-y-2">
+        {/* KANAN: Status Aktif */}
+        <div className="space-y-2">
             <Label htmlFor="status">Status Aktif</Label>
             <Select
                 value={formData.is_active ? "active" : "inactive"}
@@ -208,8 +196,22 @@ export function MenuForm({
             </Select>
         </div>
 
+
+        {/* === HIDDEN SEQUENCE (Tetap ada tapi tidak tampil) === */}
+        <div className="hidden">
+          <Input
+            id="sequence"
+            type="hidden"
+            value={formData.sequence}
+            onChange={(e) => handleInputChange("sequence", e.target.value)}
+          />
+        </div>
+
+
+        {/* === BARIS 4 (FULL WIDTH) === */}
+
         {/* Hak Akses Role */}
-        <div className="md:col-span-2 space-y-3 border rounded-md p-4 bg-slate-50/50">
+        <div className="md:col-span-2 space-y-3 border rounded-md p-4 bg-slate-50/50 mt-2">
           <Label className={errors.allowed_roles ? "text-red-500" : ""}>
             Hak Akses Role <span className="text-red-500">*</span>
           </Label>
@@ -235,7 +237,7 @@ export function MenuForm({
       </div>
 
       {/* Footer Buttons */}
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex justify-end gap-3 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Batal
         </Button>
