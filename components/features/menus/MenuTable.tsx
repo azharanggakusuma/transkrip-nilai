@@ -87,7 +87,8 @@ export default function MenuTable({ data, isLoading, onEdit, onDelete, onAdd }: 
                   {row.section}
                </span>
                {row.parent && (
-                  <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">
+                  /* UPDATE: Warna Biru diganti jadi Slate (Abu-abu) netral */
+                  <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 font-medium">
                     Induk: {row.parent.label}
                   </span>
                )}
