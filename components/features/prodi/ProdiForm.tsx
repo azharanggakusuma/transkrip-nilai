@@ -93,54 +93,64 @@ export function ProdiForm({ initialData, isEditing, isLoading = false, onSubmit,
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-5 py-4">
-      <div className="grid grid-cols-4 gap-4">
-        {/* Kolom Kode */}
-        <div className="grid gap-2 col-span-2">
-          <Label htmlFor="kode">Kode Prodi</Label>
-          <div className="relative">
-            <Input 
-              id="kode" 
-              value={formData.kode} 
-              onChange={(e) => handleInputChange("kode", e.target.value)} 
-              placeholder="Contoh: TI" 
-              className={`${errorClass("kode")} ${isEditing ? "bg-muted text-muted-foreground opacity-100 pr-8" : ""}`}
-              disabled={isEditing} 
-            />
-            {isEditing && (
-              <Lock className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            )}
-          </div>
+      
+      {/* Baris 1: Kode Prodi (Full Width) */}
+      <div className="grid gap-2">
+        <Label htmlFor="kode">
+          Kode Prodi <span className="text-red-500">*</span>
+        </Label>
+        <div className="relative">
+          <Input 
+            id="kode" 
+            value={formData.kode} 
+            onChange={(e) => handleInputChange("kode", e.target.value)} 
+            placeholder="Contoh: TI" 
+            className={`${errorClass("kode")} ${isEditing ? "bg-muted text-muted-foreground opacity-100 pr-8" : ""}`}
+            disabled={isEditing} 
+          />
+          {isEditing && (
+            <Lock className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          )}
+        </div>
+      </div>
+
+      {/* Baris 2: Nama Prodi (Kiri) & Jenjang (Kanan) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {/* Kolom Nama Program Studi */}
+        <div className="grid gap-2">
+          <Label htmlFor="nama">
+            Nama Program Studi <span className="text-red-500">*</span>
+          </Label>
+          <Input 
+            id="nama" 
+            value={formData.nama} 
+            onChange={(e) => handleInputChange("nama", e.target.value)} 
+            placeholder="Contoh: Teknik Informatika" 
+            className={errorClass("nama")}
+          />
         </div>
 
         {/* Kolom Jenjang */}
-        <div className="grid gap-2 col-span-2">
-          <Label htmlFor="jenjang">Jenjang</Label>
+        <div className="grid gap-2">
+          <Label htmlFor="jenjang">
+            Jenjang <span className="text-red-500">*</span>
+          </Label>
           <Select 
             value={formData.jenjang} 
             onValueChange={(val) => handleInputChange("jenjang", val)}
           >
-            <SelectTrigger className={errorClass("jenjang")}>
+            {/* [MODIFIKASI] Ditambahkan w-full agar select mentok kanan */}
+            <SelectTrigger className={`w-full ${errorClass("jenjang")}`}>
               <SelectValue placeholder="Pilih Jenjang" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="D3">D3 - Ahli Madya</SelectItem>
-              <SelectItem value="D4">D4 - Sarjana Terapan</SelectItem>
-              <SelectItem value="S1">S1 - Sarjana</SelectItem>
-              <SelectItem value="S2">S2 - Magister</SelectItem>
+              <SelectItem value="S1">S1</SelectItem>
+              <SelectItem value="D3">D3</SelectItem>
             </SelectContent>
           </Select>
         </div>
-      </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="nama">Nama Program Studi</Label>
-        <Input 
-          id="nama" 
-          value={formData.nama} 
-          onChange={(e) => handleInputChange("nama", e.target.value)} 
-          placeholder="Contoh: Teknik Informatika" 
-          className={errorClass("nama")}
-        />
       </div>
 
       <div className="flex justify-end gap-2 pt-2">
