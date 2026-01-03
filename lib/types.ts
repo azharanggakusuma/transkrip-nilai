@@ -26,6 +26,12 @@ export interface AcademicYear {
   is_active: boolean;
 }
 
+export interface AcademicYearFormValues {
+  nama: string;
+  semester: string;
+  is_active: boolean;
+}
+
 // Interface untuk Pejabat (Official)
 export interface Official {
   id: string;
