@@ -38,9 +38,54 @@ export default function MenuTable({ data, isLoading, onEdit, onDelete, onAdd }: 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // === SORTING LOGIC (AGAR SAMA DENGAN SIDEBAR) ===
+  const sortedData = useMemo(() => {
+    // 1. Ambil daftar section unik
+    const sections = Array.from(new Set(data.map((m) => m.section)));
+    const result: Menu[] = [];
+    const addedIds = new Set<string>();
+
+    sections.forEach((section) => {
+      // Filter item berdasarkan section
+      const sectionItems = data.filter((m) => m.section === section);
+      
+      // Ambil Parent (item yang tidak punya parent_id) & urutkan sequence
+      const parents = sectionItems
+        .filter((m) => !m.parent_id)
+        .sort((a, b) => a.sequence - b.sequence);
+
+      parents.forEach((parent) => {
+        // Masukkan Parent
+        result.push(parent);
+        addedIds.add(parent.id);
+
+        // Ambil Children dari parent ini & urutkan sequence
+        const children = sectionItems
+          .filter((m) => m.parent_id === parent.id)
+          .sort((a, b) => a.sequence - b.sequence);
+
+        // Masukkan Children tepat di bawah Parent
+        children.forEach((child) => {
+          result.push(child);
+          addedIds.add(child.id);
+        });
+      });
+    });
+
+    // Fallback: Masukkan item sisa (Orphan/Error) yang belum masuk ke list (agar tidak hilang dari tabel)
+    const leftovers = data.filter((m) => !addedIds.has(m.id));
+    if (leftovers.length > 0) {
+      result.push(...leftovers);
+    }
+
+    return result;
+  }, [data]);
+
   // === FILTERING LOGIC ===
   const filteredData = useMemo(() => {
-    let result = data;
+    // Gunakan sortedData sebagai basis data
+    let result = sortedData;
+
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
       result = result.filter(
@@ -52,7 +97,7 @@ export default function MenuTable({ data, isLoading, onEdit, onDelete, onAdd }: 
       );
     }
     return result;
-  }, [data, searchQuery]);
+  }, [sortedData, searchQuery]);
 
   // === PAGINATION ===
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
@@ -97,7 +142,7 @@ export default function MenuTable({ data, isLoading, onEdit, onDelete, onAdd }: 
         </div>
       ),
     },
-    // [GABUNG] Kolom Icon dan Path digabung di sini
+    // [UPDATE] Kolom Icon dan Path digabung
     {
       header: "Icon & Path",
       render: (row) => (
@@ -150,8 +195,8 @@ export default function MenuTable({ data, isLoading, onEdit, onDelete, onAdd }: 
             variant={row.is_active ? "default" : "destructive"} 
             className={`font-normal ${
               row.is_active 
-                ? "bg-green-600 hover:bg-green-600" 
-                : "hover:bg-destructive"
+                ? "bg-green-600 hover:bg-green-600" // Hover warna tetap sama
+                : "hover:bg-destructive" // Hover warna tetap sama
             }`}
           >
             {row.is_active ? (
