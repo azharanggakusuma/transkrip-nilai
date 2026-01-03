@@ -7,10 +7,11 @@ import { usePathname } from "next/navigation";
 import { useLayout } from "@/app/context/LayoutContext";
 import { logout } from "@/app/actions/auth";
 import Tooltip from "@/components/shared/Tooltip";
+// [PERBAIKAN 1] Gunakan Named Import (pakai kurung kurawal)
+import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import { Menu } from "@/lib/types"; 
 import * as LucideIcons from "lucide-react"; 
 
-// [TAMBAHAN] Import komponen Dropdown
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,10 +33,11 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
   // eslint-disable-next-line no-unused-vars
   const { user } = useLayout();
 
-  // [PERBAIKAN 1] Ubah key state dari number ke string (UUID)
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
+  
+  // State untuk modal konfirmasi logout
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  // [PERBAIKAN 2] Ubah parameter id dari number ke string
   const toggleDropdown = (id: string) => {
     setOpenDropdowns((prev) => ({
       ...prev,
@@ -50,13 +52,8 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
     await logout();
   };
 
-  // Helper dinamis untuk mengambil icon dari LucideIcons
   const getIconComponent = (iconName: string) => {
-    // Mengakses icon secara dinamis menggunakan key string
-    // Kita gunakan (LucideIcons as any) untuk menghindari error TypeScript indexing
     const Icon = (LucideIcons as any)[iconName];
-    
-    // Fallback ke icon 'Circle' atau 'HelpCircle' jika icon tidak ditemukan / typo di DB
     return Icon || LucideIcons.Circle;
   };
 
@@ -88,14 +85,13 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
     });
   }, [menus]);
 
-  // Icon Icons
+  // Icons
   const XIcon = LucideIcons.X;
   const UserIcon = LucideIcons.User;
   const SettingsIcon = LucideIcons.Settings;
   const LogOutIcon = LucideIcons.LogOut;
   const ChevronsUpDown = LucideIcons.ChevronsUpDown;
 
-  // Helper tampilan user
   const displayName = user?.name || user?.username || "Pengguna";
   const displayRole = user?.role || "Mahasiswa";
 
@@ -173,7 +169,6 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
           hover:[&::-webkit-scrollbar-thumb]:bg-slate-300
         `}
         >
-          {/* RENDER DYNAMIC SECTIONS */}
           {menuSections.map((section, idx) => (
             <div key={idx} className="space-y-0.5">
               <SectionLabel label={section.label} isCollapsed={isCollapsed} />
@@ -181,14 +176,12 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
               {section.items.map((item) => {
                 const Icon = getIconComponent(item.icon);
 
-                // Jika punya subItems, render dropdown
                 if (item.subItems && item.subItems.length > 0) {
                   return (
                     <NavDropdown
                       key={item.id}
                       label={item.label}
                       icon={<Icon size={20} />}
-                      // Key object sekarang string, jadi aman diakses dengan item.id (string)
                       isOpen={!!openDropdowns[item.id]} 
                       onToggle={() => toggleDropdown(item.id)}
                       isCollapsed={isCollapsed}
@@ -212,7 +205,6 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
                   );
                 }
 
-                // Jika tidak punya subItems, render item biasa
                 return (
                   <NavItem
                     key={item.id}
@@ -242,12 +234,10 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
                 `}
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  {/* Avatar */}
                   <div className="shrink-0 relative w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 group-hover:border-slate-300 transition-colors">
                     <UserIcon size={16} />
                   </div>
 
-                  {/* User Details (Hidden if collapsed) */}
                   <div 
                     className={`
                       flex flex-col text-left min-w-0 transition-all duration-300
@@ -263,18 +253,16 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
                   </div>
                 </div>
 
-                {/* Chevron (Hidden if collapsed) */}
                 {!isCollapsed && (
                   <ChevronsUpDown size={14} className="text-slate-400 shrink-0 opacity-50 group-hover:opacity-100" />
                 )}
               </button>
             </DropdownMenuTrigger>
 
-            {/* Dropdown Content */}
             <DropdownMenuContent 
-              align="end"     // Meratakan bagian bawah dropdown dengan trigger
-              side="right"    // [PERBAIKAN] Membuka ke kanan, bukan ke atas
-              className="w-52 ml-2" // Lebar sedikit dikecilkan, beri jarak kiri
+              align="end"     
+              side="right"    
+              className="w-52 ml-2" 
               sideOffset={5}
             >
               <DropdownMenuLabel className="text-xs font-bold text-slate-500">
@@ -292,7 +280,10 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
               <DropdownMenuSeparator />
               
               <DropdownMenuItem 
-                onClick={handleLogout}
+                onClick={(e) => {
+                   e.preventDefault(); 
+                   setShowLogoutConfirm(true);
+                }}
                 className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 gap-2 text-xs"
               >
                 <LogOutIcon size={14} />
@@ -302,6 +293,18 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
           </DropdownMenu>
         </div>
       </aside>
+
+      {/* [PERBAIKAN 2] Props disesuaikan dengan ConfirmModal.tsx */}
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        onClose={setShowLogoutConfirm}
+        onConfirm={handleLogout}
+        title="Konfirmasi Keluar"
+        description="Apakah Anda yakin ingin keluar dari sesi ini?"
+        confirmLabel="Keluar"
+        cancelLabel="Batal"
+        variant="destructive"
+      />
     </>
   );
 }
