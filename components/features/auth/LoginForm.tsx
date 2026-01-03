@@ -114,7 +114,7 @@ export function LoginForm() {
                 htmlFor="username"
                 className="text-slate-700 dark:text-slate-300 font-medium hidden lg:block"
               >
-                Username
+                <span>Username <span className="text-red-500">*</span></span>
               </Label>
               <div className="relative group transition-all duration-300">
                 <User className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-blue-600" />
@@ -137,7 +137,7 @@ export function LoginForm() {
                   htmlFor="password"
                   className="text-slate-700 dark:text-slate-300 font-medium"
                 >
-                  Password
+                  <span>Password <span className="text-red-500">*</span></span>
                 </Label>
                 
                 {/* Link Lupa Password (Desktop) */}

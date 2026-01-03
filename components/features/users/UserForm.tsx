@@ -154,7 +154,9 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
       {/* Role Selection & Status */}
       <div className="grid grid-cols-10 gap-4">
           <div className={`grid gap-2 ${isEditing ? "col-span-6" : "col-span-10"}`}>
-            <Label htmlFor="role">Role / Peran</Label>
+            <Label htmlFor="role">
+              <span>Role / Peran <span className="text-red-500">*</span></span>
+            </Label>
             <Select
             value={formData.role}
             onValueChange={(val) => {
@@ -197,7 +199,7 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
       {formData.role === "mahasiswa" && (
         <div className="grid gap-2 relative" ref={dropdownRef}>
           <Label className="flex justify-between items-center">
-            Tautkan Data Mahasiswa
+            <span>Tautkan Data Mahasiswa <span className="text-red-500">*</span></span>
             {isLoadingStudents && <Loader2 className="animate-spin h-3 w-3 text-muted-foreground" />}
           </Label>
           
@@ -258,7 +260,9 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
       {/* Nama & Username */}
       <div className="grid grid-cols-10 gap-4">
         <div className="grid gap-2 col-span-6">
-          <Label htmlFor="name">Nama Lengkap</Label>
+          <Label htmlFor="name">
+            <span>Nama Lengkap <span className="text-red-500">*</span></span>
+          </Label>
           <Input
             id="name"
             value={formData.name}
@@ -270,7 +274,9 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
         </div>
 
         <div className="grid gap-2 col-span-4">
-          <Label htmlFor="username">Username</Label>
+          <Label htmlFor="username">
+            <span>Username <span className="text-red-500">*</span></span>
+          </Label>
           <Input
             id="username"
             value={formData.username}
@@ -283,7 +289,9 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
 
       {!isEditing && (
         <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">
+                <span>Password <span className="text-red-500">*</span></span>
+            </Label>
             <div className="relative">
             <Input
                 id="password"

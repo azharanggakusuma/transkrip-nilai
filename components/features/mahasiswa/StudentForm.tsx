@@ -128,7 +128,9 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
         
         {/* NIM: 6/12 (Edit) atau 9/12 (Add) */}
         <div className={`grid gap-2 ${isEditing ? "col-span-6" : "col-span-9"}`}>
-          <Label htmlFor="nim">NIM</Label>
+          <Label htmlFor="nim">
+            <span>NIM <span className="text-red-500">*</span></span>
+          </Label>
           <div className="relative">
             <Input
               id="nim"
@@ -165,7 +167,9 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
 
         {/* Semester: 3/12 */}
         <div className="grid gap-2 col-span-3">
-          <Label htmlFor="semester">Semester</Label>
+          <Label htmlFor="semester">
+            <span>Semester <span className="text-red-500">*</span></span>
+          </Label>
           <Input
             id="semester"
             value={formData.semester}
@@ -178,7 +182,9 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
 
       {/* Baris 2: Nama Lengkap */}
       <div className="grid gap-2">
-        <Label htmlFor="nama">Nama Lengkap</Label>
+        <Label htmlFor="nama">
+          <span>Nama Lengkap <span className="text-red-500">*</span></span>
+        </Label>
         <Input
         id="nama"
         value={formData.nama}
@@ -190,7 +196,9 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
 
       {/* Baris 3: Prodi */}
       <div className="grid gap-2"> 
-          <Label htmlFor="study_program_id">Program Studi</Label>
+          <Label htmlFor="study_program_id">
+            <span>Program Studi <span className="text-red-500">*</span></span>
+          </Label>
           <Select 
             value={formData.study_program_id} 
             onValueChange={(v) => handleInputChange("study_program_id", v)}
