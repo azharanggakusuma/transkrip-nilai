@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import PageHeader from "@/components/layout/PageHeader";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button"; 
 import { ArrowUpDown } from "lucide-react";    
 import { FormModal } from "@/components/shared/FormModal";
@@ -12,10 +11,15 @@ import { MenuForm } from "@/components/features/menus/MenuForm";
 import MenuReorderList from "@/components/features/menus/MenuReorderList"; 
 import { Menu, MenuFormValues } from "@/lib/types";
 import { getMenus, createMenu, updateMenu, deleteMenu } from "@/app/actions/menus";
+// 1. Import Hook
+import { useToastMessage } from "@/hooks/use-toast-message";
 
 export default function MenusPage() {
   const [dataList, setDataList] = useState<Menu[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // 2. Gunakan Hook
+  const { showLoading, successAction, errorAction, showSuccess } = useToastMessage();
 
   // Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -30,10 +34,8 @@ export default function MenusPage() {
       const menus = await getMenus();
       setDataList(menus);
     } catch (error) {
-      console.error(error);
-      toast.error("Gagal Memuat Data", { 
-        description: "Terjadi kesalahan saat mengambil data menu. Silakan muat ulang halaman." 
-      });
+      // Panggil template error "load"
+      errorAction("load", error);
     } finally {
       setIsLoading(false);
     }
@@ -61,57 +63,44 @@ export default function MenusPage() {
   };
 
   const handleFormSubmit = async (values: MenuFormValues) => {
-    // Tutup modal dulu biar UX terasa cepat
     setIsFormOpen(false); 
     
-    // Tampilkan loading toast
-    const toastId = toast.loading("Sedang memproses data...");
+    // Tampilkan Loading
+    const toastId = showLoading("Menyimpan data menu...");
 
     try {
       if (isEditing && selectedMenu) {
         await updateMenu(selectedMenu.id, values);
-        toast.success("Perubahan Disimpan", { 
-          description: `Data menu "${values.label}" berhasil diperbarui.`,
-          id: toastId // Replace loading toast
-        });
+        // Panggil template sukses "update" -> otomatis teksnya "Perubahan Disimpan..."
+        successAction("Menu", "update", toastId);
       } else {
         await createMenu(values);
-        toast.success("Menu Ditambahkan", { 
-          description: `Menu baru "${values.label}" telah berhasil dibuat.`,
-          id: toastId 
-        });
+        // Panggil template sukses "create" -> otomatis teksnya "Berhasil Ditambahkan..."
+        successAction("Menu", "create", toastId);
       }
       
       await fetchData();
     } catch (error: any) {
-      console.error("Submit Error:", error); // Log error asli di console untuk developer
-      toast.error("Gagal Menyimpan", { 
-        description: "Terjadi kendala saat menyimpan data. Silakan coba lagi beberapa saat lagi.",
-        id: toastId
-      });
-      // Buka modal lagi jika gagal, agar user tidak perlu ketik ulang (opsional)
-      setIsFormOpen(true); 
+      // Jika error, form dibuka lagi (opsional)
+      setIsFormOpen(true);
+      // Panggil template error "save"
+      errorAction("save", error, toastId);
     }
   };
 
   const handleDelete = async () => {
     if (selectedMenu) {
       setIsDeleteOpen(false);
-      const toastId = toast.loading("Menghapus data...");
+      const toastId = showLoading("Menghapus data...");
 
       try {
         await deleteMenu(selectedMenu.id);
-        toast.success("Berhasil Dihapus", { 
-            description: "Data menu telah dihapus dari sistem.",
-            id: toastId
-        });
+        // Panggil template sukses "delete"
+        successAction("Menu", "delete", toastId);
         await fetchData();
       } catch (error: any) {
-        console.error("Delete Error:", error);
-        toast.error("Gagal Menghapus", { 
-            description: "Data tidak dapat dihapus. Pastikan menu ini tidak memiliki sub-menu aktif.",
-            id: toastId
-        });
+        // Panggil template error "delete"
+        errorAction("delete", error, toastId);
       }
     }
   };
@@ -119,7 +108,7 @@ export default function MenusPage() {
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
       
-      {/* HEADER DENGAN TOMBOL REORDER */}
+      {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <PageHeader title="Manajemen Menu" breadcrumb={["Beranda", "Menus"]} />
           
@@ -185,7 +174,8 @@ export default function MenusPage() {
               onClose={() => setIsReorderOpen(false)}
               onSuccess={() => {
                   fetchData();
-                  toast.success("Urutan Diperbarui", { description: "Susunan menu sidebar berhasil disimpan." });
+                  // Bisa pakai showSuccess manual jika pesannya spesifik
+                  showSuccess("Urutan Diperbarui", "Susunan menu sidebar berhasil disimpan.");
               }} 
            />
         )}
