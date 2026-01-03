@@ -183,7 +183,7 @@ export default function MenuTable({ data, isLoading, onEdit, onDelete, onAdd }: 
       ),
     },
     {
-        header: "Urut",
+        header: "Urutan",
         className: "text-center w-[60px]",
         render: (row) => <span className="font-mono text-sm text-slate-500 font-medium">{row.sequence}</span>,
     },
