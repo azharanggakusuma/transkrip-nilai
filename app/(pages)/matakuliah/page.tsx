@@ -22,11 +22,12 @@ import { type Course as CourseData, type CourseFormValues, type CourseCategory }
 import { getCourses, createCourse, updateCourse, deleteCourse } from "@/app/actions/courses";
 
 export default function MataKuliahPage() {
-  // Init Hook
-  const { successAction, confirmDeleteMessage, showError } = useToastMessage();
+  // Init Hook: Ambil showLoading juga
+  const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
 
   const [courses, setCourses] = useState<CourseData[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false); // [BARU] State untuk loading tombol simpan
 
   // Filters & Pagination
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,7 +42,7 @@ export default function MataKuliahPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [deleteName, setDeleteName] = useState<string>(""); // State untuk nama MK yang akan dihapus
+  const [deleteName, setDeleteName] = useState<string>(""); 
   const [formData, setFormData] = useState<CourseFormValues | undefined>(undefined);
 
   // === FETCH DATA ===
@@ -105,7 +106,6 @@ export default function MataKuliahPage() {
     setIsDialogOpen(true);
   };
 
-  // Mengubah handle delete untuk menyimpan nama juga
   const handleDelete = (course: CourseData) => {
     setSelectedId(course.id);
     setDeleteName(course.matkul);
@@ -114,34 +114,41 @@ export default function MataKuliahPage() {
 
   const confirmDelete = async () => {
     if (selectedId) {
+      // [BARU] Tambahkan loading toast saat hapus
+      const toastId = showLoading("Menghapus data..."); 
       try {
         await deleteCourse(selectedId);
-        successAction("Mata Kuliah", "delete");
+        successAction("Mata Kuliah", "delete", toastId); // Replace toast
         
         if (currentData.length === 1 && currentPage > 1) {
           setCurrentPage((prev) => prev - 1);
         }
         await fetchData();
       } catch (error: any) {
-        showError("Gagal Menghapus", error.message);
+        showError("Gagal Menghapus", error.message, toastId);
       }
     }
     setIsDeleteOpen(false);
   };
 
   const handleFormSubmit = async (values: CourseFormValues) => {
+    setIsSaving(true); // Aktifkan spinner tombol
+    const toastId = showLoading("Menyimpan data..."); // Munculkan toast loading
+
     try {
       if (isEditing && selectedId) {
         await updateCourse(selectedId, values);
-        successAction("Mata Kuliah", "update");
+        successAction("Mata Kuliah", "update", toastId); // Sukses (replace toast)
       } else {
         await createCourse(values);
-        successAction("Mata Kuliah", "create");
+        successAction("Mata Kuliah", "create", toastId); // Sukses (replace toast)
       }
       await fetchData();
       setIsDialogOpen(false);
     } catch (error: any) {
-      showError("Gagal Menyimpan", error.message);
+      showError("Gagal Menyimpan", error.message, toastId); // Error (replace toast)
+    } finally {
+      setIsSaving(false); // Matikan spinner tombol
     }
   };
 
@@ -190,7 +197,7 @@ export default function MataKuliahPage() {
             variant="ghost" 
             size="icon" 
             className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" 
-            onClick={() => handleDelete(row)} // Pass row object
+            onClick={() => handleDelete(row)} 
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -254,6 +261,7 @@ export default function MataKuliahPage() {
             key={isEditing && selectedId ? `edit-${selectedId}` : "create-new"} 
             initialData={formData}
             isEditing={isEditing}
+            isLoading={isSaving} // [BARU] Pass state loading ke form
             onSubmit={handleFormSubmit}
             onCancel={() => setIsDialogOpen(false)}
         />

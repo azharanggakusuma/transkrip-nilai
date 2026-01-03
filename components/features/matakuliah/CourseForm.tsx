@@ -9,13 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Lock } from "lucide-react"; // Import ikon Lock
+import { Lock, Loader2 } from "lucide-react";
 import { CourseFormValues } from "@/lib/types";
-import { useToastMessage } from "@/hooks/use-toast-message"; // Menggunakan hook yang disediakan
+import { useToastMessage } from "@/hooks/use-toast-message";
 
 interface CourseFormProps {
   initialData?: CourseFormValues;
   isEditing: boolean;
+  isLoading?: boolean;
   onSubmit: (data: CourseFormValues) => void;
   onCancel: () => void;
 }
@@ -24,25 +25,30 @@ const defaultValues: CourseFormValues = {
   kode: "", matkul: "", sks: "", smt_default: "", kategori: ""
 };
 
-export function CourseForm({ initialData, isEditing, onSubmit, onCancel }: CourseFormProps) {
-  const { showError } = useToastMessage(); // Inisialisasi hook
-  const [formData, setFormData] = useState<CourseFormValues>(defaultValues);
+export function CourseForm({ initialData, isEditing, isLoading = false, onSubmit, onCancel }: CourseFormProps) {
+  const { showError } = useToastMessage();
+
+  // [PERBAIKAN] Helper untuk parsing data awal agar bersih
+  const parseInitialData = (data?: CourseFormValues): CourseFormValues => {
+    if (!data) return defaultValues;
+    return {
+      kode: data.kode || "",
+      matkul: data.matkul || "",
+      sks: data.sks ? String(data.sks) : "",
+      smt_default: data.smt_default ? String(data.smt_default) : "",
+      kategori: data.kategori || "" // Pastikan kategori terbawa
+    };
+  };
+
+  // [PERBAIKAN] Inisialisasi state langsung dari initialData (Lazy Initialization)
+  // Ini mencegah "Select" kehilangan value saat render pertama
+  const [formData, setFormData] = useState<CourseFormValues>(() => parseInitialData(initialData));
+  
   const [errors, setErrors] = useState<Partial<Record<keyof CourseFormValues, boolean>>>({});
 
-  // Reset form saat modal dibuka kembali
+  // Tetap jaga sinkronisasi jika initialData berubah dari luar
   useEffect(() => {
-    if (initialData) {
-      setFormData({
-        kode: initialData.kode || "",
-        matkul: initialData.matkul || "",
-        // Konversi ke string agar aman di input text
-        sks: initialData.sks ? String(initialData.sks) : "",
-        smt_default: initialData.smt_default ? String(initialData.smt_default) : "",
-        kategori: initialData.kategori || ""
-      });
-    } else {
-      setFormData(defaultValues);
-    }
+    setFormData(parseInitialData(initialData));
   }, [initialData]);
 
   // --- HANDLERS ---
@@ -54,7 +60,6 @@ export function CourseForm({ initialData, isEditing, onSubmit, onCancel }: Cours
   };
 
   const handleNumericInput = (field: keyof CourseFormValues, value: string, maxLength: number) => {
-    // Hanya izinkan angka dan batasi panjang karakter
     if (/^\d*$/.test(value) && value.length <= maxLength) {
       handleInputChange(field, value);
     }
@@ -96,7 +101,6 @@ export function CourseForm({ initialData, isEditing, onSubmit, onCancel }: Cours
     if (errorMessages.length > 0) {
       setErrors(newErrors);
       isValid = false;
-      // Menggunakan showError dari hook
       showError("Validasi Gagal", errorMessages.join(", "));
     }
 
@@ -114,7 +118,8 @@ export function CourseForm({ initialData, isEditing, onSubmit, onCancel }: Cours
   return (
     <form onSubmit={handleSubmit} className="grid gap-5 py-4">
       <div className="grid grid-cols-4 gap-4">
-        {/* Kolom Kode MK - Terkunci saat Edit */}
+        
+        {/* Kolom Kode MK */}
         <div className="grid gap-2 col-span-2">
           <Label htmlFor="kode">Kode MK</Label>
           <div className="relative">
@@ -123,11 +128,9 @@ export function CourseForm({ initialData, isEditing, onSubmit, onCancel }: Cours
               value={formData.kode} 
               onChange={(e) => handleInputChange("kode", e.target.value)} 
               placeholder="Contoh: TKK-01" 
-              // Style khusus saat disabled agar mirip StudentForm
               className={`${errorClass("kode")} ${isEditing ? "bg-muted text-muted-foreground opacity-100 pr-8" : ""}`}
               disabled={isEditing} 
             />
-            {/* Tampilkan ikon gembok jika sedang Edit */}
             {isEditing && (
               <Lock className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             )}
@@ -187,8 +190,13 @@ export function CourseForm({ initialData, isEditing, onSubmit, onCancel }: Cours
       </div>
 
       <div className="flex justify-end gap-2 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel}>Batal</Button>
-        <Button type="submit">{isEditing ? "Simpan Perubahan" : "Tambah Mata Kuliah"}</Button>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+          Batal
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isEditing ? "Simpan Perubahan" : "Tambah Mata Kuliah"}
+        </Button>
       </div>
     </form>
   );
