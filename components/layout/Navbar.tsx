@@ -14,7 +14,6 @@ import {
   CalendarDays
 } from "lucide-react";
 import { UserSession, logout } from "@/app/actions/auth";
-// 1. Import tipe data
 import { AcademicYear } from "@/lib/types";
 
 import {
@@ -31,7 +30,6 @@ type NavbarProps = {
   onToggleCollapse?: () => void;
   isCollapsed?: boolean;
   user?: UserSession | null;
-  // 2. Tambahkan props baru (opsional karena bisa null)
   academicYearData?: AcademicYear | null;
 };
 
@@ -40,13 +38,11 @@ export default function Navbar({
   onToggleCollapse, 
   isCollapsed, 
   user,
-  academicYearData // Terima props
+  academicYearData 
 }: NavbarProps) {
+  // Variabel displayName dan displayRole tetap ada jika nanti dibutuhkan di dalam dropdown
   const displayName = user?.name || user?.username || "Pengguna";
-  const displayRole = user?.role || "Mahasiswa";
   
-  // 3. Logic: Jika data ada, gabungkan nama + semester. Jika tidak, pakai fallback.
-  // Format: "2024/2025" + " " + "Ganjil" -> "2024/2025 Ganjil"
   const academicYear = academicYearData 
     ? `${academicYearData.nama} ${academicYearData.semester}` 
     : "TA Belum Diatur";
@@ -80,7 +76,7 @@ export default function Navbar({
             </button>
           </Tooltip>
 
-          {/* SEARCH BAR (Tetap sama) */}
+          {/* SEARCH BAR */}
           <div className="hidden md:block ml-2">
             <div className="relative group">
               <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 transition-colors duration-200 group-focus-within:text-blue-600">
@@ -117,16 +113,11 @@ export default function Navbar({
               <button 
                 type="button" 
                 suppressHydrationWarning
-                className="group flex items-center gap-2 rounded-full p-1 transition-colors duration-200 hover:bg-slate-100/60 focus:outline-none focus:ring-0 active:ring-0"
+                // Hapus 'gap-2' dan teks di dalamnya, sisakan wrapper icon saja
+                className="group flex items-center justify-center rounded-full p-1 transition-colors duration-200 hover:bg-slate-100/60 focus:outline-none focus:ring-0 active:ring-0"
               >
-                <div className="hidden sm:flex flex-col text-right leading-tight mr-1">
-                  <span className="text-xs font-semibold text-slate-700 transition-colors duration-200 group-hover:text-slate-900">
-                    {displayName}
-                  </span>
-                  <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">
-                    {displayRole}
-                  </span>
-                </div>
+                {/* Bagian teks (Nama & Role) telah dihapus dari sini */}
+                
                 <div className="relative w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 group-hover:border-slate-300 transition-all">
                   <User className="h-4 w-4 text-slate-500" />
                 </div>
@@ -134,9 +125,14 @@ export default function Navbar({
             </DropdownMenuTrigger>
             
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
+              {/* Menampilkan Nama di Header Dropdown agar tetap terlihat saat diklik */}
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <span>Akun Saya</span>
+                  <span className="text-xs font-normal text-slate-500 truncate">{displayName}</span>
+                </div>
+              </DropdownMenuLabel>
               
-              {/* Info TA untuk Mobile User (di dalam dropdown) */}
               <div className="md:hidden px-2 py-2 text-xs text-slate-500 border-b border-slate-100 mb-1 bg-slate-50/50">
                  <span className="font-medium">TA: {academicYear}</span>
               </div>
