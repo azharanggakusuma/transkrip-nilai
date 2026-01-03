@@ -13,6 +13,12 @@ import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import { AcademicYearForm } from "@/components/features/academic-year/AcademicYearForm";
 import { AcademicYear, AcademicYearFormValues } from "@/lib/types";
 import { getAcademicYears, createAcademicYear, updateAcademicYear, deleteAcademicYear } from "@/app/actions/academic-years";
+import {
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
 
 export default function AcademicYearPage() {
   const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
@@ -21,8 +27,9 @@ export default function AcademicYearPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Pagination & Search
+  // Pagination, Search, & Filter
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL"); // [NEW] State untuk filter
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -56,12 +63,22 @@ export default function AcademicYearPage() {
   // --- FILTER LOGIC ---
   const filteredData = useMemo(() => {
     return dataList.filter((item) => {
+      // 1. Filter Search
       const matchSearch = 
         item.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.semester.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchSearch;
+      
+      // 2. Filter Status (Dropdown)
+      let matchStatus = true;
+      if (statusFilter === "active") {
+        matchStatus = item.is_active === true;
+      } else if (statusFilter === "inactive") {
+        matchStatus = item.is_active === false;
+      }
+
+      return matchSearch && matchStatus;
     });
-  }, [dataList, searchQuery]);
+  }, [dataList, searchQuery, statusFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
@@ -189,6 +206,25 @@ export default function AcademicYearPage() {
     }
   ];
 
+  // === FILTER MENU CONTENT ===
+  const filterContent = (
+    <>
+      <DropdownMenuLabel>Filter Status</DropdownMenuLabel>
+      <DropdownMenuSeparator />
+      <DropdownMenuRadioGroup 
+        value={statusFilter} 
+        onValueChange={(v) => { 
+          setStatusFilter(v); 
+          setCurrentPage(1); 
+        }}
+      >
+        <DropdownMenuRadioItem value="ALL">Semua</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="active">Aktif</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="inactive">Non-Aktif</DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
+    </>
+  );
+
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
       <PageHeader title="Tahun Akademik" breadcrumb={["Beranda", "Tahun Akademik"]} />
@@ -203,6 +239,16 @@ export default function AcademicYearPage() {
             onSearchChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             searchPlaceholder="Cari Tahun/Semester..."
             onAdd={handleOpenAdd}
+            
+            // Props untuk Filter
+            filterContent={filterContent}
+            isFilterActive={statusFilter !== "ALL"}
+            onResetFilter={() => {
+              setStatusFilter("ALL");
+              setSearchQuery("");
+              setCurrentPage(1);
+            }}
+
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
