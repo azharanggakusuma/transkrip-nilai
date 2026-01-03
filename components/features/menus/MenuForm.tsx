@@ -146,7 +146,8 @@ export function MenuForm({
               handleInputChange("parent_id", val === "0" ? null : Number(val))
             }
           >
-            <SelectTrigger>
+            {/* PERBAIKAN: Tambahkan w-full disini */}
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Pilih Parent..." />
             </SelectTrigger>
             <SelectContent>
@@ -178,7 +179,8 @@ export function MenuForm({
                 value={formData.is_active ? "active" : "inactive"}
                 onValueChange={(val) => handleInputChange("is_active", val === "active")}
             >
-                <SelectTrigger>
+                {/* PERBAIKAN: Tambahkan w-full disini */}
+                <SelectTrigger className="w-full">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
