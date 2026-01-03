@@ -11,8 +11,7 @@ import {
   CheckCircle2, 
   XCircle, 
   HelpCircle, 
-  CornerDownRight, 
-  Link as LinkIcon 
+  CornerDownRight
 } from "lucide-react";
 import { Menu } from "@/lib/types";
 import * as LucideIcons from "lucide-react";
@@ -88,7 +87,7 @@ export default function MenuTable({ data, isLoading, onEdit, onDelete, onAdd }: 
                   {row.section}
                </span>
                
-               {/* Label Induk (Sekarang styling-nya NETRAL/ABU sama seperti Section) */}
+               {/* Label Induk */}
                {row.parent && (
                   <span className="bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
                     Induk: {row.parent.label}
@@ -98,24 +97,23 @@ export default function MenuTable({ data, isLoading, onEdit, onDelete, onAdd }: 
         </div>
       ),
     },
+    // [GABUNG] Kolom Icon dan Path digabung di sini
     {
-      header: "Icon",
-      className: "w-[80px] text-center",
+      header: "Icon & Path",
       render: (row) => (
-        <div className="flex justify-center" title={`Icon Name: ${row.icon}`}>
-            <div className="flex items-center justify-center w-9 h-9 rounded-md bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 transition-colors">
+        <div className="flex items-center gap-3">
+            {/* Icon Box (Tanpa Hover Effect) */}
+            <div 
+              className="flex items-center justify-center w-8 h-8 rounded-md bg-slate-100 border border-slate-200 text-slate-600 shrink-0" 
+              title={`Icon Name: ${row.icon}`}
+            >
                 <RowIcon name={row.icon} />
             </div>
-        </div>
-      ),
-    },
-    {
-      header: "Path URL",
-      render: (row) => (
-        <div className="flex items-center gap-2 max-w-[150px]">
-           <code className="text-xs font-mono text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 truncate" title={row.href}>
+
+            {/* Path Code */}
+            <code className="text-xs font-mono text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 truncate max-w-[140px]" title={row.href}>
               {row.href}
-           </code>
+            </code>
         </div>
       ),
     },
@@ -150,7 +148,6 @@ export default function MenuTable({ data, isLoading, onEdit, onDelete, onAdd }: 
         render: (row) => (
           <Badge 
             variant={row.is_active ? "default" : "destructive"} 
-            // PERBAIKAN DI SINI: Menambahkan hover:bg-green-600 dan hover:bg-destructive agar warna tidak berubah saat di-hover
             className={`font-normal ${
               row.is_active 
                 ? "bg-green-600 hover:bg-green-600" 
