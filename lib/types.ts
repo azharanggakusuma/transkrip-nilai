@@ -13,6 +13,12 @@ export interface StudyProgram {
   jenjang: string;
 }
 
+export interface StudyProgramFormValues {
+  kode: string;
+  nama: string;
+  jenjang: string;
+}
+
 export interface AcademicYear {
   id: string;
   nama: string;
@@ -20,7 +26,7 @@ export interface AcademicYear {
   is_active: boolean;
 }
 
-// Interface baru untuk Pejabat (Official)
+// Interface untuk Pejabat (Official)
 export interface Official {
   id: string;
   nama: string;
