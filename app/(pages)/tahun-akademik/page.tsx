@@ -153,21 +153,19 @@ export default function AcademicYearPage() {
     {
       header: "Status",
       accessorKey: "is_active",
-      className: "w-[150px] text-center",
+      className: "text-center w-[120px]",
       render: (row) => (
-        <div className="flex justify-center">
-            {row.is_active ? (
-                <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 gap-1 pl-1.5 pr-2.5">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Aktif
-                </Badge>
-            ) : (
-                <Badge variant="outline" className="text-muted-foreground bg-gray-50 gap-1 pl-1.5 pr-2.5">
-                    <XCircle className="w-3.5 h-3.5" />
-                    Tidak Aktif
-                </Badge>
-            )}
-        </div>
+        <Badge 
+          variant={row.is_active ? "default" : "destructive"} 
+          className={`font-normal ${row.is_active ? "bg-green-600" : ""}`}
+        >
+          {row.is_active ? (
+            <CheckCircle2 className="mr-1 h-3 w-3" />
+          ) : (
+            <XCircle className="mr-1 h-3 w-3" />
+          )}
+          {row.is_active ? "Aktif" : "Non-Aktif"}
+        </Badge>
       )
     },
     {
