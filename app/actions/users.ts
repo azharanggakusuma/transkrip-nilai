@@ -17,6 +17,29 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   },
 });
 
+// --- HELPER ERROR HANDLING ---
+const handleDbError = (error: any, context: string) => {
+  // 1. Log Error Asli di SERVER Console
+  console.error(`[DB_ERROR] ${context}:`, error);
+
+  // 2. Cek Kode Error Postgres
+  // Code 23505: Unique Violation (Data Kembar)
+  if (error.code === '23505') {
+    if (error.message?.includes('username')) {
+        throw new Error("Username tersebut sudah digunakan. Silakan pilih username lain.");
+    }
+    throw new Error("Data duplikat terdeteksi dalam sistem.");
+  }
+
+  // Code 23503: Foreign Key Violation
+  if (error.code === '23503') {
+    throw new Error("User tidak dapat dihapus karena data ini terhubung dengan data lain.");
+  }
+
+  // 3. Fallback Error Umum
+  throw new Error("Gagal memproses data. Terjadi kendala di server.");
+};
+
 // === GET USERS ===
 export async function getUsers() {
   const { data, error } = await supabaseAdmin
@@ -33,7 +56,6 @@ export async function getUsers() {
 
 // === HELPER: GET STUDENTS FOR SELECTION ===
 export async function getStudentsForSelection(excludeUserId?: string) {
-  // 1. Ambil data mahasiswa
   const { data: students, error } = await supabaseAdmin
     .from("students")
     .select("id, nim, nama")
@@ -41,7 +63,6 @@ export async function getStudentsForSelection(excludeUserId?: string) {
 
   if (error || !students) return [];
 
-  // 2. Cek student_id yang sudah terpakai di tabel users
   let query = supabaseAdmin.from("users").select("student_id").not("student_id", "is", null);
   
   if (excludeUserId) {
@@ -49,12 +70,10 @@ export async function getStudentsForSelection(excludeUserId?: string) {
   }
 
   const { data: usedUsers } = await query;
-  // student_id di sini sekarang string
   const usedStudentIds = new Set(usedUsers?.map((u) => u.student_id));
 
-  // 3. Map status 'is_taken'
   return students.map((s) => ({
-    id: s.id, // UUID
+    id: s.id,
     nim: s.nim,
     nama: s.nama,
     is_taken: usedStudentIds.has(s.id),
@@ -65,14 +84,11 @@ export async function getStudentsForSelection(excludeUserId?: string) {
 export async function createUser(values: UserPayload) {
   const { name, username, password, role, student_id, is_active } = values;
 
-  // Validasi password wajib ada saat create
   if (!password) throw new Error("Password wajib diisi untuk user baru.");
 
-  // Tentukan student_id berdasarkan role
-  // Hapus Number(), biarkan string atau null
   const targetStudentId = (role === "mahasiswa" && student_id) ? student_id : null;
 
-  // [BARU] Validasi: Pastikan mahasiswa belum punya akun
+  // Validasi: Pastikan mahasiswa belum punya akun
   if (targetStudentId) {
     const { data: existingUser } = await supabaseAdmin
       .from("users")
@@ -98,10 +114,7 @@ export async function createUser(values: UserPayload) {
 
   const { error } = await supabaseAdmin.from("users").insert([payload]);
 
-  if (error) {
-    if (error.code === "23505") throw new Error("Username sudah digunakan.");
-    throw new Error(error.message);
-  }
+  if (error) handleDbError(error, "createUser");
 
   revalidatePath("/users");
 }
@@ -110,17 +123,15 @@ export async function createUser(values: UserPayload) {
 export async function updateUser(id: string, values: UserPayload) {
   const { name, username, password, role, student_id, is_active } = values;
 
-  // Tentukan student_id berdasarkan role
-  // Hapus Number(), biarkan string atau null
   const targetStudentId = (role === "mahasiswa" && student_id) ? student_id : null;
 
-  // [BARU] Validasi: Pastikan mahasiswa belum punya akun (kecuali user ini sendiri)
+  // Validasi: Pastikan mahasiswa belum punya akun (kecuali user ini sendiri)
   if (targetStudentId) {
     const { data: existingUser } = await supabaseAdmin
       .from("users")
       .select("id")
       .eq("student_id", targetStudentId)
-      .neq("id", id) // Abaikan user yang sedang diedit
+      .neq("id", id)
       .single();
 
     if (existingUser) {
@@ -132,12 +143,10 @@ export async function updateUser(id: string, values: UserPayload) {
     name,
     username,
     role,
-    // Jika role bukan mahasiswa, hapus relasi student_id
     student_id: targetStudentId,
     is_active: is_active
   };
 
-  // Hanya update password jika diisi
   if (password && password.trim() !== "") {
     updates.password = await bcrypt.hash(password, 10);
   }
@@ -147,7 +156,7 @@ export async function updateUser(id: string, values: UserPayload) {
     .update(updates)
     .eq("id", id);
 
-  if (error) throw new Error(error.message);
+  if (error) handleDbError(error, "updateUser");
 
   revalidatePath("/users");
 }
@@ -155,6 +164,8 @@ export async function updateUser(id: string, values: UserPayload) {
 // === DELETE USER ===
 export async function deleteUser(id: string) {
   const { error } = await supabaseAdmin.from("users").delete().eq("id", id);
-  if (error) throw new Error(error.message);
+  
+  if (error) handleDbError(error, "deleteUser");
+  
   revalidatePath("/users");
 }

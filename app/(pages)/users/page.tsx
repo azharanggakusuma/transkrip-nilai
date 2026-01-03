@@ -2,17 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import PageHeader from "@/components/layout/PageHeader";
-import { toast } from "sonner";
+import { useToastMessage } from "@/hooks/use-toast-message"; // Menggunakan Hook
 import { FormModal } from "@/components/shared/FormModal";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import { UserForm } from "@/components/features/users/UserForm";
 import UserTable from "@/components/features/users/UserTable";
 import { ResetPasswordModal } from "@/components/features/users/ResetPasswordModal"; 
-// PERBAIKAN IMPORT
 import { type UserData, type UserFormValues } from "@/lib/types";
 import { getUsers, createUser, updateUser, deleteUser } from "@/app/actions/users";
 
 export default function UsersPage() {
+  // Init Hook
+  const { successAction, confirmDeleteMessage, showError } = useToastMessage();
+
   const [dataList, setDataList] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -31,7 +33,10 @@ export default function UsersPage() {
       setDataList(users);
     } catch (error) {
       console.error(error);
-      toast.error("Gagal memuat data users.");
+      showError(
+        "Gagal Memuat Data", 
+        "Terjadi kesalahan saat mengambil data pengguna. Silakan coba muat ulang halaman."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -68,15 +73,16 @@ export default function UsersPage() {
     try {
       if (isEditing && selectedUser) {
         await updateUser(selectedUser.id, values);
-        toast.success("Berhasil Update", { description: `User ${values.name} diperbarui.` });
+        successAction("User", "update");
       } else {
         await createUser(values);
-        toast.success("Berhasil", { description: `User ${values.name} ditambahkan.` });
+        successAction("User", "create");
       }
       setIsFormOpen(false);
       await fetchData();
     } catch (error: any) {
-      toast.error("Gagal Menyimpan", { description: error.message || "Terjadi kesalahan sistem." });
+      // Menampilkan pesan error bersih dari server
+      showError("Gagal Menyimpan", error.message);
     }
   };
 
@@ -84,10 +90,10 @@ export default function UsersPage() {
     if (selectedUser) {
       try {
         await deleteUser(selectedUser.id);
-        toast.success("Dihapus", { description: "User berhasil dihapus." });
+        successAction("User", "delete");
         await fetchData();
       } catch (error: any) {
-        toast.error("Gagal Hapus", { description: error.message || "Gagal menghapus data." });
+        showError("Gagal Menghapus", error.message);
       }
     }
     setIsDeleteOpen(false);
@@ -140,7 +146,7 @@ export default function UsersPage() {
         onClose={setIsDeleteOpen}
         onConfirm={handleDelete}
         title="Hapus User?"
-        description={`Yakin ingin menghapus user "${selectedUser?.name}"? Akses login akan hilang permanen.`}
+        description={confirmDeleteMessage("User", selectedUser?.name)}
         confirmLabel="Hapus User"
         variant="destructive"
       />
