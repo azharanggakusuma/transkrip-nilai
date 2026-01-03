@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { toast } from "sonner";
+// Hapus import toast langsung, gunakan hook
+import { useToastMessage } from "@/hooks/use-toast-message"; 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import { Eye, EyeOff, Copy, Check, Wand2, Key, Info } from "lucide-react";
 import { FormModal } from "@/components/shared/FormModal";
 import Tooltip from "@/components/shared/Tooltip";
 import { updateUser } from "@/app/actions/users";
-// PERBAIKAN: Import dari lib/types
 import { type UserData } from "@/lib/types"; 
 
 interface ResetPasswordModalProps {
@@ -20,6 +20,9 @@ interface ResetPasswordModalProps {
 }
 
 export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPasswordModalProps) {
+  // Init Hook
+  const { showLoading, showSuccess, showError } = useToastMessage();
+
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,9 +54,8 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
     navigator.clipboard.writeText(newPassword);
     setIsCopied(true);
     
-    toast.success("Password Disalin", { 
-      description: "Password telah disalin ke clipboard. Siap untuk digunakan." 
-    });
+    // Gunakan showSuccess dari hook
+    showSuccess("Password Disalin", "Password telah disalin ke clipboard. Siap untuk digunakan.");
     
     // Reset icon copy setelah 2 detik
     setTimeout(() => setIsCopied(false), 2000);
@@ -64,25 +66,32 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
     if (!user || !newPassword.trim()) return;
 
     if (newPassword.length < 6) {
-      toast.error("Password Lemah", { description: "Minimal 6 karakter." });
+      showError("Password Lemah", "Minimal 6 karakter.");
       return;
     }
 
+    // 1. Tampilkan Loading dan simpan ID-nya
+    const toastId = showLoading("Sedang menyimpan password...");
     setIsLoading(true);
+
     try {
       await updateUser(user.id, {
         ...user,
         password: newPassword,
       });
 
-      toast.success("Sukses", {
-        description: `Password untuk ${user.name} berhasil diubah.`
-      });
+      // 2. Oper ID ke showSuccess agar toast loading berubah jadi sukses
+      showSuccess(
+        "Sukses", 
+        `Password untuk ${user.name} berhasil diubah.`, 
+        toastId
+      );
 
       onClose(false);
       if (onSuccess) onSuccess();
     } catch (error: any) {
-      toast.error("Gagal", { description: error.message });
+      // 3. Oper ID ke showError agar toast loading berubah jadi error
+      showError("Gagal", error.message, toastId);
     } finally {
       setIsLoading(false);
     }
