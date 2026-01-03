@@ -28,13 +28,12 @@ const defaultValues: StudentFormValues = {
 
 export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, onCancel }: StudentFormProps) {
   
-  // [PERBAIKAN] Helper untuk memastikan data ter-parse dengan benar sejak awal render
   const parseInitialData = (data?: StudentFormValues): StudentFormValues => {
     if (!data) return defaultValues;
     return {
       nim: data.nim || "",
       nama: data.nama || "",
-      // Pastikan ID dikonversi ke String secara eksplisit agar cocok dengan value SelectItem
+      // [UBAH] study_program_id adalah UUID string, pastikan string
       study_program_id: data.study_program_id ? String(data.study_program_id) : "",
       semester: data.semester ? String(data.semester) : "",
       alamat: data.alamat || "",
@@ -42,13 +41,9 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
     };
   };
 
-  // [PERBAIKAN] Inisialisasi state LANGSUNG dengan data yang sudah di-parse
-  // Ini mencegah "flash" data kosong yang membuat Select bingung
   const [formData, setFormData] = useState<StudentFormValues>(() => parseInitialData(initialData));
-  
   const [errors, setErrors] = useState<Partial<Record<keyof StudentFormValues, boolean>>>({});
 
-  // Reset form jika initialData berubah (misal ganti baris yang diedit tanpa tutup modal)
   useEffect(() => {
     setFormData(parseInitialData(initialData));
   }, [initialData]);
@@ -205,7 +200,8 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
             </SelectTrigger>
             <SelectContent>
               {studyPrograms.map(p => (
-                <SelectItem key={p.id} value={String(p.id)}>
+                // [UBAH] ID sekarang UUID String
+                <SelectItem key={p.id} value={p.id}>
                   {p.nama} ({p.jenjang})
                 </SelectItem>
               ))}

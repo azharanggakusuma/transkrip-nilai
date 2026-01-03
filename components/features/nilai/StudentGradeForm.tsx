@@ -25,8 +25,9 @@ import Tooltip from "@/components/shared/Tooltip";
 import { RotateCcw, Save, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// [UBAH] ID sekarang string (UUID)
 interface CourseRaw {
-  id: number;
+  id: string; 
   kode: string;
   matkul: string;
   sks: number;
@@ -36,7 +37,8 @@ interface CourseRaw {
 interface StudentGradeFormProps {
   student: StudentData;
   allCourses: CourseRaw[];
-  onSubmit: (studentId: number, grades: { course_id: number; hm: string }[]) => Promise<void>;
+  // [UBAH] Parameter onSubmit menggunakan string ID
+  onSubmit: (studentId: string, grades: { course_id: string; hm: string }[]) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -49,12 +51,13 @@ export function StudentGradeForm({
   const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   
-  // State perubahan nilai
-  const [gradeChanges, setGradeChanges] = useState<Record<number, string>>({});
+  // [UBAH] Key gradeChanges sekarang string (UUID course_id)
+  const [gradeChanges, setGradeChanges] = useState<Record<string, string>>({});
 
   // --- Helpers ---
 
-  const getGradeValue = (courseId: number) => {
+  // [UBAH] courseId string
+  const getGradeValue = (courseId: string) => {
     return gradeChanges[courseId] !== undefined
       ? gradeChanges[courseId]
       : student.transcript.find((t) => t.course_id === courseId)?.hm || "";
@@ -65,11 +68,13 @@ export function StudentGradeForm({
     return points[hm] ?? 0;
   };
 
-  const handleGradeChange = (courseId: number, value: string) => {
+  // [UBAH] courseId string
+  const handleGradeChange = (courseId: string, value: string) => {
     setGradeChanges((prev) => ({ ...prev, [courseId]: value }));
   };
 
-  const handleResetRow = (courseId: number) => {
+  // [UBAH] courseId string
+  const handleResetRow = (courseId: string) => {
     const newChanges = { ...gradeChanges };
     delete newChanges[courseId];
     setGradeChanges(newChanges);
@@ -112,12 +117,14 @@ export function StudentGradeForm({
 
     try {
       const payload = Object.entries(gradeChanges).map(([cId, hm]) => ({
-        course_id: parseInt(cId),
+        // [UBAH] cId sudah string (UUID), jangan di parseInt
+        course_id: cId,
         hm: hm,
       }));
 
+      // [UBAH] student.id sudah string (UUID), jangan di parseInt
       await toast.promise(
-        onSubmit(parseInt(student.id), payload),
+        onSubmit(student.id, payload),
         {
           loading: 'Sedang memproses penyimpanan data akademik...',
           success: `Nilai atas nama ${student.profile.nama} berhasil diperbarui.`,
@@ -138,7 +145,6 @@ export function StudentGradeForm({
     (_, i) => i + 1
   );
 
-  // Helper untuk mengambil data Prodi & Jenjang dengan aman
   const prodiInfo = student.profile.study_program 
     ? student.profile.study_program.nama 
     : "-";
@@ -154,7 +160,6 @@ export function StudentGradeForm({
         {/* === HEADER === */}
         <div className="flex-none px-6 py-5 border-b bg-background flex justify-between items-start z-10">
           
-          {/* Info Mahasiswa */}
           <div className="space-y-1">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
               {student.profile.nama}
@@ -163,14 +168,12 @@ export function StudentGradeForm({
               <Badge variant="outline" className="font-mono text-xs font-normal px-2 py-0.5 border-border">
                 {student.profile.nim}
               </Badge>
-              {/* PERBAIKAN DI SINI: Menggunakan data dari relasi study_program */}
               <span>
                 {prodiInfo} {jenjangInfo}
               </span>
             </div>
           </div>
 
-          {/* Widget IPK Clean */}
           <div className="flex flex-col items-end justify-center pt-0.5">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
               Proyeksi IPK

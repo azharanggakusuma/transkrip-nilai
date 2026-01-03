@@ -33,8 +33,9 @@ export function CourseForm({ initialData, isEditing, onSubmit, onCancel }: Cours
       setFormData({
         kode: initialData.kode || "",
         matkul: initialData.matkul || "",
-        sks: initialData.sks || "",
-        smt_default: initialData.smt_default || "",
+        // Konversi ke string agar aman di input text
+        sks: initialData.sks ? String(initialData.sks) : "",
+        smt_default: initialData.smt_default ? String(initialData.smt_default) : "",
         kategori: initialData.kategori || ""
       });
     } else {

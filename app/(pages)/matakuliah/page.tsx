@@ -18,7 +18,6 @@ import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import Tooltip from "@/components/shared/Tooltip";
 import { toast } from "sonner";
 import { CourseForm } from "@/components/features/matakuliah/CourseForm";
-// PERBAIKAN IMPORT:
 import { type Course as CourseData, type CourseFormValues, type CourseCategory } from "@/lib/types";
 import { getCourses, createCourse, updateCourse, deleteCourse } from "@/app/actions/courses";
 
@@ -38,7 +37,8 @@ export default function MataKuliahPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  // [PERBAIKAN] Ubah tipe state ID menjadi string (UUID)
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [formData, setFormData] = useState<CourseFormValues | undefined>(undefined);
 
   // === FETCH DATA ===
@@ -86,19 +86,20 @@ export default function MataKuliahPage() {
   };
 
   const handleOpenEdit = (course: CourseData) => {
-    setSelectedId(course.id);
+    setSelectedId(course.id); // course.id sekarang string
     setFormData({
       kode: course.kode,
       matkul: course.matkul,
       sks: course.sks,
       smt_default: course.smt_default,
-      kategori: course.kategori as CourseCategory // Casting explicit jika perlu
+      kategori: course.kategori as CourseCategory 
     });
     setIsEditing(true);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
+  // [PERBAIKAN] Parameter id menjadi string
+  const handleDelete = (id: string) => {
     setSelectedId(id);
     setIsDeleteOpen(true);
   };

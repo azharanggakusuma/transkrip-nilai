@@ -7,16 +7,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { FormModal } from "@/components/shared/FormModal";
 
 // Imports
-import { getStudents, getStudyPrograms } from "@/app/actions/students"; // Import getStudyPrograms
+import { getStudents, getStudyPrograms } from "@/app/actions/students"; 
 import { getAllCourses, saveStudentGrades } from "@/app/actions/grades";
-import { StudentData, StudyProgram } from "@/lib/types"; // Import type
+import { StudentData, StudyProgram } from "@/lib/types"; 
 import { StudentGradeForm } from "@/components/features/nilai/StudentGradeForm";
 import { StudentTable } from "@/components/features/nilai/StudentTable";
 
 export default function NilaiPage() {
   const [studentList, setStudentList] = useState<StudentData[]>([]);
   const [coursesList, setCoursesList] = useState<any[]>([]);
-  const [studyPrograms, setStudyPrograms] = useState<StudyProgram[]>([]); // State baru
+  const [studyPrograms, setStudyPrograms] = useState<StudyProgram[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal State
@@ -30,7 +30,7 @@ export default function NilaiPage() {
       const [students, courses, programs] = await Promise.all([
         getStudents(),
         getAllCourses(),
-        getStudyPrograms() // Ambil data prodi
+        getStudyPrograms() 
       ]);
       
       setStudentList(students);
@@ -53,7 +53,8 @@ export default function NilaiPage() {
     setIsFormOpen(true);
   };
 
-  const handleSaveGrades = async (studentId: number, grades: { course_id: number; hm: string }[]) => {
+  // [PERBAIKAN] studentId dan course_id diubah jadi string
+  const handleSaveGrades = async (studentId: string, grades: { course_id: string; hm: string }[]) => {
     await saveStudentGrades(studentId, grades);
     await fetchData(); 
   };
@@ -66,7 +67,7 @@ export default function NilaiPage() {
         <CardContent className="p-6">
           <StudentTable 
             data={studentList}
-            studyPrograms={studyPrograms} // Pass data ke table
+            studyPrograms={studyPrograms} 
             isLoading={isLoading}
             onEdit={handleOpenEdit}
           />

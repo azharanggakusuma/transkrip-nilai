@@ -33,8 +33,8 @@ type MenuSection = {
   items: MenuItemWithChildren[];
 };
 
-// --- HELPER: SORTABLE CHILD ---
-function SortableChild({ id, label }: { id: number; label: string }) {
+// [UBAH] ID string (UUID)
+function SortableChild({ id, label }: { id: string; label: string }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
@@ -62,14 +62,14 @@ function SortableChild({ id, label }: { id: number; label: string }) {
   );
 }
 
-// --- HELPER: SORTABLE ROOT ---
+// [UBAH] ID string (UUID)
 function SortableRoot({ 
   id, 
   label, 
   childrenItems, 
   onChildDragEnd 
 }: { 
-  id: number; 
+  id: string; 
   label: string; 
   childrenItems: Menu[];
   onChildDragEnd: (event: DragEndEvent) => void;
@@ -194,7 +194,7 @@ export default function MenuReorderList({ initialItems, onClose, onSuccess }: Me
     });
   };
 
-  const handleDragChild = (event: DragEndEvent, sectionIndex: number, parentId: number) => {
+  const handleDragChild = (event: DragEndEvent, sectionIndex: number, parentId: string) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -226,15 +226,14 @@ export default function MenuReorderList({ initialItems, onClose, onSuccess }: Me
 
   const handleSave = async () => {
     setIsSaving(true);
-    const updates: { id: number; sequence: number }[] = [];
+    // [UBAH] id sekarang string
+    const updates: { id: string; sequence: number }[] = [];
 
     sections.forEach((section) => {
        section.items.forEach((root, rootIndex) => {
-          // UPDATE: Gunakan kelipatan 10 untuk Parent (10, 20, 30...)
           updates.push({ id: root.id, sequence: (rootIndex + 1) * 10 });
 
           root.children.forEach((child, childIndex) => {
-             // UPDATE: Gunakan format 100+ untuk Child (101, 102, 103...)
              updates.push({ id: child.id, sequence: 100 + (childIndex + 1) });
           });
        });

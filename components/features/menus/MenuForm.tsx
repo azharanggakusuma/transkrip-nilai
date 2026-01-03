@@ -141,19 +141,20 @@ export function MenuForm({
         <div className="space-y-2">
           <Label htmlFor="parent_id">Menu Induk</Label>
           <Select
+            // [UBAH] parent_id string, gunakan "0" untuk root
             value={formData.parent_id?.toString() || "0"}
             onValueChange={(val) =>
-              handleInputChange("parent_id", val === "0" ? null : Number(val))
+              // [UBAH] Jangan di Number(), biarkan string atau null
+              handleInputChange("parent_id", val === "0" ? null : val)
             }
           >
-            {/* PERBAIKAN: Tambahkan w-full disini */}
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Pilih Parent..." />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="0">-- Root (Menu Utama) --</SelectItem>
               {validParents.map((parent) => (
-                <SelectItem key={parent.id} value={parent.id.toString()}>
+                <SelectItem key={parent.id} value={parent.id}>
                   {parent.label}
                 </SelectItem>
               ))}
@@ -179,7 +180,6 @@ export function MenuForm({
                 value={formData.is_active ? "active" : "inactive"}
                 onValueChange={(val) => handleInputChange("is_active", val === "active")}
             >
-                {/* PERBAIKAN: Tambahkan w-full disini */}
                 <SelectTrigger className="w-full">
                     <SelectValue />
                 </SelectTrigger>
@@ -190,7 +190,6 @@ export function MenuForm({
             </Select>
         </div>
 
-        {/* === HIDDEN SEQUENCE === */}
         <div className="hidden">
           <Input
             id="sequence"
@@ -202,7 +201,6 @@ export function MenuForm({
 
         {/* === BARIS 4: HAK AKSES ROLE === */}
         <div className="md:col-span-2 space-y-3 mt-2">
-          {/* [UPDATE] Text hint dipindah ke bawah Label */}
           <div className="space-y-1">
             <Label className={errors.allowed_roles ? "text-red-500" : ""}>
               Hak Akses Role <span className="text-red-500">*</span>
@@ -258,7 +256,6 @@ export function MenuForm({
 
       </div>
 
-      {/* Footer Buttons */}
       <div className="flex justify-end gap-3 pt-6 border-t mt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Batal

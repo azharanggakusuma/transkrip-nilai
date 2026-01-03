@@ -31,6 +31,7 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
   const [formData, setFormData] = useState<UserFormValues>(() => {
     if (initialData) {
       return {
+        // [UBAH] ID sekarang String
         id: initialData.id,
         name: initialData.name || "",
         username: initialData.username || "",
@@ -40,7 +41,6 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
         is_active: initialData.is_active ?? true, 
       };
     }
-    // Default true jika tambah baru
     return { ...defaultValues, is_active: true };
   });
 
@@ -58,6 +58,7 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
   useEffect(() => {
     if (formData.role === "mahasiswa") {
       setIsLoadingStudents(true);
+      // [UBAH] getStudentsForSelection sekarang menerima string ID (untuk exclude)
       getStudentsForSelection(isEditing ? formData.id : undefined)
         .then(setStudentOptions)
         .finally(() => setIsLoadingStudents(false));
@@ -133,7 +134,7 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
     if (student.is_taken) return;
     setFormData((prev) => ({
       ...prev,
-      student_id: student.id,
+      student_id: student.id, // [UBAH] student.id sudah string
       name: student.nama, 
       username: student.nim 
     }));
@@ -180,7 +181,6 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
                     value={formData.is_active ? "active" : "inactive"}
                     onValueChange={(val) => setFormData(prev => ({ ...prev, is_active: val === "active" }))}
                 >
-                    {/* UPDATE: Menambahkan className="w-full" agar select full width */}
                     <SelectTrigger className="w-full">
                         <SelectValue />
                     </SelectTrigger>
@@ -281,7 +281,6 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
         </div>
       </div>
 
-      {/* Password - HANYA TAMPIL SAAT TAMBAH BARU (!isEditing) */}
       {!isEditing && (
         <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
