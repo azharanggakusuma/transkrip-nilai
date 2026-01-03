@@ -21,7 +21,7 @@ import { type StudentData, type StudentFormValues, type StudyProgram } from "@/l
 import { getStudents, getStudyPrograms, createStudent, updateStudent, deleteStudent } from "@/app/actions/students";
 
 export default function MahasiswaPage() {
-  // [UPDATE] Ambil 'showError' untuk pesan custom
+  // Hook Toast Custom
   const { successAction, confirmDeleteMessage, showError } = useToastMessage();
 
   const [dataList, setDataList] = useState<StudentData[]>([]);
@@ -56,7 +56,6 @@ export default function MahasiswaPage() {
       setStudyPrograms(programs);
     } catch (error) {
       console.error("Load Error:", error);
-      // [UPDATE] Pesan Custom untuk Error Load
       showError(
         "Gagal Memuat Data",
         "Mohon maaf, sistem gagal memuat data mahasiswa. Silakan periksa koneksi internet Anda dan coba muat ulang halaman."
@@ -125,14 +124,8 @@ export default function MahasiswaPage() {
       await fetchData(); 
       setIsFormOpen(false);
     } catch (error: any) {
-      console.error("Save Error:", error);
-      // [UPDATE] Pesan Custom untuk Error Save (Create/Update)
-      // Menghandle kemungkinan duplikat data atau validasi
-      const desc = error.message.includes("unique") 
-        ? "NIM tersebut sudah terdaftar di sistem. Mohon gunakan NIM lain."
-        : "Mohon maaf, data mahasiswa gagal disimpan. Pastikan semua input sudah benar atau coba lagi beberapa saat lagi.";
-        
-      showError("Gagal Menyimpan", desc);
+      // Menangkap error bersih dari server action
+      showError("Gagal Menyimpan", error.message);
     }
   };
 
@@ -147,13 +140,8 @@ export default function MahasiswaPage() {
         }
         await fetchData();
       } catch (error: any) {
-        console.error("Delete Error:", error);
-        // [UPDATE] Pesan Custom untuk Error Delete
-        // Menjelaskan alasan kenapa tidak bisa dihapus (biasanya constraint foreign key)
-        showError(
-          "Gagal Menghapus", 
-          "Data mahasiswa tidak dapat dihapus karena kemungkinan masih memiliki riwayat akademik (KRS/Nilai) atau tagihan aktif."
-        );
+        // Menangkap error bersih dari server action
+        showError("Gagal Menghapus", error.message);
       }
     }
     setIsDeleteOpen(false);

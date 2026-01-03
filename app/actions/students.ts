@@ -32,6 +32,29 @@ const getAM = (hm: string): number => {
   return map[hm] || 0;
 };
 
+// --- HELPER ERROR HANDLING ---
+const handleDbError = (error: any, context: string) => {
+  // 1. Log Error Asli di SERVER Console (hanya terlihat di terminal server/Vercel logs)
+  console.error(`[DB_ERROR] ${context}:`, error);
+
+  // 2. Cek Kode Error Postgres
+  // Code 23505: Unique Violation (Data Kembar)
+  if (error.code === '23505') {
+    if (error.message?.includes('nim')) {
+        throw new Error("NIM tersebut sudah terdaftar. Silakan gunakan NIM lain.");
+    }
+    throw new Error("Data duplikat terdeteksi dalam sistem.");
+  }
+
+  // Code 23503: Foreign Key Violation (Data Terpakai)
+  if (error.code === '23503') {
+    throw new Error("Data tidak dapat dihapus atau diubah karena sedang digunakan oleh data lain (misal: KRS/Nilai/Tagihan).");
+  }
+
+  // 3. Fallback Error Umum (Menyembunyikan pesan teknis lainnya)
+  throw new Error("Gagal memproses data. Terjadi kendala di server.");
+};
+
 // --- READ OPERATIONS ---
 
 export async function getStudyPrograms(): Promise<StudyProgram[]> {
@@ -58,7 +81,6 @@ export async function getActiveAcademicYear(): Promise<AcademicYear | null> {
   return data as AcademicYear;
 }
 
-// Fungsi BARU: Ambil Pejabat Aktif
 export async function getActiveOfficial(): Promise<Official | null> {
   const { data, error } = await supabase
     .from('officials')
@@ -96,7 +118,7 @@ export async function getStudents(): Promise<StudentData[]> {
         )
       )
     `)
-    .order('nama', { ascending: true }); // Ubah order by nama karena UUID tidak urut
+    .order('nama', { ascending: true });
 
   if (error) {
     console.error("Error fetching students:", error.message);
@@ -117,7 +139,7 @@ export async function getStudents(): Promise<StudentData[]> {
 
         return {
           no: index + 1,
-          course_id: course?.id, // UUID string
+          course_id: course?.id,
           kode: course?.kode || "CODE",
           matkul: course?.matkul || "Unknown",
           smt: course?.smt_default || 1,
@@ -130,7 +152,7 @@ export async function getStudents(): Promise<StudentData[]> {
       .sort((a, b) => a.smt - b.smt || a.kode.localeCompare(b.kode));
 
     return {
-      id: s.id, // UUID string
+      id: s.id,
       profile: {
         id: s.id,
         nim: s.nim,
@@ -149,22 +171,21 @@ export async function getStudents(): Promise<StudentData[]> {
 // --- CRUD OPERATIONS ---
 
 export async function createStudent(values: StudentFormValues) {
-  // Hapus Number() pada study_program_id karena sekarang UUID
   const { error } = await supabase.from('students').insert([{
     nim: values.nim,
     nama: values.nama,
-    semester: Number(values.semester), // Semester tetap integer
+    semester: Number(values.semester),
     alamat: values.alamat,
     study_program_id: values.study_program_id || null, 
     is_active: values.is_active 
   }]);
   
-  if (error) throw new Error(error.message);
+  if (error) handleDbError(error, "createStudent");
+  
   revalidatePath('/mahasiswa'); 
 }
 
 export async function updateStudent(id: string, values: StudentFormValues) {
-  // id string, study_program_id string
   const { error } = await supabase.from('students').update({
     nim: values.nim,
     nama: values.nama,
@@ -174,12 +195,15 @@ export async function updateStudent(id: string, values: StudentFormValues) {
     is_active: values.is_active
   }).eq('id', id);
 
-  if (error) throw new Error(error.message);
+  if (error) handleDbError(error, "updateStudent");
+  
   revalidatePath('/mahasiswa');
 }
 
 export async function deleteStudent(id: string) {
   const { error } = await supabase.from('students').delete().eq('id', id);
-  if (error) throw new Error(error.message);
+  
+  if (error) handleDbError(error, "deleteStudent");
+  
   revalidatePath('/mahasiswa');
 }
