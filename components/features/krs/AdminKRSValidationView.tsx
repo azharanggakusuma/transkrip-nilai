@@ -101,7 +101,7 @@ export default function AdminKRSValidationView() {
   };
 
   return (
-    <div className="flex flex-col gap-4 animate-in fade-in duration-500">
+    <div className="flex flex-col gap-4 animate-in fade-in duration-500 mt-8">
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-5">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
