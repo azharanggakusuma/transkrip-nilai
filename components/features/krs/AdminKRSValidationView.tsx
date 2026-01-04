@@ -289,13 +289,6 @@ export default function AdminKRSValidationView() {
                             </div>
                             <p className="text-slate-400 text-xs mt-2">Menunggu persetujuan KRS untuk TA {currentAcademicYearName}.</p>
                         </div>
-                        <Button 
-                            variant="outline" 
-                            className="w-full justify-between group border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 transition-all rounded-full"
-                            onClick={() => document.getElementById('krs-table')?.scrollIntoView({ behavior: 'smooth' })}
-                        >
-                            Lihat Daftar <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </Button>
                     </div>
                  )}
             </CardContent>
