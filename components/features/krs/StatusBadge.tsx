@@ -16,12 +16,12 @@ export function StatusBadge({ status }: { status?: string }) {
       label = "Disetujui";
       break;
     case "SUBMITTED":
-      styles = "bg-blue-50 text-blue-700 border-blue-200";
+      styles = "bg-blue-600 text-white border-transparent";
       icon = <Clock className="mr-1.5 h-3 w-3" />;
       label = "Diajukan";
       break;
     case "REJECTED":
-      styles = "bg-red-50 text-red-700 border-red-200";
+      styles = "bg-red-600 text-white border-transparent";
       icon = <XCircle className="mr-1.5 h-3 w-3" />;
       label = "Ditolak";
       break;
