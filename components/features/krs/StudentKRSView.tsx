@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
     Send, AlertTriangle, BookOpen, GraduationCap, PieChart
 } from "lucide-react";
@@ -161,7 +161,8 @@ export default function StudentKRSView({ user }: { user: any }) {
       header: "Mata Kuliah",
       render: (row) => (
         <div>
-            <div className={`font-semibold text-sm transition-colors ${row.is_taken ? "text-blue-800" : "text-slate-800"}`}>
+            {/* UPDATE: Menghilangkan conditional class text-blue-800 */}
+            <div className="font-semibold text-sm text-slate-800">
                 {row.matkul}
             </div>
             <div className="text-xs text-slate-400 mt-0.5">{row.kategori || "Reguler"}</div>
@@ -188,7 +189,6 @@ export default function StudentKRSView({ user }: { user: any }) {
             ) : <span className="text-xs text-slate-400 italic">-</span>
         )
     }
-    // Kolom "Aksi" dihapus karena sudah digantikan oleh Checkbox
   ];
 
   return (
