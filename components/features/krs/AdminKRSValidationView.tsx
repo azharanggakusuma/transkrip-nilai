@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { 
-  CheckCircle2, Eye, XCircle, GraduationCap, CalendarDays, AlertCircle, ListTodo, BookOpen
+  CheckCircle2, Eye, XCircle, GraduationCap, CalendarDays, AlertCircle, ListTodo, BookOpen, Users
 } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; 
@@ -183,7 +183,7 @@ export default function AdminKRSValidationView() {
       {/* --- Section Filter & Stats --- */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         
-        {/* Card Filter: Style Gradient seperti Halaman Mahasiswa */}
+        {/* Card Filter: Style Gradient Slate */}
         <Card className="md:col-span-8 border-none shadow-md text-white overflow-hidden relative bg-gradient-to-br from-slate-700 to-slate-800">
             {/* Dekorasi Background */}
             <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -193,7 +193,6 @@ export default function AdminKRSValidationView() {
             <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start">
                     <div>
-                        {/* UPDATE TEXT DISINI */}
                         <p className="text-white/80 font-medium text-sm mb-1">Panel Validasi</p>
                         <h2 className="text-3xl font-bold tracking-tight">
                             Validasi KRS Mahasiswa
@@ -223,18 +222,29 @@ export default function AdminKRSValidationView() {
             </CardContent>
         </Card>
 
-        {/* Card Summary Stats */}
-        <Card className="md:col-span-4 bg-indigo-600 text-white border-indigo-600 shadow-md">
-            <CardContent className="p-6 flex flex-col justify-center h-full">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2 opacity-90">
-                        <ListTodo className="h-4 w-4" />
-                        <span className="text-sm font-medium">Antrean Validasi</span>
+        {/* Card Summary Stats: Style Gradient Indigo */}
+        <Card className="md:col-span-4 border-none shadow-md text-white overflow-hidden relative bg-gradient-to-br from-indigo-600 to-violet-700">
+            {/* Dekorasi Background */}
+            <div className="absolute -bottom-6 -right-6 opacity-20 rotate-12">
+                <ListTodo size={140} />
+            </div>
+
+            <CardContent className="p-6 relative z-10 flex flex-col justify-center h-full">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                         <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                            <Users className="h-5 w-5 text-indigo-50" />
+                         </div>
+                         <span className="text-sm font-medium text-indigo-100">Antrean Validasi</span>
                     </div>
-                    <div className="text-2xl font-bold tracking-tight">
-                        {isLoading ? "..." : filteredData.length} Mahasiswa
+                    
+                    <div>
+                        <div className="text-4xl font-extrabold tracking-tight">
+                            {isLoading ? "..." : filteredData.length}
+                            <span className="text-lg font-normal text-indigo-200 ml-2">Mahasiswa</span>
+                        </div>
+                        <p className="text-indigo-100/80 text-xs mt-1">Menunggu persetujuan KRS.</p>
                     </div>
-                    <p className="text-indigo-100 text-xs">Menunggu persetujuan KRS</p>
                 </div>
             </CardContent>
         </Card>
