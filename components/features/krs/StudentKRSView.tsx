@@ -38,8 +38,9 @@ export default function StudentKRSView({ user }: { user: any }) {
   const [studentSemester, setStudentSemester] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   
-  // State Pejabat untuk Tanda Tangan
+  // State Data Dinamis untuk Cetak
   const [official, setOfficial] = useState<Official | null>(null);
+  const [studentProfile, setStudentProfile] = useState<any>(null); // State Profil Mahasiswa
 
   // DataTable State
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,6 +84,7 @@ export default function StudentKRSView({ user }: { user: any }) {
       const res = await getStudentCourseOfferings(studentId, selectedYear);
       setOfferings(res.offerings);
       setStudentSemester(res.student_semester);
+      setStudentProfile(res.student_profile); // Simpan profil lengkap
     } catch (error: any) {
       showError("Gagal", error.message);
     } finally {
@@ -257,20 +259,20 @@ export default function StudentKRSView({ user }: { user: any }) {
     <div id="print-area" className="hidden print:block font-sans bg-white text-black p-4">
         <DocumentHeader title="KARTU RENCANA STUDI (KRS)" />
 
-        {/* Info Mahasiswa */}
+        {/* Info Mahasiswa Dinamis */}
         <div className="mt-6 mb-4 px-2">
              <StudentInfo 
-                profile={{
+                profile={studentProfile || { // Gunakan data dari database, atau fallback ke user session
                     nama: user?.name || "-",
-                    nim: user?.username || "-",
+                    nim: user?.username || "-", 
                     semester: studentSemester,
-                    study_program: { nama: "Teknik Informatika", jenjang: "S1" } // Sesuaikan dengan data real
+                    study_program: { nama: "-", jenjang: "-" } 
                 }}
                 displaySemester={studentSemester}
              />
         </div>
 
-        {/* Tabel KRS Resmi (Style Manual agar Rapi saat Print) */}
+        {/* Tabel KRS Resmi */}
         <div className="w-full mb-6 px-1">
             <table className="w-full text-[11px] font-['Cambria']" style={{ borderCollapse: 'collapse', width: '100%' }}>
                 <thead>

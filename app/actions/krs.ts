@@ -112,10 +112,18 @@ export async function getKRSByStudent(studentId: string, academicYearId: string)
 // 2. Ambil Paket Mata Kuliah Ditawarkan ( + Status Ambil)
 export async function getStudentCourseOfferings(studentId: string, academicYearId: string) {
   try {
-    // A. Ambil Data Mahasiswa (untuk tahu semester berapa dia sekarang)
+    // A. Ambil Data Mahasiswa LENGKAP (Profil + Semester)
     const { data: student, error: studentError } = await supabase
       .from("students")
-      .select("semester")
+      .select(`
+        nama,
+        nim,
+        semester,
+        study_program:study_programs (
+          nama,
+          jenjang
+        )
+      `)
       .eq("id", studentId)
       .single();
 
@@ -152,12 +160,13 @@ export async function getStudentCourseOfferings(studentId: string, academicYearI
 
     return {
       student_semester: student.semester,
+      student_profile: student, // <-- KITA KEMBALIKAN DATA PROFIL LENGKAP
       offerings: offerings
     };
 
   } catch (error) {
     console.error("Error fetching offerings:", error);
-    return { student_semester: 0, offerings: [] };
+    return { student_semester: 0, student_profile: null, offerings: [] };
   }
 }
 
