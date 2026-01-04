@@ -332,18 +332,29 @@ export default function AdminKRSValidationView() {
 
                 <div className="relative z-10 p-6 sm:p-8">
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
-                        {/* Student Info - No Profile Picture */}
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="outline" className="border-white/20 text-indigo-100 bg-indigo-500/20 hover:bg-indigo-500/20 backdrop-blur-sm">
-                                    Semester {selectedStudent?.semester}
-                                </Badge>
-                                <span className="text-white/40 text-sm">|</span>
-                                <span className="text-sm font-mono text-white/70">{selectedStudent?.nim}</span>
-                            </div>
-                            <h2 className="text-2xl sm:text-3xl font-bold leading-tight">{selectedStudent?.nama}</h2>
-                            <div className="text-sm text-slate-300 mt-1">
-                                {selectedStudent?.study_program?.jenjang} {selectedStudent?.study_program?.nama}
+                        {/* Student Info - Rearranged */}
+                        <div className="space-y-2">
+                            {/* Nama sebagai Judul Utama */}
+                            <h2 className="text-2xl sm:text-3xl font-bold leading-tight text-white">
+                                {selectedStudent?.nama}
+                            </h2>
+                            
+                            {/* Meta info (NIM, Prodi, Semester) di bawah nama */}
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-300">
+                                 <div className="bg-white/10 px-2 py-0.5 rounded border border-white/10 text-indigo-50 font-mono">
+                                    {selectedStudent?.nim}
+                                 </div>
+                                 
+                                 <span className="hidden sm:inline text-white/20">|</span>
+                                 
+                                 <span>{selectedStudent?.study_program?.jenjang} {selectedStudent?.study_program?.nama}</span>
+                                 
+                                 <span className="hidden sm:inline text-white/20">|</span>
+
+                                 <div className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)]"></span>
+                                    <span>Semester {selectedStudent?.semester}</span>
+                                 </div>
                             </div>
                         </div>
 
