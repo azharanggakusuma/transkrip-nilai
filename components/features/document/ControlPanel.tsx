@@ -1,6 +1,6 @@
 import React from "react";
 import { StudentData } from "@/lib/types";
-import { Printer, Check, ChevronsUpDown, Lock, User } from "lucide-react"; 
+import { Printer, Check, ChevronsUpDown, Lock } from "lucide-react"; // Icon User dihapus
 import { cn } from "@/lib/utils";
 
 // Shadcn UI Components
@@ -31,7 +31,7 @@ interface ControlPanelProps {
   onPrint: () => void;
   disablePrint?: boolean;
   
-  // [BARU] Data User Login untuk Cek Role
+  // Data User Login untuk Cek Role
   user?: any;
 
   // Props KHS
@@ -91,7 +91,7 @@ export default function ControlPanel(props: ControlPanelProps) {
           <div className={sectionClass}>
             <div className="flex items-baseline justify-between">
               <label className={labelClass}>Mahasiswa</label>
-              {/* Jika Admin, tampilkan counter page. Jika Mahasiswa, sembunyikan atau tampilkan icon user */}
+              {/* Jika Admin, tampilkan counter page. Jika Mahasiswa, sembunyikan */}
               {!isMahasiswa && (
                 <p className="text-[11px] text-gray-400">{selectedIndex + 1}/{students.length}</p>
               )}
@@ -99,15 +99,12 @@ export default function ControlPanel(props: ControlPanelProps) {
             
             {/* LOGIKA KONDISIONAL */}
             {isMahasiswa ? (
-               // TAMPILAN UNTUK MAHASISWA (READ ONLY - TERKUNCI)
-               <div className="flex items-center gap-3 px-3 py-2 bg-white border border-gray-200 rounded-xl h-10 select-none cursor-not-allowed opacity-90">
-                  <div className="bg-indigo-50 p-1 rounded-full text-indigo-600">
-                    <User className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-xs font-medium text-gray-700 truncate">
+               // TAMPILAN UNTUK MAHASISWA (READ ONLY - TERKUNCI - HANYA NAMA)
+               <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-xl h-10 select-none cursor-not-allowed opacity-90">
+                  <span className="text-xs font-medium text-gray-700 truncate w-full">
                     {selectedStudentName}
                   </span>
-                  <Lock className="w-3 h-3 text-gray-400 ml-auto" />
+                  <Lock className="w-3 h-3 text-gray-400 ml-2 shrink-0" />
                </div>
             ) : (
                // TAMPILAN UNTUK ADMIN (DROPDOWN SEARCHABLE)
