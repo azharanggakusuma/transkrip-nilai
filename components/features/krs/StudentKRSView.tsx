@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
-    Send, AlertTriangle, BookOpen, GraduationCap, PieChart
+    Send, AlertTriangle, BookOpen, GraduationCap, PieChart, Printer
 } from "lucide-react";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import { StatusBadge } from "./StatusBadge";
@@ -16,12 +16,18 @@ import { StatusBadge } from "./StatusBadge";
 // Import DataTable
 import { DataTable, type Column } from "@/components/ui/data-table";
 
+// Import Dokumen Components
+import DocumentHeader from "@/components/features/document/DocumentHeader";
+import StudentInfo from "@/components/features/document/StudentInfo";
+import DocumentFooter from "@/components/features/document/DocumentFooter";
+
 import { 
   getStudentCourseOfferings, createKRS, deleteKRS, submitKRS, 
   CourseOffering 
 } from "@/app/actions/krs";
 import { getAcademicYears } from "@/app/actions/academic-years";
-import { AcademicYear } from "@/lib/types";
+import { getActiveOfficial } from "@/app/actions/students"; 
+import { AcademicYear, Official } from "@/lib/types";
 
 export default function StudentKRSView({ user }: { user: any }) {
   const { successAction, showError, showLoading } = useToastMessage();
@@ -32,6 +38,9 @@ export default function StudentKRSView({ user }: { user: any }) {
   const [studentSemester, setStudentSemester] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   
+  // State Pejabat untuk Tanda Tangan
+  const [official, setOfficial] = useState<Official | null>(null);
+
   // DataTable State
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,12 +52,19 @@ export default function StudentKRSView({ user }: { user: any }) {
   const studentId = user.student_id;
   const MAX_SKS = 24; 
 
+  // === INIT DATA ===
   useEffect(() => {
     async function init() {
       try {
-        const years = await getAcademicYears();
+        const [years, activeOfficial] = await Promise.all([
+             getAcademicYears(),
+             getActiveOfficial()
+        ]);
+        
         const active = years.find(y => y.is_active);
         setAcademicYears(years);
+        setOfficial(activeOfficial);
+
         if (active) setSelectedYear(active.id);
         else if (years.length > 0) setSelectedYear(years[0].id);
       } catch (e) { console.error(e); }
@@ -80,9 +96,13 @@ export default function StudentKRSView({ user }: { user: any }) {
   const krsGlobalStatus = offerings.find(c => c.is_taken)?.krs_status || "BELUM_AMBIL";
   const progressPercent = Math.min((totalSKS / MAX_SKS) * 100, 100);
 
+  // Filter Mata Kuliah yang Diambil (Untuk Cetak)
+  const takenCourses = useMemo(() => {
+     return offerings.filter(c => c.is_taken);
+  }, [offerings]);
+
   // === ACTIONS ===
   const handleToggleCourse = async (course: CourseOffering, isChecked: boolean) => {
-    // 1. Jika dicentang (Ambil Mata Kuliah)
     if (isChecked) {
         if (totalSKS + course.sks > MAX_SKS) {
             showError("Batas SKS", `Gagal mengambil mata kuliah. Total SKS akan melebihi batas (${MAX_SKS}).`);
@@ -96,7 +116,6 @@ export default function StudentKRSView({ user }: { user: any }) {
             await fetchData(); 
         } catch (e: any) { showError("Gagal", e.message, toastId); }
     
-    // 2. Jika tidak dicentang (Batal Mata Kuliah)
     } else {
         if (!course.krs_id) return;
         const toastId = showLoading(`Membatalkan ${course.matkul}...`);
@@ -117,8 +136,12 @@ export default function StudentKRSView({ user }: { user: any }) {
     } catch (e: any) { showError("Gagal", e.message, toastId); }
     finally { setIsSubmitOpen(false); }
   };
+  
+  const handlePrint = () => {
+    window.print();
+  };
 
-  // Logic Filter & Pagination
+  // Logic Filter & Pagination (Untuk Tampilan Web)
   const filteredData = useMemo(() => {
     if (!searchQuery) return offerings;
     const lower = searchQuery.toLowerCase();
@@ -133,7 +156,7 @@ export default function StudentKRSView({ user }: { user: any }) {
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
 
-  // === DEFINISI KOLOM ===
+  // === DEFINISI KOLOM WEB ===
   const columns: Column<CourseOffering>[] = [
     {
       header: "Pilih",
@@ -161,7 +184,6 @@ export default function StudentKRSView({ user }: { user: any }) {
       header: "Mata Kuliah",
       render: (row) => (
         <div>
-            {/* UPDATE: Menghilangkan conditional class text-blue-800 */}
             <div className="font-semibold text-sm text-slate-800">
                 {row.matkul}
             </div>
@@ -170,8 +192,17 @@ export default function StudentKRSView({ user }: { user: any }) {
       )
     },
     {
+        header: "Smt",
+        className: "text-center w-[60px]",
+        render: (row) => (
+            <span className="text-sm font-medium text-slate-600">
+                {row.smt_default}
+            </span>
+        )
+    },
+    {
         header: "SKS",
-        className: "text-center w-[80px]",
+        className: "text-center w-[60px]",
         render: (row) => (
             <Badge variant="secondary" className="font-mono text-xs bg-white border border-slate-200 text-slate-600">
                 {row.sks}
@@ -192,7 +223,111 @@ export default function StudentKRSView({ user }: { user: any }) {
   ];
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-500 mt-4">
+    <>
+    {/* --- CSS KHUSUS PRINT --- */}
+    <style jsx global>{`
+      @media print {
+        @page {
+          margin: 10mm;
+          size: A4 portrait;
+        }
+        /* Sembunyikan SEMUA elemen body */
+        body * {
+          visibility: hidden;
+        }
+        /* Hanya tampilkan area print */
+        #print-area, #print-area * {
+          visibility: visible;
+        }
+        /* Posisikan area print di pojok kiri atas menutupi segalanya */
+        #print-area {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          margin: 0;
+          padding: 0;
+          background-color: white;
+          z-index: 9999;
+        }
+      }
+    `}</style>
+
+    {/* --- LAYOUT PRINT (ID: #print-area) --- */}
+    <div id="print-area" className="hidden print:block font-sans bg-white text-black p-4">
+        <DocumentHeader title="KARTU RENCANA STUDI (KRS)" />
+
+        {/* Info Mahasiswa */}
+        <div className="mt-6 mb-4 px-2">
+             <StudentInfo 
+                profile={{
+                    nama: user?.name || "-",
+                    nim: user?.username || "-",
+                    semester: studentSemester,
+                    study_program: { nama: "Teknik Informatika", jenjang: "S1" } // Sesuaikan dengan data real
+                }}
+                displaySemester={studentSemester}
+             />
+        </div>
+
+        {/* Tabel KRS Resmi (Style Manual agar Rapi saat Print) */}
+        <div className="w-full mb-6 px-1">
+            <table className="w-full text-[11px] font-['Cambria']" style={{ borderCollapse: 'collapse', width: '100%' }}>
+                <thead>
+                    <tr className="bg-gray-100">
+                        <th style={{ border: '1px solid black', padding: '6px', width: '40px', textAlign: 'center' }}>NO</th>
+                        <th style={{ border: '1px solid black', padding: '6px', width: '100px', textAlign: 'left' }}>KODE</th>
+                        <th style={{ border: '1px solid black', padding: '6px', textAlign: 'left' }}>MATA KULIAH</th>
+                        <th style={{ border: '1px solid black', padding: '6px', width: '50px', textAlign: 'center' }}>SKS</th>
+                        <th style={{ border: '1px solid black', padding: '6px', width: '50px', textAlign: 'center' }}>SMT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {takenCourses.length > 0 ? takenCourses.map((course, index) => (
+                        <tr key={course.id}>
+                            <td style={{ border: '1px solid black', padding: '4px', textAlign: 'center' }}>{index + 1}</td>
+                            <td style={{ border: '1px solid black', padding: '4px', fontFamily: 'monospace' }}>{course.kode}</td>
+                            <td style={{ border: '1px solid black', padding: '4px', fontWeight: 'bold' }}>{course.matkul}</td>
+                            <td style={{ border: '1px solid black', padding: '4px', textAlign: 'center' }}>{course.sks}</td>
+                            <td style={{ border: '1px solid black', padding: '4px', textAlign: 'center' }}>{course.smt_default}</td>
+                        </tr>
+                    )) : (
+                        <tr>
+                            <td colSpan={5} style={{ border: '1px solid black', padding: '20px', textAlign: 'center', fontStyle: 'italic' }}>
+                                Belum ada mata kuliah yang diambil.
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+                {takenCourses.length > 0 && (
+                     <tfoot>
+                        <tr className="bg-gray-50 font-bold">
+                            <td colSpan={3} style={{ border: '1px solid black', padding: '6px', textAlign: 'right' }}>TOTAL SKS :</td>
+                            <td style={{ border: '1px solid black', padding: '6px', textAlign: 'center' }}>{totalSKS}</td>
+                            <td style={{ border: '1px solid black', padding: '6px' }}></td>
+                        </tr>
+                     </tfoot>
+                )}
+            </table>
+        </div>
+
+        {/* Footer Tanda Tangan */}
+        <div className="px-2">
+            <DocumentFooter 
+                signatureType="none" 
+                signatureBase64={null}
+                mode="khs"
+                official={official}
+            />
+        </div>
+        
+        <div className="mt-8 text-[10px] text-gray-400 italic text-right pr-2">
+             Dicetak melalui SIAKAD STMIK IKMI Cirebon pada {new Date().toLocaleDateString('id-ID')}
+        </div>
+    </div>
+
+    {/* --- LAYOUT WEB (Tampil di Layar) --- */}
+    <div className="flex flex-col gap-6 animate-in fade-in duration-500 mt-4 print:hidden">
       
       {/* 1. HEADER STATS & FILTER */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -217,9 +352,23 @@ export default function StudentKRSView({ user }: { user: any }) {
                              krsGlobalStatus === 'BELUM_AMBIL' ? "Belum Mengisi" : "Mode Draft"}
                         </h2>
                     </div>
-                    {krsGlobalStatus === 'DRAFT' && (
-                        <Badge className="bg-amber-400 text-amber-900 hover:bg-amber-500 border-none">Action Needed</Badge>
-                    )}
+                    <div className="flex gap-2">
+                        {/* Tombol Cetak (Hanya muncul jika sudah Submitted/Approved) */}
+                        {(krsGlobalStatus === 'SUBMITTED' || krsGlobalStatus === 'APPROVED') && (
+                            <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                                onClick={handlePrint}
+                            >
+                                <Printer className="w-4 h-4 mr-2" />
+                                Cetak KRS
+                            </Button>
+                        )}
+                        {krsGlobalStatus === 'DRAFT' && (
+                            <Badge className="bg-amber-400 text-amber-900 hover:bg-amber-500 border-none">Action Needed</Badge>
+                        )}
+                    </div>
                 </div>
                 
                 <div className="mt-6 flex flex-wrap items-center gap-4">
@@ -328,5 +477,6 @@ export default function StudentKRSView({ user }: { user: any }) {
       <ConfirmModal isOpen={isSubmitOpen} onClose={setIsSubmitOpen} onConfirm={confirmSubmit}
         title="Ajukan KRS?" description="Setelah diajukan, KRS akan dikunci dan menunggu persetujuan Dosen Wali. Pastikan pilihan mata kuliah sudah benar." confirmLabel="Ajukan Sekarang" variant="default" />
     </div>
+    </>
   );
 }
