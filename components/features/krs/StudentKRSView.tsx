@@ -1,3 +1,5 @@
+// components/features/krs/StudentKRSView.tsx
+
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
@@ -11,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"; 
 import { Label } from "@/components/ui/label"; 
 import { 
-    Send, AlertTriangle, BookOpen, GraduationCap, PieChart, Printer, PenTool, Loader2
+    Send, AlertTriangle, BookOpen, GraduationCap, PieChart, Printer, Loader2
 } from "lucide-react";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import { StatusBadge } from "./StatusBadge";
@@ -58,10 +60,8 @@ export default function StudentKRSView({ user }: { user: any }) {
   const studentId = user.student_id;
   const MAX_SKS = 24; 
 
-  // Ref untuk Toast ID agar tidak duplikat
   const toastIdRef = useRef<string | number | null>(null);
 
-  // Effect untuk Toast Loading saat mengambil TTD
   useEffect(() => {
     if (isSigLoading) {
         if (!toastIdRef.current) {
@@ -115,7 +115,7 @@ export default function StudentKRSView({ user }: { user: any }) {
     }
   };
 
-  // === STATS ===
+  // === STATS & DATA ===
   const totalSKS = offerings.filter(c => c.is_taken).reduce((acc, curr) => acc + curr.sks, 0);
   const hasDraft = offerings.some(c => c.is_taken && c.krs_status === 'DRAFT');
   const krsGlobalStatus = offerings.find(c => c.is_taken)?.krs_status || "BELUM_AMBIL";
@@ -130,6 +130,34 @@ export default function StudentKRSView({ user }: { user: any }) {
       return ay ? `${ay.nama} ${ay.semester}` : "";
   }, [academicYears, selectedYear]);
 
+  // Filter & Pagination
+  const filteredData = useMemo(() => {
+    if (!searchQuery) return offerings;
+    const lower = searchQuery.toLowerCase();
+    return offerings.filter(c => 
+        c.matkul.toLowerCase().includes(lower) || 
+        c.kode.toLowerCase().includes(lower)
+    );
+  }, [offerings, searchQuery]);
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
+
+  // --- LOGIC SELECT ALL ---
+  // Kita hitung status baris di halaman ini
+  const editableRows = useMemo(() => {
+    return currentData.filter(row => {
+        // Baris yang bisa diedit adalah yang belum diambil ATAU yang diambil tapi statusnya DRAFT
+        const isLocked = row.is_taken && row.krs_status !== 'DRAFT';
+        return !isLocked;
+    });
+  }, [currentData]);
+
+  // Apakah semua baris yang bisa diedit SUDAH diambil?
+  const isAllTaken = editableRows.length > 0 && editableRows.every(row => row.is_taken);
+  
   // === ACTIONS ===
   const handleToggleCourse = async (course: CourseOffering, isChecked: boolean) => {
     if (isChecked) {
@@ -137,14 +165,12 @@ export default function StudentKRSView({ user }: { user: any }) {
             showError("Batas SKS", `Gagal mengambil mata kuliah. Total SKS akan melebihi batas (${MAX_SKS}).`);
             return;
         }
-
         const toastId = showLoading(`Mengambil ${course.matkul}...`);
         try {
             await createKRS({ student_id: studentId, academic_year_id: selectedYear, course_id: course.id });
             successAction("Mata Kuliah", "create", toastId);
             await fetchData(); 
         } catch (e: any) { showError("Gagal", e.message, toastId); }
-    
     } else {
         if (!course.krs_id) return;
         const toastId = showLoading(`Membatalkan ${course.matkul}...`);
@@ -153,6 +179,42 @@ export default function StudentKRSView({ user }: { user: any }) {
             successAction("Mata Kuliah", "delete", toastId);
             await fetchData();
         } catch (e: any) { showError("Gagal", e.message, toastId); }
+    }
+  };
+
+  const handleSelectAll = async () => {
+    if (isLoading || editableRows.length === 0) return;
+
+    if (isAllTaken) {
+        // SCENARIO: BATALKAN SEMUA
+        const toastId = showLoading("Melepas mata kuliah...");
+        try {
+            const promises = editableRows
+                .filter(row => row.krs_id)
+                .map(row => deleteKRS(row.krs_id!));
+            await Promise.all(promises);
+            successAction("KRS", "delete", toastId);
+            await fetchData();
+        } catch (e: any) { showError("Gagal", e.message, toastId); }
+    } else {
+        // SCENARIO: AMBIL SEMUA
+        const toTake = editableRows.filter(row => !row.is_taken);
+        const sKsToAdd = toTake.reduce((sum, row) => sum + row.sks, 0);
+        
+        if (totalSKS + sKsToAdd > MAX_SKS) {
+            showError("Batas SKS", `Total SKS akan menjadi ${totalSKS + sKsToAdd}. Batas maksimal adalah ${MAX_SKS}.`);
+            return;
+        }
+
+        const toastId = showLoading("Mengambil mata kuliah...");
+        try {
+             const promises = toTake.map(row => 
+                createKRS({ student_id: studentId, academic_year_id: selectedYear, course_id: row.id })
+             );
+             await Promise.all(promises);
+             successAction("KRS", "create", toastId);
+             await fetchData();
+        } catch(e: any) { showError("Gagal", e.message, toastId); }
     }
   };
 
@@ -173,25 +235,22 @@ export default function StudentKRSView({ user }: { user: any }) {
     }, 300);
   };
 
-  // Logic Filter & Pagination
-  const filteredData = useMemo(() => {
-    if (!searchQuery) return offerings;
-    const lower = searchQuery.toLowerCase();
-    return offerings.filter(c => 
-        c.matkul.toLowerCase().includes(lower) || 
-        c.kode.toLowerCase().includes(lower)
-    );
-  }, [offerings, searchQuery]);
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentData = filteredData.slice(startIndex, endIndex);
-
-  // === DEFINISI KOLOM WEB ===
+  // === COLUMNS DEFINITION ===
   const columns: Column<CourseOffering>[] = [
     {
-      header: "Pilih",
+      // Checkbox Header
+      header: () => (
+          <div className="flex justify-center">
+            <Checkbox 
+                checked={isAllTaken}
+                onCheckedChange={handleSelectAll}
+                disabled={isLoading || editableRows.length === 0}
+                aria-label="Pilih Semua"
+                title={isAllTaken ? "Batalkan pilihan di halaman ini" : "Pilih semua di halaman ini"}
+                className="data-[state=checked]:bg-blue-800 data-[state=checked]:border-blue-800"
+            />
+          </div>
+      ),
       className: "w-[50px] text-center",
       render: (row) => {
         const isLocked = row.is_taken && row.krs_status !== 'DRAFT';
@@ -206,6 +265,16 @@ export default function StudentKRSView({ user }: { user: any }) {
             </div>
         );
       },
+    },
+    // --- KOLOM BARU: NOMOR (#) ---
+    {
+        header: "#",
+        className: "w-[40px] text-center",
+        render: (_, index) => (
+            <span className="text-xs font-medium text-slate-500">
+                {startIndex + index + 1}
+            </span>
+        ),
     },
     {
       header: "Kode",
@@ -254,7 +323,6 @@ export default function StudentKRSView({ user }: { user: any }) {
     }
   ];
 
-  // Disable button saat loading atau jika TTD belum siap (kecuali pilih 'none')
   const isPrintButtonDisabled = isSigLoading || (signatureType !== 'none' && !secureImage);
 
   return (
@@ -262,40 +330,23 @@ export default function StudentKRSView({ user }: { user: any }) {
     {/* --- CSS KHUSUS PRINT --- */}
     <style jsx global>{`
       @media print {
-        @page {
-          margin: 10mm;
-          size: A4 portrait;
-        }
-        body * {
-          visibility: hidden;
-        }
-        #print-area, #print-area * {
-          visibility: visible;
-        }
+        @page { margin: 10mm; size: A4 portrait; }
+        body * { visibility: hidden; }
+        #print-area, #print-area * { visibility: visible; }
         #print-area {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100%;
-          margin: 0;
-          padding: 0;
-          background-color: white;
-          z-index: 9999;
+          position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; background-color: white; z-index: 9999;
         }
       }
     `}</style>
 
-    {/* --- LAYOUT PRINT (ID: #print-area) --- */}
+    {/* --- LAYOUT PRINT --- */}
     <div id="print-area" className="hidden print:block font-sans bg-white text-black p-8">
         <DocumentHeader title="KARTU RENCANA STUDI" />
-
         <div className="mt-1 mb-4 px-2">
              <StudentInfo 
                 profile={studentProfile || { 
-                    nama: user?.name || "-",
-                    nim: user?.username || "-", 
-                    semester: studentSemester,
-                    study_program: { nama: "-", jenjang: "-" } 
+                    nama: user?.name || "-", nim: user?.username || "-", 
+                    semester: studentSemester, study_program: { nama: "-", jenjang: "-" } 
                 }}
                 displaySemester={studentSemester}
                 periode={selectedAcademicYearName}
@@ -324,9 +375,7 @@ export default function StudentKRSView({ user }: { user: any }) {
                         </tr>
                     )) : (
                         <tr>
-                            <td colSpan={5} className="border border-black p-4 text-center italic">
-                                Belum ada mata kuliah yang diambil.
-                            </td>
+                            <td colSpan={5} className="border border-black p-4 text-center italic">Belum ada mata kuliah yang diambil.</td>
                         </tr>
                     )}
                 </tbody>
@@ -341,33 +390,22 @@ export default function StudentKRSView({ user }: { user: any }) {
                 )}
             </table>
         </div>
-
         <div className="px-2">
-            <DocumentFooter 
-                signatureType={signatureType} 
-                signatureBase64={secureImage} 
-                mode="krs" 
-                official={official}
-            />
+            <DocumentFooter signatureType={signatureType} signatureBase64={secureImage} mode="krs" official={official} />
         </div>
     </div>
 
-    {/* --- LAYOUT WEB (Tampil di Layar) --- */}
+    {/* --- LAYOUT WEB --- */}
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 mt-4 print:hidden">
       
-      {/* 1. HEADER STATS & FILTER */}
+      {/* 1. HEADER STATS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        
-        {/* Card Status Utama */}
         <Card className={`col-span-1 md:col-span-2 border-none shadow-md text-white overflow-hidden relative
             ${krsGlobalStatus === 'APPROVED' ? 'bg-gradient-to-br from-emerald-600 to-teal-700' : 
               krsGlobalStatus === 'SUBMITTED' ? 'bg-gradient-to-br from-blue-800 to-blue-900' : 
               'bg-gradient-to-br from-slate-700 to-slate-800' }`}>
             
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-                <BookOpen size={120} />
-            </div>
-            
+            <div className="absolute top-0 right-0 p-8 opacity-10"><BookOpen size={120} /></div>
             <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start">
                     <div>
@@ -379,16 +417,10 @@ export default function StudentKRSView({ user }: { user: any }) {
                         </h2>
                     </div>
                     <div className="flex gap-2">
-                        {/* Tombol Cetak Buka Modal */}
                         {(krsGlobalStatus === 'SUBMITTED' || krsGlobalStatus === 'APPROVED') && (
-                            <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
-                                onClick={() => setIsPrintModalOpen(true)}
-                            >
-                                <Printer className="w-4 h-4 mr-2" />
-                                Cetak KRS
+                            <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                                onClick={() => setIsPrintModalOpen(true)}>
+                                <Printer className="w-4 h-4 mr-2" /> Cetak KRS
                             </Button>
                         )}
                         {krsGlobalStatus === 'DRAFT' && (
@@ -396,7 +428,6 @@ export default function StudentKRSView({ user }: { user: any }) {
                         )}
                     </div>
                 </div>
-                
                 <div className="mt-6 flex flex-wrap items-center gap-4">
                     <Select value={selectedYear} onValueChange={setSelectedYear}>
                         <SelectTrigger className="w-[240px] h-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:ring-0">
@@ -404,13 +435,10 @@ export default function StudentKRSView({ user }: { user: any }) {
                         </SelectTrigger>
                         <SelectContent>
                             {academicYears.map((ay) => (
-                                <SelectItem key={ay.id} value={ay.id}>
-                                  {ay.nama} - {ay.semester} {ay.is_active ? "(Aktif)" : ""}
-                                </SelectItem>
+                                <SelectItem key={ay.id} value={ay.id}>{ay.nama} - {ay.semester} {ay.is_active ? "(Aktif)" : ""}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-                    
                     {studentSemester > 0 && (
                         <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-md border border-white/10">
                             <GraduationCap className="w-4 h-4 text-white/80" />
@@ -421,35 +449,22 @@ export default function StudentKRSView({ user }: { user: any }) {
             </CardContent>
         </Card>
 
-        {/* Card Statistik SKS */}
         <Card className="border-none shadow-md text-white overflow-hidden relative bg-gradient-to-br from-cyan-600 to-blue-600">
-            <div className="absolute -bottom-6 -right-6 opacity-20 rotate-12">
-                <PieChart size={140} />
-            </div>
-
+            <div className="absolute -bottom-6 -right-6 opacity-20 rotate-12"><PieChart size={140} /></div>
             <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
                 <div>
-                    <div className="flex items-center gap-2 text-cyan-50 mb-1">
-                        <span className="text-sm font-medium">Total SKS Diambil</span>
-                    </div>
+                    <div className="flex items-center gap-2 text-cyan-50 mb-1"><span className="text-sm font-medium">Total SKS Diambil</span></div>
                     <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-extrabold tracking-tight">{totalSKS}</span>
                         <span className="text-lg text-cyan-100 font-medium">/ {MAX_SKS} SKS</span>
                     </div>
                 </div>
-                
                 <div className="mt-4">
                     <div className="w-full bg-black/20 rounded-full h-3 mb-3 overflow-hidden backdrop-blur-sm">
-                        <div 
-                            className="h-full rounded-full transition-all duration-1000 ease-out bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-                            style={{ width: `${progressPercent}%` }}
-                        />
+                        <div className="h-full rounded-full transition-all duration-1000 ease-out bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ width: `${progressPercent}%` }} />
                     </div>
-                    
                     <p className="text-xs text-cyan-50/90 leading-relaxed font-medium">
-                        {totalSKS < 10 ? "SKS masih sedikit. Maksimalkan jatah SKS Anda." : 
-                             totalSKS > 20 ? "Beban studi tinggi. Semangat!" :
-                             "Beban studi cukup optimal."}
+                        {totalSKS < 10 ? "SKS masih sedikit. Maksimalkan jatah SKS Anda." : totalSKS > 20 ? "Beban studi tinggi. Semangat!" : "Beban studi cukup optimal."}
                     </p>
                 </div>
             </CardContent>
@@ -460,14 +475,10 @@ export default function StudentKRSView({ user }: { user: any }) {
       {hasDraft && (
            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm animate-in slide-in-from-top-2">
               <div className="flex items-start gap-3">
-                  <div className="p-2 bg-amber-100 rounded-full text-amber-700 shrink-0">
-                    <AlertTriangle className="h-5 w-5" />
-                  </div>
+                  <div className="p-2 bg-amber-100 rounded-full text-amber-700 shrink-0"><AlertTriangle className="h-5 w-5" /></div>
                   <div>
                     <h4 className="font-semibold text-amber-900 text-sm">Selesaikan Pengisian KRS</h4>
-                    <p className="text-sm text-amber-800/80 mt-1 max-w-2xl">
-                      Anda memiliki mata kuliah berstatus <strong>Draft</strong>. Harap ajukan segera agar dapat divalidasi oleh Dosen Wali.
-                    </p>
+                    <p className="text-sm text-amber-800/80 mt-1 max-w-2xl">Anda memiliki mata kuliah berstatus <strong>Draft</strong>. Harap ajukan segera.</p>
                   </div>
               </div>
               <Button onClick={() => setIsSubmitOpen(true)} className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white shadow-sm border-0 font-medium">
@@ -476,7 +487,7 @@ export default function StudentKRSView({ user }: { user: any }) {
            </div>
       )}
 
-      {/* Tabel Menggunakan DataTable */}
+      {/* TABLE */}
       <Card className="border-none shadow-sm ring-1 ring-slate-200">
         <CardContent className="p-6">
             <DataTable
@@ -484,12 +495,8 @@ export default function StudentKRSView({ user }: { user: any }) {
                 columns={columns}
                 isLoading={isLoading}
                 searchQuery={searchQuery}
-                onSearchChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(1);
-                }}
+                onSearchChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                 searchPlaceholder="Cari Matkul atau Kode..."
-                
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
@@ -503,53 +510,31 @@ export default function StudentKRSView({ user }: { user: any }) {
       {/* MODAL PRINT OPTIONS */}
       <Dialog open={isPrintModalOpen} onOpenChange={setIsPrintModalOpen}>
         <DialogContent className="sm:max-w-[400px]">
-            <DialogHeader>
-                <DialogTitle>Opsi Cetak KRS</DialogTitle>
-            </DialogHeader>
-            
+            <DialogHeader><DialogTitle>Opsi Cetak KRS</DialogTitle></DialogHeader>
             <div className="py-4 space-y-4">
                 <div className="space-y-2">
                     <Label className="text-sm font-medium">Pilih Jenis Tanda Tangan</Label>
                     <Select value={signatureType} onValueChange={(val: any) => setSignatureType(val)}>
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Pilih Tanda Tangan" />
-                        </SelectTrigger>
+                        <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Tanda Tangan" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="none">Tanpa Tanda Tangan</SelectItem>
                             <SelectItem value="basah">Tanda Tangan Basah</SelectItem>
                             <SelectItem value="digital">Tanda Tangan Digital (QR)</SelectItem>
                         </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">
-                        Pilih "Tanpa Tanda Tangan" jika ingin meminta tanda tangan basah langsung ke dosen terkait atau ke bagian akademik (BAAK).
-                    </p>
                 </div>
             </div>
-
             <DialogFooter>
                 <Button variant="outline" onClick={() => setIsPrintModalOpen(false)}>Batal</Button>
-                <Button 
-                    onClick={handlePrintProcess} 
-                    disabled={isPrintButtonDisabled}
-                >
-                    {isSigLoading ? (
-                        <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 
-                            Memuat...
-                        </>
-                    ) : (
-                        <>
-                            <Printer className="w-4 h-4 mr-2" /> 
-                            Cetak PDF
-                        </>
-                    )}
+                <Button onClick={handlePrintProcess} disabled={isPrintButtonDisabled}>
+                    {isSigLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Memuat...</> : <><Printer className="w-4 h-4 mr-2" /> Cetak PDF</>}
                 </Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <ConfirmModal isOpen={isSubmitOpen} onClose={setIsSubmitOpen} onConfirm={confirmSubmit}
-        title="Ajukan KRS?" description="Setelah diajukan, KRS akan dikunci dan menunggu persetujuan Dosen Wali. Pastikan pilihan mata kuliah sudah benar." confirmLabel="Ajukan Sekarang" variant="default" />
+        title="Ajukan KRS?" description="Setelah diajukan, KRS akan dikunci dan menunggu persetujuan Dosen Wali." confirmLabel="Ajukan Sekarang" variant="default" />
     </div>
     </>
   );

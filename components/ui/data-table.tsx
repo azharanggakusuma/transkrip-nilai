@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton
+import { Skeleton } from "@/components/ui/skeleton"; 
 import { Search, Plus, Filter, ChevronLeft, ChevronRight, ListFilter } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,9 +19,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Definisi Tipe Column
 export interface Column<T> {
-  header: string;
+  header: string | (() => React.ReactNode); 
   className?: string;
   accessorKey?: keyof T;
   render?: (item: T, index: number) => React.ReactNode;
@@ -30,7 +29,7 @@ export interface Column<T> {
 interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
-  isLoading?: boolean; // Tambahan properti loading
+  isLoading?: boolean; 
   searchQuery: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   searchPlaceholder?: string;
@@ -50,7 +49,7 @@ interface DataTableProps<T> {
 export function DataTable<T>({
   data,
   columns,
-  isLoading = false, // Default false
+  isLoading = false,
   searchQuery,
   onSearchChange,
   searchPlaceholder = "Cari data...",
@@ -69,7 +68,7 @@ export function DataTable<T>({
   
   return (
     <div className="space-y-4">
-      {/* TOOLBAR (Tetap terlihat saat loading) */}
+      {/* TOOLBAR */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-72">
@@ -79,7 +78,7 @@ export function DataTable<T>({
               className="pl-9 bg-muted/30"
               value={searchQuery}
               onChange={onSearchChange}
-              disabled={isLoading} // Opsional: disable input saat loading
+              disabled={isLoading}
             />
           </div>
 
@@ -126,15 +125,18 @@ export function DataTable<T>({
             <TableRow className="bg-muted/50 hover:bg-muted/50">
               {columns.map((col, idx) => (
                 <TableHead key={idx} className={col.className}>
-                  {col.header}
+                  {/* --- PERBAIKAN LOGIC RENDER HEADER --- */}
+                  {/* Cek apakah header adalah fungsi (komponen) atau string biasa */}
+                  {typeof col.header === "function" 
+                    ? col.header() 
+                    : col.header}
                 </TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              // === SKELETON TABLE ROWS ===
-              // Menampilkan 5 baris skeleton saat loading
+              // SKELETON
               Array.from({ length: 5 }).map((_, rowIndex) => (
                 <TableRow key={rowIndex}>
                   {columns.map((_, colIndex) => (
@@ -145,7 +147,7 @@ export function DataTable<T>({
                 </TableRow>
               ))
             ) : data.length > 0 ? (
-              // === DATA ROWS ===
+              // DATA ROWS
               data.map((row, rowIndex) => (
                 <TableRow key={rowIndex} className="group hover:bg-muted/30 transition-colors">
                   {columns.map((col, colIndex) => (
@@ -160,7 +162,7 @@ export function DataTable<T>({
                 </TableRow>
               ))
             ) : (
-              // === EMPTY STATE ===
+              // EMPTY STATE
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-64 text-center text-muted-foreground">
                   <div className="flex flex-col items-center justify-center gap-2">
@@ -187,7 +189,6 @@ export function DataTable<T>({
       <div className="flex items-center justify-between">
         <div className="text-xs text-muted-foreground">
           {isLoading ? (
-             // Skeleton untuk teks info "Menampilkan x-y dari z"
              <Skeleton className="h-4 w-[200px]" />
           ) : data.length > 0 ? (
             <>
@@ -200,7 +201,6 @@ export function DataTable<T>({
 
         <div className="flex items-center space-x-2">
           {isLoading ? (
-            // Skeleton untuk kontrol pagination
             <>
                <Skeleton className="h-8 w-8 rounded-md" /> 
                <Skeleton className="h-4 w-16" />
