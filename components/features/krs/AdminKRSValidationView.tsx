@@ -287,7 +287,7 @@ export default function AdminKRSValidationView() {
                                 <span className="text-4xl font-extrabold tracking-tight text-slate-900">{pendingCount}</span>
                                 <span className="text-sm font-medium text-slate-500">Mahasiswa</span>
                             </div>
-                            <p className="text-slate-400 text-xs mt-2">Menunggu persetujuan KRS untuk Tahun Akademik {currentAcademicYearName}.</p>
+                            <p className="text-slate-400 text-xs mt-2">Menunggu persetujuan KRS untuk TA {currentAcademicYearName}.</p>
                         </div>
                         <Button 
                             variant="outline" 
