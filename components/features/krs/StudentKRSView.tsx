@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useToastMessage } from "@/hooks/use-toast-message";
+import { useSignature } from "@/hooks/useSignature"; 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"; 
+import { Label } from "@/components/ui/label"; 
 import { 
-    Send, AlertTriangle, BookOpen, GraduationCap, PieChart, Printer
+    Send, AlertTriangle, BookOpen, GraduationCap, PieChart, Printer, PenTool, Loader2
 } from "lucide-react";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import { StatusBadge } from "./StatusBadge";
@@ -30,7 +33,10 @@ import { getActiveOfficial } from "@/app/actions/students";
 import { AcademicYear, Official } from "@/lib/types";
 
 export default function StudentKRSView({ user }: { user: any }) {
-  const { successAction, showError, showLoading } = useToastMessage();
+  const { successAction, showError, showLoading, dismiss } = useToastMessage();
+
+  // Hook Signature dengan isLoading
+  const { signatureType, setSignatureType, secureImage, isLoading: isSigLoading } = useSignature("none");
 
   const [offerings, setOfferings] = useState<CourseOffering[]>([]);
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
@@ -38,20 +44,37 @@ export default function StudentKRSView({ user }: { user: any }) {
   const [studentSemester, setStudentSemester] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   
-  // State Pejabat untuk Tanda Tangan
   const [official, setOfficial] = useState<Official | null>(null);
-  const [studentProfile, setStudentProfile] = useState<any>(null); // State Profil Mahasiswa
+  const [studentProfile, setStudentProfile] = useState<any>(null);
 
-  // DataTable State
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   
   // Modal State
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   const studentId = user.student_id;
   const MAX_SKS = 24; 
+
+  // Ref untuk Toast ID agar tidak duplikat
+  const toastIdRef = useRef<string | number | null>(null);
+
+  // Effect untuk Toast Loading saat mengambil TTD
+  useEffect(() => {
+    if (isSigLoading) {
+        if (!toastIdRef.current) {
+            toastIdRef.current = showLoading("Menyiapkan dokumen...");
+        }
+    } else {
+        if (toastIdRef.current) {
+            dismiss(toastIdRef.current);
+            toastIdRef.current = null;
+        }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSigLoading]);
 
   // === INIT DATA ===
   useEffect(() => {
@@ -84,7 +107,7 @@ export default function StudentKRSView({ user }: { user: any }) {
       const res = await getStudentCourseOfferings(studentId, selectedYear);
       setOfferings(res.offerings);
       setStudentSemester(res.student_semester);
-      setStudentProfile(res.student_profile); // Simpan profil lengkap
+      setStudentProfile(res.student_profile);
     } catch (error: any) {
       showError("Gagal", error.message);
     } finally {
@@ -98,12 +121,10 @@ export default function StudentKRSView({ user }: { user: any }) {
   const krsGlobalStatus = offerings.find(c => c.is_taken)?.krs_status || "BELUM_AMBIL";
   const progressPercent = Math.min((totalSKS / MAX_SKS) * 100, 100);
 
-  // Filter Mata Kuliah yang Diambil (Untuk Cetak)
   const takenCourses = useMemo(() => {
      return offerings.filter(c => c.is_taken);
   }, [offerings]);
 
-  // Cari Nama Tahun Akademik + Semester (Ganjil/Genap)
   const selectedAcademicYearName = useMemo(() => {
       const ay = academicYears.find(y => y.id === selectedYear);
       return ay ? `${ay.nama} ${ay.semester}` : "";
@@ -145,11 +166,14 @@ export default function StudentKRSView({ user }: { user: any }) {
     finally { setIsSubmitOpen(false); }
   };
   
-  const handlePrint = () => {
-    window.print();
+  const handlePrintProcess = () => {
+    setIsPrintModalOpen(false);
+    setTimeout(() => {
+        window.print();
+    }, 300);
   };
 
-  // Logic Filter & Pagination (Untuk Tampilan Web)
+  // Logic Filter & Pagination
   const filteredData = useMemo(() => {
     if (!searchQuery) return offerings;
     const lower = searchQuery.toLowerCase();
@@ -200,7 +224,7 @@ export default function StudentKRSView({ user }: { user: any }) {
       )
     },
     {
-        header: "Smt",
+        header: "Semester",
         className: "text-center w-[60px]",
         render: (row) => (
             <span className="text-sm font-medium text-slate-600">
@@ -229,6 +253,9 @@ export default function StudentKRSView({ user }: { user: any }) {
         )
     }
   ];
+
+  // Disable button saat loading atau jika TTD belum siap (kecuali pilih 'none')
+  const isPrintButtonDisabled = isSigLoading || (signatureType !== 'none' && !secureImage);
 
   return (
     <>
@@ -259,10 +286,9 @@ export default function StudentKRSView({ user }: { user: any }) {
     `}</style>
 
     {/* --- LAYOUT PRINT (ID: #print-area) --- */}
-    <div id="print-area" className="hidden print:block font-sans bg-white text-black p-6">
+    <div id="print-area" className="hidden print:block font-sans bg-white text-black p-8">
         <DocumentHeader title="KARTU RENCANA STUDI" />
 
-        {/* Info Mahasiswa Dinamis + Periode */}
         <div className="mt-1 mb-4 px-2">
              <StudentInfo 
                 profile={studentProfile || { 
@@ -276,11 +302,9 @@ export default function StudentKRSView({ user }: { user: any }) {
              />
         </div>
 
-        {/* Tabel KRS Resmi (Style Compact Mirip KHS) */}
         <div className="w-full mb-6 px-1">
             <table className="w-full text-[9px] font-['Cambria'] border-collapse border border-black mb-2">
                 <thead>
-                    {/* Header: Biru Muda, Bold, Tinggi h-5 */}
                     <tr className="bg-[#D9EAF7] text-center font-bold h-5 border-b border-black">
                         <th className="border border-black w-6">No</th>
                         <th className="border border-black w-24">Kode MK</th>
@@ -308,7 +332,6 @@ export default function StudentKRSView({ user }: { user: any }) {
                 </tbody>
                 {takenCourses.length > 0 && (
                      <tfoot>
-                        {/* Footer*/}
                         <tr className="font-bold bg-white h-4 border-t border-black text-[9px]">
                             <td colSpan={3} className="border border-black px-2 text-left">Jumlah SKS yang diambil</td>
                             <td className="border border-black text-center">{totalSKS}</td>
@@ -319,11 +342,10 @@ export default function StudentKRSView({ user }: { user: any }) {
             </table>
         </div>
 
-        {/* Footer Tanda Tangan */}
         <div className="px-2">
             <DocumentFooter 
-                signatureType="none" 
-                signatureBase64={null}
+                signatureType={signatureType} 
+                signatureBase64={secureImage} 
                 mode="krs" 
                 official={official}
             />
@@ -357,13 +379,13 @@ export default function StudentKRSView({ user }: { user: any }) {
                         </h2>
                     </div>
                     <div className="flex gap-2">
-                        {/* Tombol Cetak */}
+                        {/* Tombol Cetak Buka Modal */}
                         {(krsGlobalStatus === 'SUBMITTED' || krsGlobalStatus === 'APPROVED') && (
                             <Button 
                                 size="sm" 
                                 variant="outline" 
                                 className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
-                                onClick={handlePrint}
+                                onClick={() => setIsPrintModalOpen(true)}
                             >
                                 <Printer className="w-4 h-4 mr-2" />
                                 Cetak KRS
@@ -477,6 +499,54 @@ export default function StudentKRSView({ user }: { user: any }) {
             />
         </CardContent>
       </Card>
+
+      {/* MODAL PRINT OPTIONS */}
+      <Dialog open={isPrintModalOpen} onOpenChange={setIsPrintModalOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+                <DialogTitle>Opsi Cetak KRS</DialogTitle>
+            </DialogHeader>
+            
+            <div className="py-4 space-y-4">
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium">Pilih Jenis Tanda Tangan</Label>
+                    <Select value={signatureType} onValueChange={(val: any) => setSignatureType(val)}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Pilih Tanda Tangan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">Tanpa Tanda Tangan</SelectItem>
+                            <SelectItem value="basah">Tanda Tangan Basah</SelectItem>
+                            <SelectItem value="digital">Tanda Tangan Digital (QR)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                        Pilih "Tanpa Tanda Tangan" jika ingin meminta tanda tangan basah langsung ke dosen terkait atau ke bagian akademik (BAAK).
+                    </p>
+                </div>
+            </div>
+
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsPrintModalOpen(false)}>Batal</Button>
+                <Button 
+                    onClick={handlePrintProcess} 
+                    disabled={isPrintButtonDisabled}
+                >
+                    {isSigLoading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 
+                            Memuat...
+                        </>
+                    ) : (
+                        <>
+                            <Printer className="w-4 h-4 mr-2" /> 
+                            Cetak PDF
+                        </>
+                    )}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ConfirmModal isOpen={isSubmitOpen} onClose={setIsSubmitOpen} onConfirm={confirmSubmit}
         title="Ajukan KRS?" description="Setelah diajukan, KRS akan dikunci dan menunggu persetujuan Dosen Wali. Pastikan pilihan mata kuliah sudah benar." confirmLabel="Ajukan Sekarang" variant="default" />
