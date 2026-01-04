@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; 
-import { Skeleton } from "@/components/ui/skeleton"; 
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Import DataTable dan Column
 import { DataTable, type Column } from "@/components/ui/data-table";
@@ -64,6 +64,7 @@ export default function AdminKRSValidationView() {
   const fetchStudents = async () => {
     setIsLoading(true);
     try {
+      // Fungsi ini sekarang mengembalikan status SUBMITTED, APPROVED, dan REJECTED
       const data = await getStudentsWithSubmittedKRS(selectedYear);
       setStudents(data);
     } catch (error) { console.error(error); } 
@@ -80,6 +81,11 @@ export default function AdminKRSValidationView() {
         s.study_program?.nama?.toLowerCase().includes(lower)
     );
   }, [students, searchQuery]);
+
+  // Hitung jumlah yang masih pending (status = SUBMITTED) untuk Card Stats
+  const pendingCount = useMemo(() => {
+    return students.filter(s => s.status === 'SUBMITTED').length;
+  }, [students]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -109,7 +115,7 @@ export default function AdminKRSValidationView() {
         
         successAction("KRS", "update", toastId);
         setIsDetailOpen(false);
-        fetchStudents();
+        fetchStudents(); // Refresh data table
     } catch (e: any) { showError("Gagal", e.message, toastId); }
     finally { setIsProcessing(false); }
   };
@@ -150,9 +156,10 @@ export default function AdminKRSValidationView() {
     {
         header: "Status",
         className: "text-center w-[120px]",
-        render: () => (
+        render: (row) => (
             <div className="flex justify-center scale-90">
-                <StatusBadge status="SUBMITTED" />
+                {/* Status diambil dari row.status (hasil modifikasi action) */}
+                <StatusBadge status={row.status} />
             </div>
         )
     },
@@ -269,7 +276,7 @@ export default function AdminKRSValidationView() {
                         
                         <div>
                             <div className="text-4xl font-extrabold tracking-tight">
-                                {filteredData.length}
+                                {pendingCount}
                                 <span className="text-lg font-normal text-teal-100 ml-2">Mahasiswa</span>
                             </div>
                             <p className="text-teal-50/80 text-xs mt-1">Menunggu persetujuan KRS Anda.</p>

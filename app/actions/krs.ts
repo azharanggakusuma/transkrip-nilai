@@ -234,7 +234,7 @@ export async function submitKRS(studentId: string, academicYearId: string) {
     }
 }
 
-// 6. Reset KRS (Hapus Semua Pilihan untuk Tahun Akademik Terpilih) - NEW
+// 6. Reset KRS (Hapus Semua Pilihan untuk Tahun Akademik Terpilih)
 export async function resetKRS(studentId: string, academicYearId: string) {
   try {
     const { error } = await supabase
@@ -256,35 +256,42 @@ export async function resetKRS(studentId: string, academicYearId: string) {
 // ADMIN ACTIONS (VALIDASI)
 // ==========================================
 
-// 7. Ambil Daftar Mahasiswa yang Mengajukan KRS (Status = SUBMITTED)
+// 7. Ambil Daftar Mahasiswa dengan Status KRS (SUBMITTED, APPROVED, REJECTED)
+//    Diubah agar menampilkan semua history, bukan hanya yang pending.
 export async function getStudentsWithSubmittedKRS(academicYearId: string) {
   try {
     const { data: krsList, error } = await supabase
       .from("krs")
       .select(`
         student_id,
+        status,
         students:students (
           id, nim, nama, semester,
           study_program:study_programs (nama, jenjang)
         )
       `)
       .eq("academic_year_id", academicYearId)
-      .eq("status", "SUBMITTED");
+      // Mengambil yang sudah diajukan, disetujui, atau ditolak
+      .in("status", ["SUBMITTED", "APPROVED", "REJECTED"]);
 
     if (error) throw error;
 
-    // Grouping by Student (Hilangkan duplikasi karena 1 mhs punya banyak baris KRS)
+    // Grouping by Student & Attach Status
     const studentMap = new Map<string, any>();
 
     krsList.forEach((item: any) => {
       if (item.students && !studentMap.has(item.student_id)) {
-        studentMap.set(item.student_id, item.students);
+        // Tempelkan status ke objek student agar bisa dirender di tabel
+        studentMap.set(item.student_id, { 
+            ...item.students, 
+            status: item.status 
+        });
       }
     });
 
     return Array.from(studentMap.values());
   } catch (error) {
-    console.error("Error fetching submitted students:", error);
+    console.error("Error fetching students:", error);
     return [];
   }
 }
@@ -297,7 +304,8 @@ export async function approveKRS(studentId: string, academicYearId: string) {
       .update({ status: "APPROVED" })
       .eq("student_id", studentId)
       .eq("academic_year_id", academicYearId)
-      .in("status", ["SUBMITTED", "DRAFT"]); 
+      // Bisa approve dari status DRAFT atau SUBMITTED atau bahkan REJECTED (re-approve)
+      .in("status", ["SUBMITTED", "DRAFT", "REJECTED"]); 
 
     if (error) throw error;
     revalidatePath("/validasi-krs"); 
@@ -307,7 +315,7 @@ export async function approveKRS(studentId: string, academicYearId: string) {
   }
 }
 
-// 9. Reject KRS (Kembalikan ke DRAFT atau set REJECTED)
+// 9. Reject KRS (Kembalikan ke REJECTED)
 export async function rejectKRS(studentId: string, academicYearId: string) {
   try {
     const { error } = await supabase
@@ -315,7 +323,8 @@ export async function rejectKRS(studentId: string, academicYearId: string) {
       .update({ status: "REJECTED" }) 
       .eq("student_id", studentId)
       .eq("academic_year_id", academicYearId)
-      .eq("status", "SUBMITTED");
+      // Bisa reject dari SUBMITTED atau APPROVED (batal setuju)
+      .in("status", ["SUBMITTED", "APPROVED"]);
 
     if (error) throw error;
     revalidatePath("/validasi-krs");
