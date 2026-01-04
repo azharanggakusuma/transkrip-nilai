@@ -232,7 +232,7 @@ export default function AdminKRSValidationView() {
                     <div className="flex justify-between items-start">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="secondary" className="bg-indigo-500/20 text-indigo-200 border-0 backdrop-blur-sm">Admin Panel</Badge>
+                                <Badge variant="secondary" className="bg-indigo-500/20 text-indigo-200 border-0 backdrop-blur-sm rounded-full">Admin Panel</Badge>
                             </div>
                             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Validasi KRS Mahasiswa</h2>
                             <p className="text-slate-400 text-sm mt-1">Kelola persetujuan rencana studi mahasiswa untuk semester aktif.</p>
@@ -240,7 +240,7 @@ export default function AdminKRSValidationView() {
                     </div>
                     <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setCurrentPage(1); }}>
-                            <SelectTrigger className="w-[240px] h-10 bg-white/5 border-white/10 text-white placeholder:text-white/60 focus:ring-indigo-500/50 hover:bg-white/10 transition-colors">
+                            <SelectTrigger className="w-[240px] h-10 bg-white/5 border-white/10 text-white placeholder:text-white/60 focus:ring-indigo-500/50 hover:bg-white/10 transition-colors rounded-full">
                                 <SelectValue placeholder="Pilih Tahun Akademik" />
                             </SelectTrigger>
                             <SelectContent>
@@ -249,7 +249,7 @@ export default function AdminKRSValidationView() {
                                 ))}
                             </SelectContent>
                         </Select>
-                        <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-md border border-white/10 text-slate-300">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 text-slate-300">
                             <CalendarDays className="w-4 h-4" />
                             <span className="text-sm font-medium">Semester {academicYears.find(y => y.id === selectedYear)?.semester || '-'}</span>
                         </div>
@@ -275,7 +275,10 @@ export default function AdminKRSValidationView() {
                                 <div className="p-2.5 bg-indigo-50 rounded-xl"><Users className="h-5 w-5 text-indigo-600" /></div>
                                 <span className="text-sm font-semibold text-slate-600">Antrean Validasi</span>
                              </div>
-                             <Badge className={pendingCount > 0 ? "bg-orange-100 text-orange-700 hover:bg-orange-100" : "bg-green-100 text-green-700 hover:bg-green-100"}>
+                             <Badge className={cn(
+                                "rounded-full px-3",
+                                pendingCount > 0 ? "bg-orange-100 text-orange-700 hover:bg-orange-100" : "bg-green-100 text-green-700 hover:bg-green-100"
+                             )}>
                                 {pendingCount > 0 ? "Perlu Tindakan" : "Selesai"}
                              </Badge>
                         </div>
@@ -288,7 +291,7 @@ export default function AdminKRSValidationView() {
                         </div>
                         <Button 
                             variant="outline" 
-                            className="w-full justify-between group border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 transition-all"
+                            className="w-full justify-between group border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 transition-all rounded-full"
                             onClick={() => document.getElementById('krs-table')?.scrollIntoView({ behavior: 'smooth' })}
                         >
                             Lihat Daftar <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -341,7 +344,7 @@ export default function AdminKRSValidationView() {
                             
                             {/* Meta info (NIM, Prodi, Semester) di bawah nama */}
                             <div className="flex flex-wrap items-center gap-3 text-sm text-slate-300">
-                                 <div className="bg-white/10 px-2 py-0.5 rounded border border-white/10 text-indigo-50 font-mono">
+                                 <div className="bg-white/10 px-3 py-0.5 rounded-full border border-white/10 text-indigo-50 font-mono text-xs">
                                     {selectedStudent?.nim}
                                  </div>
                                  
@@ -360,14 +363,14 @@ export default function AdminKRSValidationView() {
 
                         {/* Quick Stats in Header */}
                         <div className="flex gap-3 w-full sm:w-auto">
-                            <div className="flex-1 sm:flex-none bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-3 px-4 text-center min-w-[100px]">
+                            <div className="flex-1 sm:flex-none bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-3 px-4 text-center min-w-[100px]">
                                 <p className="text-xs text-slate-300 font-medium uppercase tracking-wider mb-1">Total SKS</p>
                                 <p className={cn(
                                     "text-2xl font-bold", 
                                     totalSKS > 24 ? "text-red-300" : "text-white"
                                 )}>{totalSKS}</p>
                             </div>
-                             <div className="flex-1 sm:flex-none bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-3 px-4 text-center min-w-[100px]">
+                             <div className="flex-1 sm:flex-none bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-3 px-4 text-center min-w-[100px]">
                                 <p className="text-xs text-slate-300 font-medium uppercase tracking-wider mb-1">Matkul</p>
                                 <p className="text-2xl font-bold text-white">{studentKRS.length}</p>
                             </div>
@@ -399,7 +402,7 @@ export default function AdminKRSValidationView() {
                                 <LayoutDashboard className="w-4 h-4 text-slate-500" />
                                 <h4 className="font-semibold text-slate-800 text-sm">Rencana Studi Diajukan</h4>
                             </div>
-                            <span className="text-xs text-slate-500 font-medium bg-white px-2 py-1 rounded border">
+                            <span className="text-xs text-slate-500 font-medium bg-white px-3 py-1 rounded-full border">
                                 TA {currentAcademicYearName}
                             </span>
                         </div>
@@ -439,7 +442,7 @@ export default function AdminKRSValidationView() {
                                             <TableCell className="font-mono text-xs font-medium text-slate-600">{k.course?.kode}</TableCell>
                                             <TableCell className="font-medium text-slate-900 group-hover:text-indigo-700 transition-colors">{k.course?.matkul}</TableCell>
                                             <TableCell className="text-center">
-                                                <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-0 font-mono font-normal">
+                                                <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-0 font-mono font-normal rounded-full px-2.5">
                                                     {k.course?.sks}
                                                 </Badge>
                                             </TableCell>
@@ -469,21 +472,21 @@ export default function AdminKRSValidationView() {
                     <Button 
                         variant="ghost" 
                         onClick={() => setIsDetailOpen(false)}
-                        className="text-slate-500 hover:text-slate-800 hover:bg-slate-100 w-full sm:w-auto"
+                        className="text-slate-500 hover:text-slate-800 hover:bg-slate-100 w-full sm:w-auto rounded-full"
                     >
                         Batal
                     </Button>
                     <div className="flex gap-3 w-full sm:w-auto">
                         <Button 
                             variant="outline" 
-                            className="flex-1 sm:flex-none border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300" 
+                            className="flex-1 sm:flex-none border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-full" 
                             onClick={() => handleAction("REJECT")} 
                             disabled={isProcessing}
                         >
                             {isProcessing ? "..." : <><XCircle className="w-4 h-4 mr-2" /> Tolak Ajuan</>}
                         </Button>
                         <Button 
-                            className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200" 
+                            className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200 rounded-full" 
                             onClick={() => handleAction("APPROVE")} 
                             disabled={isProcessing}
                         >
