@@ -213,7 +213,7 @@ export default function AdminKRSValidationView() {
         <Card className="md:col-span-8 border-none shadow-md text-white overflow-hidden relative bg-slate-900">
             <div className="absolute top-0 right-0 p-8 opacity-5 text-white"><BookOpen size={150} /></div>
             {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-indigo-600/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-indigo-600/20" />
             
             <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
                 {isLoading ? (
@@ -331,7 +331,7 @@ export default function AdminKRSValidationView() {
                 <div className="absolute top-0 right-0 p-12 opacity-10 transform translate-x-1/3 -translate-y-1/3">
                     <GraduationCap size={200} />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-blue-600/10 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-indigo-600/10 to-transparent pointer-events-none" />
 
                 <div className="relative z-10 p-6 sm:p-8">
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
