@@ -8,10 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { 
-  CheckCircle2, Eye, XCircle, User, GraduationCap, CalendarDays, AlertCircle, ListTodo
+  CheckCircle2, Eye, XCircle, GraduationCap, CalendarDays, AlertCircle, ListTodo
 } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; // Masih dipakai untuk detail modal
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Import DataTable dan Column
@@ -124,24 +124,18 @@ export default function AdminKRSValidationView() {
     {
       header: "Mahasiswa",
       render: (row) => (
-        <div className="flex items-center gap-3">
-            <div className="h-9 w-9 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center border border-indigo-100">
-                <User className="h-4 w-4" />
-            </div>
-            <div>
-                <p className="font-medium text-slate-900 text-sm">{row.nama}</p>
-                <p className="text-xs text-slate-500 font-mono">{row.nim}</p>
-            </div>
+        <div>
+            <p className="font-medium text-slate-900 text-sm">{row.nama}</p>
+            <p className="text-xs text-slate-500 font-mono">{row.nim}</p>
         </div>
       ),
     },
     {
         header: "Program Studi",
         render: (row) => (
-            <div className="flex flex-col">
-                <span className="text-sm text-slate-700">{row.study_program?.nama}</span>
-                <span className="text-xs text-slate-400">{row.study_program?.jenjang}</span>
-            </div>
+            <span className="text-sm text-slate-700">
+                {row.study_program?.nama} ({row.study_program?.jenjang})
+            </span>
         )
     },
     {
@@ -155,12 +149,19 @@ export default function AdminKRSValidationView() {
     },
     {
         header: "Aksi",
-        className: "text-center", 
+        className: "text-center w-[100px]", 
         render: (row) => (
-            <Button size="sm" onClick={() => openDetail(row)} 
-                className="h-8 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-200 shadow-sm transition-all">
-                <Eye className="w-3.5 h-3.5 mr-2" /> Tinjau
-            </Button>
+            <div className="flex justify-center">
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => openDetail(row)} 
+                    className="h-8 w-8 text-indigo-600 hover:bg-indigo-50"
+                    title="Tinjau KRS"
+                >
+                    <Eye className="w-4 h-4" />
+                </Button>
+            </div>
         )
     }
   ];
@@ -172,7 +173,7 @@ export default function AdminKRSValidationView() {
       
       {/* --- Section Filter & Stats --- */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-        {/* Card Filter: Tetap di Header sesuai permintaan */}
+        {/* Card Filter */}
         <Card className="md:col-span-8 shadow-sm border-slate-200">
             <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-bold text-slate-800">Filter Data</CardTitle>
@@ -220,7 +221,6 @@ export default function AdminKRSValidationView() {
       {/* --- Section Table --- */}
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-6">
-            {/* Search Bar ada di dalam DataTable agar konsisten dengan UserTable */}
             <DataTable
                 data={currentData}
                 columns={columns}
@@ -242,7 +242,7 @@ export default function AdminKRSValidationView() {
         </CardContent>
       </Card>
 
-      {/* --- Detail Modal (Tidak diubah) --- */}
+      {/* --- Detail Modal --- */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
           <DialogHeader className="p-6 pb-4 border-b bg-white z-10">
@@ -294,7 +294,7 @@ export default function AdminKRSValidationView() {
                     </div>
                 </div>
 
-                {/* Course List Detail (Tetap Table biasa untuk detail) */}
+                {/* Course List Detail */}
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                         <h4 className="font-semibold text-slate-800 text-sm">Daftar Mata Kuliah</h4>
