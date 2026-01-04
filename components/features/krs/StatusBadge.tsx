@@ -7,7 +7,7 @@ export function StatusBadge({ status }: { status?: string }) {
 
   let styles = "bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200";
   let icon = <FileText className="mr-1.5 h-3 w-3" />;
-  let label = "Draft";
+  let label = "Draf";
 
   switch (status) {
     case "APPROVED":

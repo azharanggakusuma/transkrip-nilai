@@ -152,7 +152,7 @@ export default function AdminKRSValidationView() {
         className: "text-center w-[120px]",
         render: () => (
             <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
-                Submitted
+                Diajukan
             </Badge>
         )
     },

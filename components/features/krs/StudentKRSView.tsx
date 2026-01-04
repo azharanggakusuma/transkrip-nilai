@@ -398,7 +398,7 @@ export default function StudentKRSView({ user }: { user: any }) {
                         <h2 className="text-3xl font-bold tracking-tight">
                             {krsGlobalStatus === 'APPROVED' ? "Disetujui Dosen" : 
                              krsGlobalStatus === 'SUBMITTED' ? "Menunggu Validasi" :
-                             krsGlobalStatus === 'BELUM_AMBIL' ? "Belum Mengisi" : "Mode Draft"}
+                             krsGlobalStatus === 'BELUM_AMBIL' ? "Belum Mengisi" : "Mode Draf"}
                         </h2>
                     </div>
                     <div className="flex gap-2">
@@ -409,7 +409,7 @@ export default function StudentKRSView({ user }: { user: any }) {
                             </Button>
                         )}
                         {krsGlobalStatus === 'DRAFT' && (
-                            <Badge className="bg-amber-400 text-amber-900 hover:bg-amber-500 border-none">Action Needed</Badge>
+                            <Badge className="bg-amber-400 text-amber-900 hover:bg-amber-500 border-none">Perlu Tindakan</Badge>
                         )}
                     </div>
                 </div>
@@ -463,7 +463,7 @@ export default function StudentKRSView({ user }: { user: any }) {
                   <div className="p-2 bg-amber-100 rounded-full text-amber-700 shrink-0"><AlertTriangle className="h-5 w-5" /></div>
                   <div>
                     <h4 className="font-semibold text-amber-900 text-sm">Selesaikan Pengisian KRS</h4>
-                    <p className="text-sm text-amber-800/80 mt-1 max-w-2xl">Anda memiliki mata kuliah berstatus <strong>Draft</strong>. Harap ajukan segera.</p>
+                    <p className="text-sm text-amber-800/80 mt-1 max-w-2xl">Anda memiliki mata kuliah berstatus <strong>Draf</strong>. Harap ajukan segera.</p>
                   </div>
               </div>
               <Button onClick={() => setIsSubmitOpen(true)} className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white shadow-sm border-0 font-medium">
