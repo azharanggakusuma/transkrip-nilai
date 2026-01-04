@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useToastMessage } from "@/hooks/use-toast-message";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -70,7 +70,7 @@ export default function AdminKRSValidationView() {
     finally { setIsLoading(false); }
   };
 
-  // Filtering & Pagination Logic
+  // Logic Filtering & Pagination
   const filteredData = useMemo(() => {
     if (!searchQuery) return students;
     const lower = searchQuery.toLowerCase();
@@ -114,7 +114,7 @@ export default function AdminKRSValidationView() {
     finally { setIsProcessing(false); }
   };
 
-  // Definisi Kolom
+  // Definisi Kolom DataTable
   const columns: Column<any>[] = [
     {
       header: "#",
@@ -165,56 +165,62 @@ export default function AdminKRSValidationView() {
     }
   ];
 
-  // Konten Filter Tahun Akademik untuk DataTable
-  const filterContent = (
-    <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-slate-600 hidden md:inline">Tahun:</span>
-        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setCurrentPage(1); }}>
-            <SelectTrigger className="w-[180px] h-9 bg-white border-slate-200">
-                <SelectValue placeholder="Pilih Tahun" />
-            </SelectTrigger>
-            <SelectContent>
-                {academicYears.map((ay) => (
-                <SelectItem key={ay.id} value={ay.id}>
-                    {ay.nama} - {ay.semester}
-                </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
-    </div>
-  );
-
   const totalSKS = studentKRS.reduce((acc, curr) => acc + (curr.course?.sks || 0), 0);
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 mt-6">
       
-      {/* --- Section Stats Only --- */}
+      {/* --- Section Filter & Stats --- */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        {/* Card Filter: Tetap di Header sesuai permintaan */}
+        <Card className="md:col-span-8 shadow-sm border-slate-200">
+            <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold text-slate-800">Filter Data</CardTitle>
+                <CardDescription>Pilih tahun akademik untuk melihat pengajuan.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center gap-4">
+                    <div className="flex-1 max-w-xs space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tahun Akademik</label>
+                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setCurrentPage(1); }}>
+                            <SelectTrigger className="w-full bg-slate-50 border-slate-200">
+                                <SelectValue placeholder="Pilih Tahun" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {academicYears.map((ay) => (
+                                <SelectItem key={ay.id} value={ay.id}>
+                                    {ay.nama} - {ay.semester}
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+
         {/* Card Summary Stats */}
-        <Card className="md:col-span-12 bg-indigo-600 text-white border-indigo-600 shadow-md">
-            <CardContent className="p-6 flex items-center justify-between">
+        <Card className="md:col-span-4 bg-indigo-600 text-white border-indigo-600 shadow-md">
+            <CardContent className="p-6 flex flex-col justify-center h-full">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 opacity-90">
                         <ListTodo className="h-4 w-4" />
                         <span className="text-sm font-medium">Antrean Validasi</span>
                     </div>
-                    {/* [FIXED] Menggunakan filteredData.length alih-alih filteredStudents.length */}
+                    {/* Menggunakan filteredData untuk statistik */}
                     <div className="text-2xl font-bold tracking-tight">
                         {isLoading ? "..." : filteredData.length} Mahasiswa
                     </div>
                     <p className="text-indigo-100 text-xs">Menunggu persetujuan KRS</p>
                 </div>
-                <div className="h-12 w-12 bg-white/10 rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="h-6 w-6 text-white" />
-                </div>
             </CardContent>
         </Card>
       </div>
 
-      {/* Tabel Menggunakan DataTable */}
+      {/* --- Section Table --- */}
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-6">
+            {/* Search Bar ada di dalam DataTable agar konsisten dengan UserTable */}
             <DataTable
                 data={currentData}
                 columns={columns}
@@ -226,10 +232,6 @@ export default function AdminKRSValidationView() {
                 }}
                 searchPlaceholder="Cari Nama, NIM, atau Prodi..."
                 
-                filterContent={filterContent}
-                isFilterActive={true} 
-                onResetFilter={() => {}} 
-
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
@@ -240,7 +242,7 @@ export default function AdminKRSValidationView() {
         </CardContent>
       </Card>
 
-      {/* --- Detail Modal --- */}
+      {/* --- Detail Modal (Tidak diubah) --- */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
           <DialogHeader className="p-6 pb-4 border-b bg-white z-10">
@@ -292,7 +294,7 @@ export default function AdminKRSValidationView() {
                     </div>
                 </div>
 
-                {/* Course List Detail */}
+                {/* Course List Detail (Tetap Table biasa untuk detail) */}
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                         <h4 className="font-semibold text-slate-800 text-sm">Daftar Mata Kuliah</h4>
