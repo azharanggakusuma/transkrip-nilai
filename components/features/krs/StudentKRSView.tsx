@@ -427,10 +427,10 @@ export default function StudentKRSView({ user }: { user: any }) {
                         <div>
                             <p className="text-white/80 font-medium text-sm mb-1">Status Pengisian KRS</p>
                             <h2 className="text-3xl font-bold tracking-tight">
-                                {krsGlobalStatus === 'APPROVED' ? "Disetujui Dosen" : 
+                                {krsGlobalStatus === 'APPROVED' ? "KRS Disetujui" : 
                                  krsGlobalStatus === 'SUBMITTED' ? "Menunggu Validasi" :
                                  krsGlobalStatus === 'REJECTED' ? "KRS Ditolak" :
-                                 krsGlobalStatus === 'NOT_TAKEN' ? "Belum Mengisi" : "Mode Draf"}
+                                 krsGlobalStatus === 'NOT_TAKEN' ? "Belum Mengisi" : "Belum Diajukan"}
                             </h2>
                         </div>
                         <div className="flex gap-2">
@@ -524,7 +524,7 @@ export default function StudentKRSView({ user }: { user: any }) {
                   <div className="p-2 bg-amber-100 rounded-full text-amber-700 shrink-0"><AlertTriangle className="h-5 w-5" /></div>
                   <div>
                     <h4 className="font-semibold text-amber-900 text-sm">Selesaikan Pengisian KRS</h4>
-                    <p className="text-sm text-amber-800/80 mt-1 max-w-2xl">Anda memiliki mata kuliah berstatus <strong>Draf</strong>. Harap ajukan segera.</p>
+                    <p className="text-sm text-amber-800/80 mt-1 max-w-2xl">Anda memiliki mata kuliah berstatus <strong>Belum Diajukan</strong>. Harap ajukan segera.</p>
                   </div>
               </div>
               <Button onClick={() => setIsSubmitOpen(true)} className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white shadow-sm border-0 font-medium">
