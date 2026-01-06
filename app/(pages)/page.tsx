@@ -1,4 +1,3 @@
-// app/(pages)/page.tsx
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -9,7 +8,6 @@ import {
   calculateSemesterTrend,
   calculateStudentSemesterTrend,
   calculateGradeDistribution,
-  // calculateTotalSKS, // Hapus atau biarkan tidak terpakai
 } from "@/lib/dashboard-helper";
 
 import { getStudents } from "@/app/actions/students";
@@ -94,11 +92,26 @@ export default function DashboardPage() {
       
       if (myData) {
         const myIPK = calculateIPK(myData.transcript).toFixed(2);
-
+        
+        // 1. Ambil Total SKS (Dari KRS Approved)
         const totalSKS = myData.total_sks || 0; 
-
         const currentSmt = myData.profile.semester; 
         const totalMK = myData.transcript.length;
+
+        // 2. [LOGIKA DESKRIPSI DINAMIS]
+        const jenjang = myData.profile.study_program?.jenjang || "S1";
+        const targetSKS = jenjang.includes("D3") ? 108 : 144; // D3=108, S1=144
+        const sisaSKS = targetSKS - totalSKS;
+
+        let deskripsiSKS = "";
+        
+        if (sisaSKS > 0) {
+            // Jika masih kurang
+            deskripsiSKS = `${sisaSKS} SKS lagi untuk Lulus.`;
+        } else {
+            // Jika sudah cukup atau lebih
+            deskripsiSKS = "Syarat SKS Terpenuhi"; 
+        }
 
         stats = [
           {
@@ -111,14 +124,14 @@ export default function DashboardPage() {
           {
             label: "Total SKS",
             value: totalSKS.toString(),
-            description: "Akumulasi Kredit Diambil", // Deskripsi disesuaikan
+            description: deskripsiSKS,
             icon: <Activity className="w-6 h-6" />, 
             themeColor: "chart-2",
           },
           {
             label: "Mata Kuliah",
             value: totalMK.toString(),
-            description: "Total Mata Kuliah Lulus", // Deskripsi diperjelas (karena dari transcript)
+            description: "Akumulasi Mata Kuliah Lulus", 
             icon: <LibraryIcon className="w-6 h-6" />,
             themeColor: "chart-3",
           },
