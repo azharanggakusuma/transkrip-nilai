@@ -70,6 +70,31 @@ export function MbkmForm({
   const [formData, setFormData] = useState<StudentMBKMFormValues>(initialData || defaultValues);
   const [openStudent, setOpenStudent] = useState(false); 
 
+  // --- LOGIC DINAMIS LABEL MITRA ---
+  const getMitraConfig = (jenis: string) => {
+    switch (jenis) {
+      case "Pertukaran Mahasiswa Merdeka":
+        return { label: "Kampus Tujuan", placeholder: "Contoh: Universitas Gadjah Mada" };
+      case "Kampus Mengajar":
+        return { label: "Sekolah Penempatan", placeholder: "Contoh: SDN 1 Cirebon" };
+      case "KKN Tematik":
+        return { label: "Desa / Lokasi", placeholder: "Contoh: Desa Trusmi" };
+      case "Penelitian / Riset":
+        return { label: "Lembaga Riset / Lab", placeholder: "Contoh: BRIN / Lab Komputer" };
+      case "Proyek Kemanusiaan":
+        return { label: "Organisasi / Yayasan", placeholder: "Contoh: Palang Merah Indonesia" };
+      case "Wirausaha Merdeka":
+        return { label: "Nama Usaha / Lokasi", placeholder: "Contoh: Kedai Kopi / Lokasi Usaha" };
+      case "Studi Independen":
+        return { label: "Platform / Mitra", placeholder: "Contoh: Dicoding Indonesia / Bangkit" };
+      default:
+        return { label: "Nama Mitra", placeholder: "Contoh: PT. Telkom Indonesia" };
+    }
+  };
+
+  const mitraConfig = getMitraConfig(formData.jenis_mbkm);
+  // ---------------------------------
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -77,7 +102,7 @@ export function MbkmForm({
     if (!formData.student_id) errors.push("Mahasiswa wajib dipilih.");
     if (!formData.academic_year_id) errors.push("Periode Akademik wajib dipilih.");
     if (!formData.jenis_mbkm) errors.push("Jenis MBKM wajib dipilih.");
-    if (!formData.mitra.trim()) errors.push("Nama Mitra wajib diisi.");
+    if (!formData.mitra.trim()) errors.push(`${mitraConfig.label} wajib diisi.`);
 
     if (errors.length > 0) {
       toast.error("Validasi Gagal", {
@@ -166,7 +191,8 @@ export function MbkmForm({
                 value={formData.academic_year_id} 
                 onValueChange={(val) => setFormData({...formData, academic_year_id: val})}
             >
-              <SelectTrigger>
+              {/* PERBAIKAN: Tambahkan className="w-full" agar select full width */}
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Pilih Periode" />
               </SelectTrigger>
               <SelectContent>
@@ -186,7 +212,8 @@ export function MbkmForm({
                 value={formData.jenis_mbkm} 
                 onValueChange={(val) => setFormData({...formData, jenis_mbkm: val})}
             >
-              <SelectTrigger>
+              {/* PERBAIKAN: Tambahkan className="w-full" agar select full width */}
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Pilih Jenis Program" />
               </SelectTrigger>
               <SelectContent>
@@ -199,14 +226,17 @@ export function MbkmForm({
         </div>
       </div>
 
-      {/* SECTION 2: DETAIL MITRA */}
+      {/* SECTION 2: DETAIL MITRA (Label Dinamis) */}
       <div className="space-y-4 pt-2 border-t">
         <div className="flex flex-col gap-2">
-          <Label>Nama Mitra <span className="text-red-500">*</span></Label>
+          {/* LABEL DINAMIS */}
+          <Label>
+            {mitraConfig.label} <span className="text-red-500">*</span>
+          </Label>
           <Input 
             value={formData.mitra}
             onChange={(e) => setFormData({...formData, mitra: e.target.value})}
-            placeholder="Contoh: PT. Telkom Indonesia, Tbk"
+            placeholder={mitraConfig.placeholder}
           />
         </div>
 
