@@ -237,7 +237,7 @@ export default function AdminKRSValidationView() {
                     </div>
                     <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setCurrentPage(1); }}>
-                            <SelectTrigger className="w-[240px] h-10 bg-white/5 border-white/10 text-white placeholder:text-white/60 focus:ring-indigo-500/50 hover:bg-white/10 transition-colors rounded-full">
+                            <SelectTrigger className="w-[240px] h-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:ring-0 [&_svg]:text-white [&_svg]:stroke-white [&_svg]:opacity-100">
                                 <SelectValue placeholder="Pilih Tahun Akademik" />
                             </SelectTrigger>
                             <SelectContent>
@@ -246,7 +246,7 @@ export default function AdminKRSValidationView() {
                                 ))}
                             </SelectContent>
                         </Select>
-                        <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 text-slate-300">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-md border border-white/10">
                             <CalendarDays className="w-4 h-4" />
                             <span className="text-sm font-medium">Semester {academicYears.find(y => y.id === selectedYear)?.semester || '-'}</span>
                         </div>

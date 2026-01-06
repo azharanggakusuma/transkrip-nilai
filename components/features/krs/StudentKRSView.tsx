@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"; 
 import { Label } from "@/components/ui/label"; 
 import { 
-    Send, AlertTriangle, BookOpen, GraduationCap, PieChart, Printer, Loader2, RotateCcw,
+    Send, AlertTriangle, BookOpen, CalendarDays, PieChart, Printer, Loader2, RotateCcw,
     CheckCircle, Clock, XCircle 
 } from "lucide-react";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
@@ -517,20 +517,20 @@ export default function StudentKRSView({ user }: { user: any }) {
                     </div>
                     <div className="mt-6 flex flex-wrap items-center gap-4">
                         <Select value={selectedYear} onValueChange={setSelectedYear}>
-                            <SelectTrigger className="w-[240px] h-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:ring-0">
+                            <SelectTrigger className="w-[240px] h-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:ring-0 [&_svg]:text-white [&_svg]:stroke-white [&_svg]:opacity-100">
                                 <SelectValue placeholder="Pilih Tahun Akademik" />
                             </SelectTrigger>
                             <SelectContent>
                                 {filteredAcademicYears.map((ay) => (
                                     <SelectItem key={ay.id} value={ay.id}>
-                                        {ay.nama} - {ay.semester}
+                                        TA {ay.nama} - {ay.semester}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                         {studentSemester > 0 && (
                             <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-md border border-white/10">
-                                <GraduationCap className="w-4 h-4 text-white/80" />
+                                <CalendarDays className="w-4 h-4" />
                                 <span className="text-sm font-medium">Semester {studentSemester}</span>
                             </div>
                         )}
