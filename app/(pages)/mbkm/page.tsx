@@ -25,7 +25,6 @@ import { getAcademicYears } from "@/app/actions/academic-years";
 import { StudentMBKM, StudentData, AcademicYear, StudentMBKMFormValues } from "@/lib/types";
 
 export default function MbkmPage() {
-  // Hook Custom untuk Toast & Loading
   const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
 
   const [dataList, setDataList] = useState<StudentMBKM[]>([]);
@@ -35,8 +34,8 @@ export default function MbkmPage() {
 
   // Filters & Pagination
   const [searchQuery, setSearchQuery] = useState("");
-  const [jenisFilter, setJenisFilter] = useState<string>("ALL"); // Filter Jenis MBKM
-  const [periodeFilter, setPeriodeFilter] = useState<string>("ALL"); // Filter Periode
+  const [jenisFilter, setJenisFilter] = useState<string>("ALL");
+  const [periodeFilter, setPeriodeFilter] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -76,7 +75,6 @@ export default function MbkmPage() {
   // --- FILTER LOGIC ---
   const filteredData = useMemo(() => {
     return dataList.filter((item) => {
-      // Search by NIM, Nama, atau Mitra
       const query = searchQuery.toLowerCase();
       const matchSearch =
         (item.student?.nim || "").toLowerCase().includes(query) ||
@@ -125,13 +123,14 @@ export default function MbkmPage() {
 
   const handleFormSubmit = async (values: StudentMBKMFormValues) => {
     const toastId = showLoading("Menyimpan data...");
+    
     try {
       if (isEditing && selectedId) {
         await updateMbkmStudent(selectedId, values);
-        successAction("Data MBKM", "update", toastId);
+        successAction("MBKM", "update", toastId);
       } else {
         await createMbkmStudent(values);
-        successAction("Data MBKM", "create", toastId);
+        successAction("MBKM", "create", toastId);
       }
       await fetchData();
       setIsDialogOpen(false);
@@ -143,9 +142,10 @@ export default function MbkmPage() {
   const confirmDelete = async () => {
     if (selectedId) {
       const toastId = showLoading("Menghapus data...");
+      
       try {
         await deleteMbkmStudent(selectedId);
-        successAction("Data MBKM", "delete", toastId);
+        successAction("MBKM", "delete", toastId);
         
         if (currentData.length === 1 && currentPage > 1) {
           setCurrentPage((prev) => prev - 1);
@@ -297,7 +297,7 @@ export default function MbkmPage() {
         onClose={setIsDeleteOpen}
         onConfirm={confirmDelete}
         title="Hapus Data MBKM?"
-        description={confirmDeleteMessage("Data MBKM", deleteName)}
+        description={confirmDeleteMessage("MBKM", deleteName)}
         confirmLabel="Hapus Permanen"
         variant="destructive"
       />
