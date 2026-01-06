@@ -26,10 +26,15 @@ interface DBResponseStudent {
     } | null;
   }[];
   
+  // [UPDATE] Menambahkan detail course di relation krs
   krs: {
     status: string; 
     courses: {
+      id: string;
+      kode: string;
+      matkul: string;
       sks: number;
+      smt_default: number;
     } | null;
   }[];
 }
@@ -121,6 +126,7 @@ export async function getStudents(): Promise<StudentData[]> {
   const activeYear = await getActiveAcademicYear();
 
   // Ambil Data Mahasiswa
+  // [UPDATE] select courses di dalam relation KRS
   const { data, error } = await supabase
     .from('students')
     .select(`
@@ -137,7 +143,7 @@ export async function getStudents(): Promise<StudentData[]> {
       krs (
         status,
         courses (
-          sks
+          id, kode, matkul, sks, smt_default
         )
       )
     `)
@@ -164,15 +170,15 @@ export async function getStudents(): Promise<StudentData[]> {
         return acc;
     }, 0);
 
-    const transcript: TranscriptItem[] = (s.grades || [])
-      .map((g, index) => {
+    // 1. Ambil data dari GRADES
+    const gradesTranscript: TranscriptItem[] = (s.grades || []).map((g) => {
         const course = g.courses;
         const am = getAM(g.hm);
         const sks = course?.sks || 0;
         const nm = am * sks;
 
         return {
-          no: index + 1,
+          no: 0, // di-reindex nanti
           course_id: course?.id,
           kode: course?.kode || "CODE",
           matkul: course?.matkul || "Unknown",
@@ -182,8 +188,32 @@ export async function getStudents(): Promise<StudentData[]> {
           am: am,
           nm: nm
         };
-      })
-      .sort((a, b) => a.smt - b.smt || a.kode.localeCompare(b.kode));
+    });
+
+    // 2. [UPDATE] Gabungkan dengan data KRS (Status APPROVED) yang belum ada di Grades
+    const gradeCourseIds = new Set(gradesTranscript.map(t => t.course_id));
+    
+    const krsTranscript: TranscriptItem[] = (s.krs || [])
+      .filter(k => k.status === 'APPROVED' && k.courses && !gradeCourseIds.has(k.courses.id))
+      .map(k => {
+          const c = k.courses!;
+          return {
+            no: 0,
+            course_id: c.id,
+            kode: c.kode,
+            matkul: c.matkul,
+            smt: c.smt_default,
+            sks: c.sks,
+            hm: "-", // Penanda belum ada nilai
+            am: 0,
+            nm: 0
+          };
+      });
+
+    // 3. Gabung dan Sortir
+    const fullTranscript = [...gradesTranscript, ...krsTranscript]
+      .sort((a, b) => a.smt - b.smt || a.kode.localeCompare(b.kode))
+      .map((item, index) => ({ ...item, no: index + 1 }));
 
     return {
       id: s.id,
@@ -198,7 +228,7 @@ export async function getStudents(): Promise<StudentData[]> {
         study_program: s.study_programs,
         is_active: s.is_active ?? true
       },
-      transcript: transcript,
+      transcript: fullTranscript, // Gunakan hasil gabungan
       total_sks: totalSksApproved 
     };
   });

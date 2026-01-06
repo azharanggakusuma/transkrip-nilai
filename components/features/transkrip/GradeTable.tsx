@@ -10,7 +10,12 @@ interface GradeTableProps {
 
 export default function GradeTable({ data, ipk, ips, mode = "transkrip" }: GradeTableProps) {
   const totalSKS = data.reduce((acc, row) => acc + row.sks, 0);
-  const totalNM = data.reduce((acc, row) => acc + row.nm, 0);
+  
+  // Filter NM agar tidak menghitung nilai kosong ('-')
+  const totalNM = data.reduce((acc, row) => {
+     if (row.hm === '-') return acc;
+     return acc + row.nm;
+  }, 0);
 
   const displayedIPK = ipk 
     ? ipk 
@@ -31,18 +36,29 @@ export default function GradeTable({ data, ipk, ips, mode = "transkrip" }: Grade
         </tr>
       </thead>
       <tbody className="font-normal">
-        {data.map((row, index) => (
-          <tr key={index} className="text-center leading-none h-[13px]">
-            <td className="border border-black">{mode === 'khs' ? index + 1 : row.no}</td>
-            <td className="border border-black">{row.kode}</td>
-            <td className="border border-black text-left pl-2 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">{row.matkul}</td>
-            {mode === "transkrip" && <td className="border border-black">{row.smt}</td>}
-            <td className="border border-black">{row.sks}</td>
-            <td className="border border-black">{row.hm}</td>
-            <td className="border border-black">{row.am}</td>
-            <td className="border border-black">{row.nm}</td>
-          </tr>
-        ))}
+        {/* [UPDATE] Handle Empty Data for KHS */}
+        {data.length === 0 && mode === 'khs' ? (
+           <tr className="h-[13px]">
+              <td colSpan={7} className="border border-black text-center italic py-2">
+                 Belum ambil KRS
+              </td>
+           </tr>
+        ) : (
+           data.map((row, index) => (
+            <tr key={index} className="text-center leading-none h-[13px]">
+              <td className="border border-black">{mode === 'khs' ? index + 1 : row.no}</td>
+              <td className="border border-black">{row.kode}</td>
+              <td className="border border-black text-left pl-2 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">{row.matkul}</td>
+              {mode === "transkrip" && <td className="border border-black">{row.smt}</td>}
+              <td className="border border-black">{row.sks}</td>
+              
+              {/* [UPDATE] Tampilkan '-' jika HM adalah '-' */}
+              <td className="border border-black">{row.hm}</td>
+              <td className="border border-black">{row.hm === '-' ? '-' : row.am}</td>
+              <td className="border border-black">{row.hm === '-' ? '-' : row.nm}</td>
+            </tr>
+          ))
+        )}
 
         {/* FOOTER SECTION */}
         {mode === "khs" ? (

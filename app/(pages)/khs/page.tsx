@@ -15,8 +15,6 @@ import StudentInfo from "@/components/features/document/StudentInfo";
 import ControlPanel from "@/components/features/document/ControlPanel";
 import GradeTable from "@/components/features/transkrip/GradeTable";
 
-// [REMOVED] Import KrsLock dan validateStudentKrs dihapus
-
 export default function KhsPage() {
   // State Data
   const [studentsData, setStudentsData] = useState<StudentData[]>([]);
@@ -30,8 +28,6 @@ export default function KhsPage() {
   
   const paperRef = useRef<HTMLDivElement>(null);
   const [totalPages, setTotalPages] = useState(1);
-
-  // [REMOVED] useEffect untuk checkAccess (KRS Validation) dihapus
 
   // === 1. FETCH DATA UTAMA ===
   useEffect(() => {
@@ -80,20 +76,20 @@ export default function KhsPage() {
 
   // === LOGIC SEMESTER ===
 
-  // 1. List Semester: Gabungan dari Transkrip + Semester Aktif Mahasiswa
+  // 1. [UPDATE] List Semester: Generate 1 sampai Semester Saat Ini (Max)
   const availableSemesters = useMemo<number[]>(() => {
     if (!currentStudent) return [];
     
-    // Ambil semester dari transkrip (history)
+    // Ambil semester tertinggi antara Profile (Semester Aktif) dan Data Transkrip
+    const currentSem = currentStudent.profile?.semester || 1;
     const transcriptSmts = currentStudent.transcript?.map((t: TranscriptItem) => Number(t.smt)) || [];
-    const uniqueSmts = new Set(transcriptSmts);
+    const maxDataSem = Math.max(0, ...transcriptSmts);
+    
+    // Batas loop adalah nilai maksimum dari keduanya
+    const limit = Math.max(currentSem, maxDataSem);
 
-    // Pastikan Semester Aktif (Profil) masuk dalam list
-    if (currentStudent.profile?.semester) {
-        uniqueSmts.add(currentStudent.profile.semester);
-    }
-
-    return Array.from(uniqueSmts).sort((a, b) => a - b);
+    // Generate array [1, 2, ..., limit]
+    return Array.from({ length: limit }, (_, i) => i + 1);
   }, [currentStudent]);
 
   // 2. Default Select: Pilih semester terakhir
@@ -114,22 +110,25 @@ export default function KhsPage() {
   // Hitung IPK/IPS
   const cumulativeData = useMemo(() => {
     if (!currentStudent?.transcript) return [];
-    return currentStudent.transcript.filter((t: TranscriptItem) => Number(t.smt) <= selectedSemester);
+    // Filter hanya yang sudah punya nilai (bukan '-')
+    return currentStudent.transcript.filter((t: TranscriptItem) => Number(t.smt) <= selectedSemester && t.hm !== '-');
   }, [currentStudent, selectedSemester]);
 
   const ips = useMemo(() => {
-    const totalSKS = semesterData.reduce((acc: number, row: TranscriptItem) => acc + row.sks, 0);
-    const totalNM = semesterData.reduce((acc: number, row: TranscriptItem) => acc + row.nm, 0);
+    // Filter hanya yang sudah punya nilai untuk IPS
+    const validData = semesterData.filter(t => t.hm !== '-');
+    const totalSKS = validData.reduce((acc: number, row: TranscriptItem) => acc + row.sks, 0);
+    const totalNM = validData.reduce((acc: number, row: TranscriptItem) => acc + row.nm, 0);
     return totalSKS > 0 ? (totalNM / totalSKS).toFixed(2).replace(".", ",") : "0,00";
   }, [semesterData]);
 
   const ipk = useMemo(() => {
+     // Cumulative data sudah difilter t.hm !== '-' di atas
     const totalSKS = cumulativeData.reduce((acc: number, row: TranscriptItem) => acc + row.sks, 0);
     const totalNM = cumulativeData.reduce((acc: number, row: TranscriptItem) => acc + row.nm, 0);
     return totalSKS > 0 ? (totalNM / totalSKS).toFixed(2).replace(".", ",") : "0,00";
   }, [cumulativeData]);
 
-  // [REMOVED] Logic isLocked dihapus
 
   // === RENDER VIEW ===
 

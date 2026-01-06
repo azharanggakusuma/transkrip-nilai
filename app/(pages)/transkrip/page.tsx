@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 // Import getActiveOfficial
 import { getStudents, getActiveOfficial } from "@/app/actions/students";
-import { type StudentData, type Official } from "@/lib/types";
+import { type StudentData, type Official, type TranscriptItem } from "@/lib/types";
 
 import { useSignature } from "@/hooks/useSignature";
 import { useLayout } from "@/app/context/LayoutContext";
@@ -51,6 +51,13 @@ export default function TranskripPage() {
 
   const currentStudent = useMemo(() => studentsData[selectedIndex], [studentsData, selectedIndex]);
 
+  // [UPDATE] Filter khusus Transkrip: Hanya tampilkan yang sudah ada nilainya (exclude KRS Only / strip '-')
+  const transcriptData = useMemo(() => {
+    if (!currentStudent?.transcript) return [];
+    
+    return currentStudent.transcript.filter((item: TranscriptItem) => item.hm !== '-');
+  }, [currentStudent]);
+
   useEffect(() => {
     if (!paperRef.current) return;
     const observer = new ResizeObserver((entries) => {
@@ -61,7 +68,7 @@ export default function TranskripPage() {
     });
     observer.observe(paperRef.current);
     return () => observer.disconnect();
-  }, [currentStudent]); 
+  }, [currentStudent, transcriptData]); // Update dependency
 
   const handlePrint = () => window.print();
 
@@ -113,7 +120,8 @@ export default function TranskripPage() {
               <>
                  <DocumentHeader title="TRANSKRIP NILAI" />
                  <StudentInfo profile={currentStudent.profile} />
-                 <GradeTable data={currentStudent.transcript} mode="transkrip" />
+                 {/* Gunakan data yang sudah difilter */}
+                 <GradeTable data={transcriptData} mode="transkrip" />
                  
                  <DocumentFooter 
                     signatureType={signatureType} 
