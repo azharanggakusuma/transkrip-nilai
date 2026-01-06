@@ -107,6 +107,7 @@ export interface StudentData {
   id: string;
   profile: StudentProfile;
   transcript: TranscriptItem[];
+  total_sks?: number; // [UPDATE] Property baru untuk menampung total SKS dari KRS
 }
 
 // =========================================

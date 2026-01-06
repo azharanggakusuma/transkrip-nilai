@@ -102,8 +102,8 @@ export function StudentTable({
         header: "SKS Diambil",
         className: "w-[100px] text-center",
         render: (row) => {
-            const totalSKS = row.transcript.reduce((acc, curr) => acc + curr.sks, 0);
-            return <span className="font-medium">{totalSKS}</span>
+            // [UPDATE] Menggunakan total_sks dari hasil fetch KRS
+            return <span className="font-medium">{row.total_sks || 0}</span>
         }
     },
     {

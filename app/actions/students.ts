@@ -25,6 +25,12 @@ interface DBResponseStudent {
       smt_default: number;
     } | null;
   }[];
+  // [UPDATE] Tambahan relasi KRS untuk hitung SKS
+  krs: {
+    courses: {
+      sks: number;
+    } | null;
+  }[];
 }
 
 const getAM = (hm: string): number => {
@@ -126,6 +132,11 @@ export async function getStudents(): Promise<StudentData[]> {
         courses (
           id, kode, matkul, sks, smt_default
         )
+      ),
+      krs (
+        courses (
+          sks
+        )
       )
     `)
     .order('nama', { ascending: true });
@@ -142,6 +153,11 @@ export async function getStudents(): Promise<StudentData[]> {
   return students.map((s) => {
     // Hitung semester dinamis
     const dynamicSemester = calculateSemester(s.angkatan, activeYear);
+
+    // [UPDATE] Hitung Total SKS dari tabel KRS (Semua semester)
+    const totalSksFromKrs = (s.krs || []).reduce((acc, curr) => {
+        return acc + (curr.courses?.sks || 0);
+    }, 0);
 
     const transcript: TranscriptItem[] = (s.grades || [])
       .map((g, index) => {
@@ -177,7 +193,8 @@ export async function getStudents(): Promise<StudentData[]> {
         study_program: s.study_programs,
         is_active: s.is_active ?? true
       },
-      transcript: transcript
+      transcript: transcript,
+      total_sks: totalSksFromKrs // [UPDATE] Masukkan hasil perhitungan ke sini
     };
   });
 }
