@@ -177,7 +177,7 @@ export function StudentGradeForm({
 
           <div className="flex flex-col items-end justify-center pt-0.5">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
-              Rata-rata (KRS)
+              Proyeksi IPK
             </p>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold text-primary tracking-tight leading-none">
