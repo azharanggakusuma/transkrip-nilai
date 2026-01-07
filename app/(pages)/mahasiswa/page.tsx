@@ -1,4 +1,3 @@
-// app/(pages)/mahasiswa/page.tsx
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -181,13 +180,14 @@ export default function MahasiswaPage() {
         </span>
       )
     },
+    // PERUBAHAN DI SINI: Jenjang sekarang menggunakan span biasa, bukan Badge
     {
       header: "Jenjang",
       className: "text-center w-[100px]",
       render: (row) => (
-        <Badge variant="outline" className="bg-slate-50 text-slate-700">
+        <span className="text-gray-600">
           {row.profile.study_program ? row.profile.study_program.jenjang : "-"}
-        </Badge>
+        </span>
       )
     },
     { 
