@@ -131,10 +131,20 @@ export function StudentGradeForm({
     }
   };
 
-  // Group mata kuliah KRS berdasarkan semester default-nya
-  const relevantSemesters = Array.from(
-    new Set(allCourses.map((c) => c.smt_default))
-  ).sort((a, b) => a - b);
+  // Menggunakan semester mahasiswa saat ini untuk menentukan rentang semester
+  const maxSemester = Math.max(1, student.profile.semester || 1);
+  const semesterRange = Array.from({ length: maxSemester }, (_, i) => i + 1);
+
+  // [UPDATE] Tentukan default accordion yang terbuka:
+  // 1. Semester yang ada di KRS (allCourses)
+  const semestersWithKrs = new Set(allCourses.map((c) => c.smt_default));
+  
+  // 2. Tambahkan semester aktif mahasiswa (agar user aware dengan periode sekarang)
+  if (student.profile.semester) {
+    semestersWithKrs.add(student.profile.semester);
+  }
+
+  const defaultOpenSemesters = Array.from(semestersWithKrs).map(String);
 
   const prodiInfo = student.profile.study_program 
     ? student.profile.study_program.nama 
@@ -184,31 +194,16 @@ export function StudentGradeForm({
         {/* === CONTENT === */}
         <div className="flex-1 overflow-y-auto p-6 bg-muted/5">
           
-          {/* Empty State: Jika mahasiswa belum punya KRS Approved */}
-          {allCourses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-8 opacity-70">
-                <div className="bg-muted p-4 rounded-full">
-                    <AlertCircle className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <div className="space-y-1">
-                    <h3 className="text-lg font-semibold">Input Nilai Tidak Tersedia</h3>
-                    <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                        Mahasiswa belum mengambil mata kuliah atau KRS belum disetujui. Silakan pastikan KRS mahasiswa telah disetujui sebelum menginput nilai.
-                    </p>
-                </div>
-                <Button variant="outline" size="sm" onClick={onCancel}>
-                    Tutup
-                </Button>
-            </div>
-          ) : (
+          {/* Menampilkan semua semester, tapi default open hanya yang ada KRS / Aktif */}
             <Accordion
                 type="multiple"
-                defaultValue={relevantSemesters.map(String)}
+                defaultValue={defaultOpenSemesters} // [UPDATE] Hanya buka yang relevan
                 className="space-y-4"
             >
-                {relevantSemesters.map((smt) => {
+                {semesterRange.map((smt) => {
                 const coursesInSmt = allCourses.filter((c) => c.smt_default === smt);
                 const semesterSks = coursesInSmt.reduce((a, b) => a + b.sks, 0);
+                const hasKrs = coursesInSmt.length > 0;
 
                 return (
                     <AccordionItem
@@ -219,95 +214,109 @@ export function StudentGradeForm({
                     <AccordionTrigger className="hover:no-underline px-5 py-4 hover:bg-muted/30 transition-colors">
                         <div className="flex items-center gap-3 w-full">
                         <span className="font-semibold text-sm text-foreground">Semester {smt}</span>
-                        <span className="ml-auto text-xs text-muted-foreground font-normal">
-                            {coursesInSmt.length} Matkul • {semesterSks} SKS
-                        </span>
+                        {hasKrs ? (
+                            <span className="ml-auto text-xs text-muted-foreground font-normal">
+                                {coursesInSmt.length} Matkul • {semesterSks} SKS
+                            </span>
+                        ) : (
+                            <span className="ml-auto text-xs text-muted-foreground font-normal italic">
+                                Belum KRS
+                            </span>
+                        )}
                         </div>
                     </AccordionTrigger>
 
                     <AccordionContent className="px-0 py-0 border-t">
-                        <div className="divide-y divide-border">
-                        {coursesInSmt.map((course) => {
-                            const currentValue = getGradeValue(course.id);
-                            const originalValue = student.transcript.find((t) => t.course_id === course.id)?.hm || "";
-                            const isModified = gradeChanges[course.id] !== undefined && gradeChanges[course.id] !== originalValue;
+                        {hasKrs ? (
+                            <div className="divide-y divide-border">
+                            {coursesInSmt.map((course) => {
+                                const currentValue = getGradeValue(course.id);
+                                const originalValue = student.transcript.find((t) => t.course_id === course.id)?.hm || "";
+                                const isModified = gradeChanges[course.id] !== undefined && gradeChanges[course.id] !== originalValue;
 
-                            return (
-                            <div
-                                key={course.id}
-                                className={cn(
-                                "group relative flex items-center justify-between py-3 px-5 transition-colors duration-200",
-                                isModified
-                                    ? "bg-muted/30 border-l-4 border-l-primary" 
-                                    : "hover:bg-muted/20 border-l-4 border-l-transparent"
-                                )}
-                            >
-                                {/* Info Matkul */}
-                                <div className="flex-1 pr-4 pl-1">
-                                <p className={cn("text-sm font-medium", isModified ? "text-foreground" : "text-foreground/80")}>
-                                    {course.matkul}
-                                </p>
-                                <div className="flex items-center gap-2 mt-1.5">
-                                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal text-muted-foreground border-border">
-                                    {course.kode}
-                                    </Badge>
-                                    <span className="text-[10px] text-muted-foreground">
-                                    {course.sks} SKS
-                                    </span>
-                                </div>
-                                </div>
+                                return (
+                                <div
+                                    key={course.id}
+                                    className={cn(
+                                    "group relative flex items-center justify-between py-3 px-5 transition-colors duration-200",
+                                    isModified
+                                        ? "bg-muted/30 border-l-4 border-l-primary" 
+                                        : "hover:bg-muted/20 border-l-4 border-l-transparent"
+                                    )}
+                                >
+                                    {/* Info Matkul */}
+                                    <div className="flex-1 pr-4 pl-1">
+                                    <p className={cn("text-sm font-medium", isModified ? "text-foreground" : "text-foreground/80")}>
+                                        {course.matkul}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-1.5">
+                                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal text-muted-foreground border-border">
+                                        {course.kode}
+                                        </Badge>
+                                        <span className="text-[10px] text-muted-foreground">
+                                        {course.sks} SKS
+                                        </span>
+                                    </div>
+                                    </div>
 
-                                {/* Kontrol Nilai */}
-                                <div className="flex items-center gap-3">
-                                {/* Tombol Reset */}
-                                {isModified && (
-                                    <Tooltip content="Kembalikan nilai awal" position="top">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
-                                        onClick={() => handleResetRow(course.id)}
+                                    {/* Kontrol Nilai */}
+                                    <div className="flex items-center gap-3">
+                                    {/* Tombol Reset */}
+                                    {isModified && (
+                                        <Tooltip content="Kembalikan nilai awal" position="top">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
+                                            onClick={() => handleResetRow(course.id)}
+                                            disabled={loading}
+                                        >
+                                            <RotateCcw className="h-3.5 w-3.5" />
+                                        </Button>
+                                        </Tooltip>
+                                    )}
+
+                                    <Select
+                                        value={currentValue}
+                                        onValueChange={(val) => handleGradeChange(course.id, val)}
                                         disabled={loading}
                                     >
-                                        <RotateCcw className="h-3.5 w-3.5" />
-                                    </Button>
-                                    </Tooltip>
-                                )}
-
-                                <Select
-                                    value={currentValue}
-                                    onValueChange={(val) => handleGradeChange(course.id, val)}
-                                    disabled={loading}
-                                >
-                                    <SelectTrigger
-                                    className={cn(
-                                        "w-[70px] h-9 text-xs font-medium transition-all bg-background",
-                                        isModified
-                                        ? "border-primary/50 ring-1 ring-primary/10 text-foreground"
-                                        : "border-input text-muted-foreground"
-                                    )}
-                                    >
-                                    <SelectValue placeholder="-" />
-                                    </SelectTrigger>
-                                    <SelectContent align="end">
-                                    {["A", "B", "C", "D", "E"].map((g) => (
-                                        <SelectItem key={g} value={g} className="text-xs">
-                                        {g}
-                                        </SelectItem>
-                                    ))}
-                                    </SelectContent>
-                                </Select>
+                                        <SelectTrigger
+                                        className={cn(
+                                            "w-[70px] h-9 text-xs font-medium transition-all bg-background",
+                                            isModified
+                                            ? "border-primary/50 ring-1 ring-primary/10 text-foreground"
+                                            : "border-input text-muted-foreground"
+                                        )}
+                                        >
+                                        <SelectValue placeholder="-" />
+                                        </SelectTrigger>
+                                        <SelectContent align="end">
+                                        {["A", "B", "C", "D", "E"].map((g) => (
+                                            <SelectItem key={g} value={g} className="text-xs">
+                                            {g}
+                                            </SelectItem>
+                                        ))}
+                                        </SelectContent>
+                                    </Select>
+                                    </div>
                                 </div>
+                                );
+                            })}
                             </div>
-                            );
-                        })}
-                        </div>
+                        ) : (
+                            // Tampilan jika belum KRS (Dropdown disable / tidak ada data)
+                            <div className="flex flex-col items-center justify-center py-8 text-center opacity-60">
+                                <AlertCircle className="h-6 w-6 text-muted-foreground mb-2" />
+                                <p className="text-xs text-muted-foreground font-medium">Mahasiswa belum mengisi KRS</p>
+                                <p className="text-[10px] text-muted-foreground">Input nilai tidak tersedia</p>
+                            </div>
+                        )}
                     </AccordionContent>
                     </AccordionItem>
                 );
                 })}
             </Accordion>
-          )}
 
         </div>
 
