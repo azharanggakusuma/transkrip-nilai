@@ -180,13 +180,21 @@ export default function MahasiswaPage() {
         </span>
       )
     },
-    // PERUBAHAN DI SINI: Jenjang sekarang menggunakan span biasa, bukan Badge
     {
       header: "Jenjang",
       className: "text-center w-[100px]",
       render: (row) => (
         <span className="text-gray-600">
           {row.profile.study_program ? row.profile.study_program.jenjang : "-"}
+        </span>
+      )
+    },
+    {
+      header: "Angkatan",
+      className: "text-center w-[100px]",
+      render: (row) => (
+        <span className="text-gray-700">
+          {row.profile.angkatan}
         </span>
       )
     },
@@ -311,4 +319,4 @@ export default function MahasiswaPage() {
       />
     </div>
   );
-}
+} 
