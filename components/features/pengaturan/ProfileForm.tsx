@@ -232,7 +232,7 @@ export default function ProfileForm({
               <Button
                 onClick={handleCropSave}
                 disabled={isProcessing}
-                className="bg-slate-900 hover:bg-slate-800"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 Gunakan Foto
               </Button>
@@ -247,7 +247,7 @@ export default function ProfileForm({
         {/* HEADER / BANNER GRADIENT + PATTERN BARU */}
         <div className="h-32 sm:h-40 bg-gradient-to-r from-[#0077b5] to-[#00a0dc] relative shrink-0 overflow-hidden">
           
-          {/* Pattern 1: Modern Grid Lines (Lebih Rapi & Teknikal) */}
+          {/* Pattern 1: Modern Grid Lines */}
           <div className="absolute inset-0 opacity-20"
                style={{
                    backgroundImage: `linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)`,
@@ -262,7 +262,7 @@ export default function ProfileForm({
                }}
           ></div>
           
-          {/* Shadow Overlay (Bottom) untuk kedalaman */}
+          {/* Shadow Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none"></div>
         </div>
 
@@ -293,12 +293,12 @@ export default function ProfileForm({
                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                 </div>
 
-                {/* Tombol Simpan (Desktop) */}
+                {/* Tombol Simpan (Desktop) - UBAH DISINI */}
                 <div className="mt-4 hidden sm:block">
                   <Button
                     type="submit"
                     disabled={isSaving || isProcessing}
-                    className="bg-slate-900 hover:bg-slate-800 rounded-full px-6 font-semibold"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 font-semibold"
                   >
                     {isSaving ? (
                       <Loader2 size={16} className="animate-spin mr-2" />
@@ -309,9 +309,9 @@ export default function ProfileForm({
                   </Button>
                 </div>
                 
-                {/* Tombol Simpan (Mobile Icon) */}
+                {/* Tombol Simpan (Mobile Icon) - UBAH DISINI */}
                 <div className="mt-4 sm:hidden">
-                    <Button size="icon" type="submit" disabled={isSaving} className="rounded-full bg-slate-900">
+                    <Button size="icon" type="submit" disabled={isSaving} className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground">
                         <Save size={18} />
                     </Button>
                 </div>

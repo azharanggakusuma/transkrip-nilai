@@ -42,7 +42,6 @@ export default function PasswordForm({ user, onUpdateSuccess }: PasswordFormProp
   };
 
   return (
-    // PERUBAHAN DISINI: Menambahkan 'h-full flex flex-col' agar card memanjang penuh mengikuti tinggi ProfileForm
     <Card className="h-full flex flex-col overflow-hidden border-none shadow-xl bg-white rounded-xl ring-1 ring-slate-100">
       
       {/* Header Bersih */}
@@ -118,7 +117,8 @@ export default function PasswordForm({ user, onUpdateSuccess }: PasswordFormProp
         </CardContent>
 
         <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-6 mt-auto">
-          <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium h-11 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300" disabled={isSaving}>
+          {/* UBAH DISINI: bg-slate-900 -> bg-primary */}
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium h-11 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300" disabled={isSaving}>
              {isSaving ? "Menyimpan Perubahan..." : "Update Password"}
           </Button>
         </CardFooter>
