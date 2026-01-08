@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from "react";
-import { User, MapPin, Save, Camera, Loader2, Check, UserCircle, AtSign } from "lucide-react"; 
+import { User, MapPin, Save, Camera, Loader2, UserCircle, AtSign } from "lucide-react"; 
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,7 +57,7 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
 
   if (!user) return null; 
 
-  // --- HELPER & LOGIC SAMA SEPERTI SEBELUMNYA ---
+  // --- LOGIC ---
   const handleSystemError = (error: any, defaultMsg: string) => {
     console.error("System Error:", error); 
     let userMessage = defaultMsg;
@@ -133,7 +133,7 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
 
   return (
     <>
-        {/* Modal Crop Tetap Sama, hanya styling disederhanakan di sini */}
+        {/* --- MODAL CROP (Sama) --- */}
         <Dialog open={isCropModalOpen} onOpenChange={(open) => !isProcessing && setIsCropModalOpen(open)}>
             <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden gap-0">
                 <DialogHeader className="p-4 bg-slate-50 border-b">
@@ -145,109 +145,122 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
                     {isProcessing && <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center text-white"><Loader2 className="animate-spin" /></div>}
                 </div>
                 <div className="p-4 space-y-4">
-                    <div className="flex items-center gap-4"><span className="text-xs text-slate-500">Zoom</span><input type="range" value={zoom} min={1} max={3} step={0.1} onChange={(e) => setZoom(Number(e.target.value))} className="w-full h-1 bg-slate-200 rounded-lg cursor-pointer accent-blue-600"/></div>
-                    <DialogFooter><Button variant="ghost" onClick={() => setIsCropModalOpen(false)}>Batal</Button><Button onClick={handleCropSave} disabled={isProcessing}>Gunakan Foto</Button></DialogFooter>
+                    <div className="flex items-center gap-4"><span className="text-xs text-slate-500">Zoom</span><input type="range" value={zoom} min={1} max={3} step={0.1} onChange={(e) => setZoom(Number(e.target.value))} className="w-full h-1 bg-slate-200 rounded-lg cursor-pointer accent-slate-900"/></div>
+                    <DialogFooter><Button variant="ghost" onClick={() => setIsCropModalOpen(false)}>Batal</Button><Button onClick={handleCropSave} disabled={isProcessing} className="bg-slate-900 hover:bg-slate-800">Gunakan Foto</Button></DialogFooter>
                 </div>
             </DialogContent>
         </Dialog>
 
         {/* --- MAIN CARD --- */}
-        <Card className="overflow-hidden border-slate-200 shadow-md bg-white">
-            {/* Banner Header */}
-            <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600 relative">
-                <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
+        <Card className="overflow-hidden border-none shadow-xl bg-white rounded-xl ring-1 ring-slate-100">
+            {/* 1. Header dengan Gradient Hitam */}
+            <div className="h-40 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 relative">
+                {/* Dekorasi Abstrak (Opsional, sangat subtle) */}
+                <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5"></div>
+                <div className="absolute -bottom-6 -left-6 text-white opacity-[0.03] rotate-12 pointer-events-none">
+                     <User size={200} />
+                </div>
             </div>
 
-            <CardContent className="px-6 pb-6">
+            <CardContent className="px-6 sm:px-8 pb-8">
                 <form onSubmit={handleProfileUpdate}>
-                    <div className="flex flex-col sm:flex-row gap-6 items-start -mt-12 mb-6">
-                        {/* Avatar Section */}
-                        <div className="relative group mx-auto sm:mx-0">
-                            <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-100 relative">
+                    {/* 2. Container Profile Info (Responsive) */}
+                    <div className="relative flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-end -mt-16 mb-8">
+                        
+                        {/* Avatar Wrapper */}
+                        <div className="relative z-10 shrink-0">
+                            <div className="w-32 h-32 rounded-full border-[5px] border-white shadow-lg overflow-hidden bg-slate-100 relative group">
                                 {previewImage ? (
                                     <Image src={previewImage} alt="Profile" fill className="object-cover" unoptimized={!!fileToUpload} />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-slate-300"><User size={64} /></div>
+                                    <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-100"><User size={64} /></div>
                                 )}
+                                {/* Overlay Edit saat Hover (Desktop) */}
+                                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                                    <Camera className="text-white drop-shadow-md" size={24} />
+                                </div>
                             </div>
-                            <button type="button" onClick={() => fileInputRef.current?.click()} className="absolute bottom-1 right-1 bg-white text-slate-700 p-2 rounded-full shadow border hover:bg-slate-50 transition-all" title="Ubah Foto">
-                                <Camera size={16} />
+                            
+                            {/* Tombol Kamera Kecil (Mobile/Always visible fallback) */}
+                            <button type="button" onClick={() => fileInputRef.current?.click()} className="md:hidden absolute bottom-1 right-1 bg-slate-900 text-white p-2 rounded-full shadow-md border-[2px] border-white hover:bg-slate-800 transition-all" title="Ubah Foto">
+                                <Camera size={14} />
                             </button>
                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                         </div>
 
-                        {/* Text Intro */}
-                        <div className="flex-1 mt-14 sm:mt-12 text-center sm:text-left space-y-1">
-                            <h2 className="text-2xl font-bold text-slate-800">{formData.nama || "Pengguna Baru"}</h2>
+                        {/* Nama & Role */}
+                        <div className="flex-1 text-center md:text-left space-y-1 md:pb-2 min-w-0 w-full">
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 truncate">{formData.nama || "Pengguna Baru"}</h2>
                             <p className="text-slate-500 font-medium">@{formData.username}</p>
-                            <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 capitalize border border-blue-100">
+                            <div className="flex items-center justify-center md:justify-start gap-2 mt-2">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 capitalize border border-slate-200">
                                     {user.role}
                                 </span>
                             </div>
                         </div>
 
-                        {/* Action Button (Desktop) */}
-                        <div className="hidden sm:block mt-14">
-                             <Button type="submit" disabled={isSaving || isProcessing} className="bg-blue-600 hover:bg-blue-700 shadow-md transition-all">
-                                {isSaving ? <Loader2 size={16} className="animate-spin mr-2" /> : <Save size={16} className="mr-2" />}
+                        {/* Tombol Simpan (Desktop: Sejajar di kanan bawah header section) */}
+                        <div className="hidden md:block md:pb-2">
+                             <Button type="submit" disabled={isSaving || isProcessing} className="bg-slate-900 hover:bg-slate-800 shadow-md transition-all h-10 px-6">
+                                {isSaving ? <Loader2 size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
                                 Simpan Perubahan
                             </Button>
                         </div>
                     </div>
 
-                    <Separator className="my-6" />
+                    <Separator className="my-8 opacity-60" />
 
-                    {/* Form Inputs */}
+                    {/* 3. Form Inputs Grid */}
                     <div className="space-y-6">
-                        <div className="grid sm:grid-cols-2 gap-5">
-                            <div className="space-y-2">
-                                <Label htmlFor="username" className="text-slate-600 flex items-center gap-2">
-                                    <AtSign size={14} /> Username
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2.5">
+                                <Label htmlFor="username" className="text-slate-700 font-medium flex items-center gap-2">
+                                    <AtSign size={16} className="text-slate-400" /> Username
                                 </Label>
                                 <Input 
                                     id="username" 
                                     value={formData.username} 
                                     disabled={user.role !== "admin"} 
                                     onChange={(e) => setFormData({ ...formData, username: e.target.value })} 
-                                    className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                                    className="bg-slate-50 border-slate-200 focus:bg-white focus:border-slate-400 transition-all h-11"
                                 />
-                                {user.role !== "admin" && <p className="text-[10px] text-slate-400 ml-1">Username tidak dapat diubah.</p>}
+                                {user.role !== "admin" && <p className="text-[11px] text-slate-400 ml-1">Username dikelola oleh administrator.</p>}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="nama" className="text-slate-600 flex items-center gap-2">
-                                    <UserCircle size={14} /> Nama Lengkap
+                            <div className="space-y-2.5">
+                                <Label htmlFor="nama" className="text-slate-700 font-medium flex items-center gap-2">
+                                    <UserCircle size={16} className="text-slate-400" /> Nama Lengkap
                                 </Label>
                                 <Input 
                                     id="nama" 
                                     value={formData.nama} 
                                     onChange={(e) => setFormData({ ...formData, nama: e.target.value })} 
-                                    className="border-slate-200 focus:border-blue-400 transition-all"
+                                    className="bg-slate-50 border-slate-200 focus:bg-white focus:border-slate-400 transition-all h-11"
                                 />
                             </div>
                         </div>
 
                         {user.role === "mahasiswa" && (
-                            <div className="space-y-2">
-                                <Label htmlFor="alamat" className="text-slate-600 flex items-center gap-2">
-                                    <MapPin size={14} /> Alamat Domisili
+                            <div className="space-y-2.5 animate-in fade-in slide-in-from-top-2">
+                                <Label htmlFor="alamat" className="text-slate-700 font-medium flex items-center gap-2">
+                                    <MapPin size={16} className="text-slate-400" /> Alamat Domisili
                                 </Label>
                                 <Textarea 
                                     id="alamat" 
-                                    rows={3} 
+                                    rows={4} 
                                     value={formData.alamat} 
                                     onChange={(e) => setFormData({ ...formData, alamat: e.target.value })} 
-                                    className="border-slate-200 focus:border-blue-400 resize-none transition-all"
+                                    className="bg-slate-50 border-slate-200 focus:bg-white focus:border-slate-400 resize-none transition-all"
                                     placeholder="Masukkan alamat lengkap..."
                                 />
                             </div>
                         )}
                     </div>
 
-                    {/* Mobile Button */}
-                    <div className="block sm:hidden mt-8">
-                         <Button type="submit" disabled={isSaving || isProcessing} className="w-full bg-blue-600 hover:bg-blue-700">
+                    {/* Tombol Simpan (Mobile Only) */}
+                    <div className="md:hidden mt-8 pt-4 border-t border-slate-100">
+                         <Button type="submit" disabled={isSaving || isProcessing} className="w-full bg-slate-900 hover:bg-slate-800 h-11 text-base font-medium">
+                            {isSaving ? <Loader2 size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
                             Simpan Perubahan
                         </Button>
                     </div>
