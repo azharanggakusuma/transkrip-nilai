@@ -276,8 +276,8 @@ export default function ProfileForm({
               <div className="flex justify-between items-start">
                 
                 {/* Avatar Wrapper (Stacked) */}
-                <div className="-mt-20 sm:-mt-24 relative z-10">
-                   <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-slate-100 relative group cursor-pointer"
+                <div className="-mt-20 sm:-mt-24 relative z-10 group">
+                   <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-slate-100 relative cursor-pointer"
                         onClick={() => fileInputRef.current?.click()}>
                       {previewImage ? (
                         <Image src={previewImage} alt="Profile" fill className="object-cover" unoptimized={!!fileToUpload} />
@@ -290,6 +290,20 @@ export default function ProfileForm({
                         <Camera className="text-white" size={28} />
                       </div>
                    </div>
+
+                   {/* TOMBOL KAMERA KECIL BARU (No Transparent Hover) */}
+                   <button
+                     type="button"
+                     onClick={(e) => {
+                       e.preventDefault();
+                       fileInputRef.current?.click();
+                     }}
+                     className="absolute bottom-0 right-0 sm:bottom-2 sm:right-2 p-2 rounded-full bg-primary text-primary-foreground shadow-lg border-2 border-white transition-transform hover:scale-105 active:scale-95 z-20 flex items-center justify-center"
+                     title="Ubah Foto"
+                   >
+                     <Camera size={16} />
+                   </button>
+
                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                 </div>
 
