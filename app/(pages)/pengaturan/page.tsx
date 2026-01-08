@@ -16,19 +16,15 @@ export default function PengaturanPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
-  // === 1. Fetch Data User ===
   useEffect(() => {
     const initData = async () => {
       try {
         const session = await getSession();
-
         if (!session) {
           router.push("/login");
           return;
         }
-
         const userData = await getUserSettings(session.username);
-        
         if (userData) {
           setCurrentUser(userData as UserProfile);
         }
@@ -39,29 +35,38 @@ export default function PengaturanPage() {
         setTimeout(() => setIsLoading(false), 300);
       }
     };
-
     initData();
   }, [router]);
 
   if (isLoading) return <SettingsSkeleton />;
 
   return (
-    <div className="flex flex-col gap-10 pb-10 animate-in fade-in duration-500">
-      <PageHeader title="Pengaturan" breadcrumb={["Beranda", "Pengaturan"]} />
+    <div className="flex flex-col gap-8 pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <PageHeader 
+        title="Pengaturan Akun" 
+        breadcrumb={["Beranda", "Pengaturan"]} 
+      />
       
-      <div className="grid gap-6 lg:grid-cols-2 items-stretch">
-        <ProfileForm 
-            user={currentUser} 
-            onUpdateSuccess={(newData) => 
-                setCurrentUser((prev) => prev ? ({ ...prev, ...newData }) : null)
-            } 
-        />
-        <PasswordForm 
-            user={currentUser} 
-            onUpdateSuccess={(newPassword) => 
-                setCurrentUser((prev) => prev ? ({ ...prev, password: newPassword }) : null)
-            }
-        />
+      <div className="grid gap-8 lg:grid-cols-12 items-start">
+        {/* Kolom Kiri: Profil (Lebih Lebar) */}
+        <div className="lg:col-span-7 xl:col-span-8">
+           <ProfileForm 
+              user={currentUser} 
+              onUpdateSuccess={(newData) => 
+                  setCurrentUser((prev) => prev ? ({ ...prev, ...newData }) : null)
+              } 
+          />
+        </div>
+
+        {/* Kolom Kanan: Password (Lebih Kecil) */}
+        <div className="lg:col-span-5 xl:col-span-4 sticky top-6">
+           <PasswordForm 
+              user={currentUser} 
+              onUpdateSuccess={(newPassword) => 
+                  setCurrentUser((prev) => prev ? ({ ...prev, password: newPassword }) : null)
+              }
+          />
+        </div>
       </div>
     </div>
   );
