@@ -293,7 +293,7 @@ export default function ProfileForm({
                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                 </div>
 
-                {/* Tombol Simpan (Desktop) - UBAH DISINI */}
+                {/* Tombol Simpan (Desktop) */}
                 <div className="mt-4 hidden sm:block">
                   <Button
                     type="submit"
@@ -309,7 +309,7 @@ export default function ProfileForm({
                   </Button>
                 </div>
                 
-                {/* Tombol Simpan (Mobile Icon) - UBAH DISINI */}
+                {/* Tombol Simpan (Mobile Icon) */}
                 <div className="mt-4 sm:hidden">
                     <Button size="icon" type="submit" disabled={isSaving} className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground">
                         <Save size={18} />
@@ -325,11 +325,7 @@ export default function ProfileForm({
                 </h2>
                 <p className="text-slate-500 font-medium text-base">@{formData.username}</p>
                 
-                <div className="pt-2 flex flex-wrap gap-2">
-                   <span className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 capitalize">
-                      {user.role}
-                   </span>
-                </div>
+                {/* Badge Role Dihapus dari sini */}
               </div>
 
             </div>
