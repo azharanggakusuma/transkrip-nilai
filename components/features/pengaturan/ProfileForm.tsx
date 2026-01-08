@@ -276,7 +276,7 @@ export default function ProfileForm({
               <div className="flex justify-between items-start">
                 
                 {/* Avatar Wrapper (Stacked) */}
-                <div className="-mt-16 sm:-mt-20 relative z-10">
+                <div className="-mt-20 sm:-mt-24 relative z-10">
                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-slate-100 relative group cursor-pointer"
                         onClick={() => fileInputRef.current?.click()}>
                       {previewImage ? (
@@ -324,8 +324,6 @@ export default function ProfileForm({
                   {formData.nama || "Pengguna"}
                 </h2>
                 <p className="text-slate-500 font-medium text-base">@{formData.username}</p>
-                
-                {/* Badge Role Dihapus dari sini */}
               </div>
 
             </div>
