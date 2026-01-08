@@ -152,12 +152,12 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
         </Dialog>
 
         {/* --- MAIN CARD --- */}
-        <Card className="overflow-hidden border-none shadow-xl bg-white rounded-xl ring-1 ring-slate-100">
-            {/* 1. Header dengan Gradient Hitam */}
-            <div className="h-40 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 relative">
-                {/* Dekorasi Abstrak (Opsional, sangat subtle) */}
-                <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5"></div>
-                <div className="absolute -bottom-6 -left-6 text-white opacity-[0.03] rotate-12 pointer-events-none">
+          <Card className="overflow-hidden border-none shadow-xl bg-white rounded-xl ring-1 ring-slate-100">
+            {/* 1. Header dengan Gradient Biru (Khas KRS) */}
+            <div className="h-40 bg-gradient-to-br from-cyan-600 to-blue-600 relative overflow-hidden">
+                {/* Dekorasi Abstrak */}
+                <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
+                <div className="absolute -bottom-8 -right-8 text-white opacity-20 rotate-12 pointer-events-none">
                      <User size={200} />
                 </div>
             </div>
