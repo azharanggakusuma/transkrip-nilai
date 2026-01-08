@@ -41,7 +41,7 @@ interface ProfileFormProps {
 
 export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps) {
   const [isSaving, setIsSaving] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false); // Mengganti istilah 'Compressing' jadi 'Processing'
+  const [isProcessing, setIsProcessing] = useState(false); 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
@@ -63,7 +63,27 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
 
   if (!user) return null; 
 
-  // --- FUNGSI PEMROSESAN GAMBAR ---
+  // --- HELPER: FORMAT PESAN ERROR ---
+  const handleSystemError = (error: any, defaultMsg: string) => {
+    console.error("System Error:", error); 
+    
+    let userMessage = defaultMsg;
+    const msg = error?.message?.toLowerCase() || "";
+
+    if (msg.includes("limit") || msg.includes("size") || msg.includes("large")) {
+        userMessage = "Ukuran berkas melebihi batas yang diizinkan sistem. Mohon gunakan foto yang lebih kecil.";
+    } else if (msg.includes("network") || msg.includes("fetch") || msg.includes("connection")) {
+        userMessage = "Gagal terhubung ke server. Mohon periksa koneksi internet Anda.";
+    } else if (msg.includes("username") || msg.includes("duplicate")) {
+        userMessage = "Username tersebut sudah digunakan oleh pengguna lain. Silakan pilih username lain.";
+    } else if (msg.includes("format") || msg.includes("type")) {
+        userMessage = "Format berkas tidak didukung. Mohon unggah foto (JPG/PNG).";
+    }
+
+    return userMessage;
+  };
+
+  // --- FUNGSI OPTIMASI GAMBAR ---
   const processImage = async (file: File): Promise<File> => {
     const options = {
       maxSizeMB: 0.5,           
@@ -78,8 +98,7 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
       const processedFile = await imageCompression(file, options);
       return new File([processedFile], file.name, { type: processedFile.type });
     } catch (error) {
-      console.error("Kesalahan pemrosesan gambar:", error);
-      // Tidak perlu toast error di sini, biarkan flow berlanjut dengan file asli atau handle di pemanggil
+      console.warn("Optimasi gambar dilewati:", error);
       return file; 
     } finally {
       setIsProcessing(false);
@@ -91,10 +110,10 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       
-      // Validasi Input Awal (Pesan Profesional)
+      // Validasi Input Awal
       if (file.size > 20 * 1024 * 1024) { 
-         toast.error("Ukuran file terlalu besar", { 
-            description: "Mohon unggah foto dengan ukuran di bawah 20MB." 
+         toast.error("Berkas terlalu besar", { 
+            description: "Mohon unggah foto dengan ukuran di bawah 20MB untuk memastikan kelancaran sistem." 
          });
          return;
       }
@@ -119,20 +138,14 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
     try {
       if (!imageSrc || !croppedAreaPixels) return;
 
-      // a. Crop Gambar
       const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
-      if (!croppedBlob) throw new Error("Gagal memotong gambar.");
+      if (!croppedBlob) throw new Error("Crop failed");
 
-      // b. Siapkan File
       const croppedFile = new File([croppedBlob], "avatar.jpg", { type: "image/jpeg" });
-
-      // c. Proses Optimasi (Silent Process)
       const finalFile = await processImage(croppedFile);
 
-      // d. Simpan ke State
       setFileToUpload(finalFile);
 
-      // e. Update Preview
       const objectUrl = URL.createObjectURL(finalFile);
       setPreviewImage(objectUrl);
 
@@ -140,20 +153,17 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
       setImageSrc(null);
       if (fileInputRef.current) fileInputRef.current.value = ""; 
 
-      // Pesan Sukses Profesional
-      toast.success("Foto berhasil disiapkan", { 
-        description: "Silakan klik tombol 'Simpan Perubahan' untuk menerapkan." 
+      toast.success("Foto Siap", { 
+        description: "Foto profil berhasil disiapkan. Jangan lupa klik 'Simpan Perubahan'." 
       });
 
     } catch (e) {
-      console.error(e);
-      // Pesan Error Profesional
-      toast.error("Gagal memproses foto", { 
-        description: "Terjadi kesalahan saat mengolah gambar. Silakan coba file lain." 
-      });
+      const msg = handleSystemError(e, "Gagal memproses gambar. Mohon coba dengan foto lain.");
+      toast.error("Kendala Pemrosesan", { description: msg });
     }
   };
 
+  // 3. Simpan ke Server
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -177,9 +187,8 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
         avatar_url: finalAvatarUrl, 
       });
 
-      // Pesan Sukses Final
-      toast.success("Profil diperbarui", { 
-        description: "Data identitas Anda telah berhasil disimpan." 
+      toast.success("Data Tersimpan", { 
+        description: "Informasi profil Anda berhasil diperbarui." 
       });
 
       onUpdateSuccess({ 
@@ -192,9 +201,13 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
       setFileToUpload(null);
 
     } catch (error: any) {
-      // Pesan Error Final
-      toast.error("Penyimpanan gagal", { 
-        description: error.message || "Terjadi kendala saat menyimpan data. Silakan coba lagi nanti." 
+      const userFriendlyMessage = handleSystemError(
+          error, 
+          "Terjadi kendala saat menyimpan data. Silakan coba beberapa saat lagi."
+      );
+      
+      toast.error("Penyimpanan Gagal", { 
+        description: userFriendlyMessage 
       });
     } finally {
       setIsSaving(false);
@@ -226,11 +239,10 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
               />
             )}
             
-            {/* Loading Overlay Profesional */}
             {isProcessing && (
               <div className="absolute inset-0 bg-black/60 z-50 flex flex-col items-center justify-center text-white gap-2">
                 <Loader2 className="animate-spin" size={32} />
-                <p className="text-sm font-medium">Sedang memproses...</p>
+                <p className="text-sm font-medium">Sedang mengoptimalkan...</p>
               </div>
             )}
           </div>
@@ -313,12 +325,6 @@ export default function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps)
                     accept="image/*" 
                     onChange={handleFileChange}
                 />
-                
-                {fileToUpload && (
-                    <span className="text-xs text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-full animate-pulse border border-blue-100">
-                        Foto baru siap disimpan
-                    </span>
-                )}
             </div>
 
             {/* Form Fields Lainnya */}
