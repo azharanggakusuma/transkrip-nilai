@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import { useLayout } from "@/app/context/LayoutContext";
 import { logout } from "@/app/actions/auth";
 import Tooltip from "@/components/shared/Tooltip";
-// [PERBAIKAN 1] Gunakan Named Import (pakai kurung kurawal)
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import { Menu } from "@/lib/types"; 
 import * as LucideIcons from "lucide-react"; 
@@ -234,8 +233,18 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
                 `}
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="shrink-0 relative w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 group-hover:border-slate-300 transition-colors">
-                    <UserIcon size={16} />
+                  {/* [!code ++] Container avatar diperbarui dengan overflow-hidden dan logika Image */}
+                  <div className="shrink-0 relative w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 group-hover:border-slate-300 transition-colors overflow-hidden">
+                    {user?.avatar_url ? (
+                      <Image 
+                        src={user.avatar_url} 
+                        alt="Profile" 
+                        fill 
+                        className="object-cover" 
+                      />
+                    ) : (
+                      <UserIcon size={16} />
+                    )}
                   </div>
 
                   <div 
@@ -294,7 +303,6 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
         </div>
       </aside>
 
-      {/* [PERBAIKAN 2] Props disesuaikan dengan ConfirmModal.tsx */}
       <ConfirmModal
         isOpen={showLogoutConfirm}
         onClose={setShowLogoutConfirm}

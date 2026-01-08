@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image"; // [!code ++] Tambah import Image
 import Tooltip from "@/components/shared/Tooltip";
 import { 
   Menu, 
@@ -113,19 +114,25 @@ export default function Navbar({
               <button 
                 type="button" 
                 suppressHydrationWarning
-                // Hapus 'gap-2' dan teks di dalamnya, sisakan wrapper icon saja
                 className="group flex items-center justify-center rounded-full p-1 transition-colors duration-200 hover:bg-slate-100/60 focus:outline-none focus:ring-0 active:ring-0"
               >
-                {/* Bagian teks (Nama & Role) telah dihapus dari sini */}
-                
-                <div className="relative w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 group-hover:border-slate-300 transition-all">
-                  <User className="h-4 w-4 text-slate-500" />
+                {/* [!code ++] Container avatar diperbarui dengan overflow-hidden dan logika Image */}
+                <div className="relative w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 group-hover:border-slate-300 transition-all overflow-hidden">
+                  {user?.avatar_url ? (
+                    <Image 
+                      src={user.avatar_url} 
+                      alt="Profile" 
+                      fill 
+                      className="object-cover" 
+                    />
+                  ) : (
+                    <User className="h-4 w-4 text-slate-500" />
+                  )}
                 </div>
               </button>
             </DropdownMenuTrigger>
             
             <DropdownMenuContent align="end" className="w-56">
-              {/* Menampilkan Nama di Header Dropdown agar tetap terlihat saat diklik */}
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <span>Akun Saya</span>
