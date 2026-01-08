@@ -272,8 +272,9 @@ export default function ProfileForm({
             {/* PROFILE SECTION */}
             <div className="relative mb-6">
               
-              {/* Row: Avatar & Tombol */}
-              <div className="flex justify-between items-start">
+              {/* Row: Avatar & Tombol Desktop */}
+              {/* UBAH DISINI: Layout mobile jadi flex-col dan items-center agar avatar di tengah */}
+              <div className="flex flex-col items-center sm:flex-row sm:justify-between sm:items-start">
                 
                 {/* Avatar Wrapper (Stacked) */}
                 <div className="-mt-16 sm:-mt-20 relative z-10">
@@ -293,7 +294,7 @@ export default function ProfileForm({
                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                 </div>
 
-                {/* Tombol Simpan (Desktop) */}
+                {/* Tombol Simpan (Desktop) - Tetap di kanan untuk layar besar */}
                 <div className="mt-4 hidden sm:block">
                   <Button
                     type="submit"
@@ -308,24 +309,27 @@ export default function ProfileForm({
                     Simpan Perubahan
                   </Button>
                 </div>
-                
-                {/* Tombol Simpan (Mobile Icon) */}
-                <div className="mt-4 sm:hidden">
-                    <Button size="icon" type="submit" disabled={isSaving} className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                        <Save size={18} />
-                    </Button>
-                </div>
-
               </div>
 
               {/* Nama & Info */}
-              <div className="mt-4 text-left space-y-1">
-                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
+              {/* UBAH DISINI: Text center di mobile */}
+              <div className="mt-4 text-center sm:text-left space-y-1">
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 flex flex-col sm:flex-row items-center gap-2 justify-center sm:justify-start">
                   {formData.nama || "Pengguna"}
                 </h2>
                 <p className="text-slate-500 font-medium text-base">@{formData.username}</p>
-                
-                {/* Badge Role Dihapus dari sini */}
+              </div>
+
+              {/* Tombol Simpan (Mobile) - Dipindahkan ke bawah Nama agar layout center lebih seimbang */}
+              <div className="mt-6 sm:hidden w-full">
+                  <Button 
+                    type="submit" 
+                    disabled={isSaving || isProcessing} 
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-semibold h-11 shadow-md"
+                  >
+                      {isSaving ? <Loader2 size={16} className="animate-spin mr-2" /> : <Save size={16} className="mr-2" />}
+                      Simpan Perubahan
+                  </Button>
               </div>
 
             </div>
