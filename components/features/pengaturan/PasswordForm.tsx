@@ -42,7 +42,8 @@ export default function PasswordForm({ user, onUpdateSuccess }: PasswordFormProp
   };
 
   return (
-    <Card className="overflow-hidden border-none shadow-xl bg-white rounded-xl ring-1 ring-slate-100">
+    // PERUBAHAN DISINI: Menambahkan 'h-full flex flex-col' agar card memanjang penuh mengikuti tinggi ProfileForm
+    <Card className="h-full flex flex-col overflow-hidden border-none shadow-xl bg-white rounded-xl ring-1 ring-slate-100">
       
       {/* Header Bersih */}
       <CardHeader className="space-y-1">
