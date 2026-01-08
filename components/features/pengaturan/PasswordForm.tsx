@@ -42,7 +42,7 @@ export default function PasswordForm({ user, onUpdateSuccess }: PasswordFormProp
   };
 
   return (
-    <Card className="h-full border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col bg-white">
+    <Card className="overflow-hidden border-none shadow-xl bg-white rounded-xl ring-1 ring-slate-100">
       
       {/* Header Bersih */}
       <CardHeader className="space-y-1">
