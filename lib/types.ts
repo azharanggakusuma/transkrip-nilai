@@ -157,6 +157,7 @@ export interface UserProfile {
   role: string;
   alamat?: string;
   password?: string;
+  avatar_url?: string | null;
 }
 
 // --- Grades / Nilai ---

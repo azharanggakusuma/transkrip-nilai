@@ -12,6 +12,7 @@ export type UserSession = {
   role: string;
   student_id?: string | null; 
   error?: string;
+  avatar_url?: string | null; // Tambahkan field ini
 };
 
 export async function authenticate(formData: FormData) {
@@ -70,11 +71,19 @@ export async function getSession(): Promise<UserSession | null> {
   const session = await auth();
   if (!session?.user) return null;
   
+  // Fetch ulang data user untuk mendapatkan avatar terbaru
+  const { data: userData } = await supabase
+    .from("users")
+    .select("avatar_url")
+    .eq("username", session.user.username)
+    .single();
+
   return {
     username: session.user.username || "",
     name: session.user.name || "",
     role: session.user.role || "mahasiswa",
     student_id: session.user.student_id || null,
+    avatar_url: userData?.avatar_url || null, // Sertakan URL avatar
     error: session.user.error, 
   };
 }
@@ -106,11 +115,16 @@ export async function updateUserSettings(
   payload: any,
   oldPasswordForVerification?: string 
 ) {
-  const { nama, password, alamat, role, username: newUsername } = payload;
+  const { nama, password, alamat, role, username: newUsername, avatar_url } = payload;
 
   const updates: any = {};
   if (nama) updates.name = nama;
   
+  // Logic update avatar_url
+  if (avatar_url !== undefined) {
+    updates.avatar_url = avatar_url;
+  }
+
   if (password) {
     if (!oldPasswordForVerification) {
       throw new Error("Password lama diperlukan untuk verifikasi.");
@@ -160,5 +174,6 @@ export async function updateUserSettings(
   }
 
   revalidatePath("/pengaturan");
+  revalidatePath("/", "layout"); // Revalidate layout agar foto header juga berubah
   return { success: true };
 }
