@@ -264,7 +264,6 @@ export default function ProfileForm({
             <div className="relative group flex flex-col items-center justify-center">
                 
                 {/* CONTAINER GAMBAR (Parent Relative) */}
-                {/* UPDATE: Menghapus 'shadow-2xl' */}
                 <div className="relative w-[85vw] h-[85vw] sm:w-[500px] sm:h-[500px] rounded-2xl overflow-hidden bg-neutral-950">
                     
                     {previewImage ? (
@@ -405,11 +404,15 @@ export default function ProfileForm({
             {/* PROFILE SECTION */}
             <div className="relative mb-6">
               
+              {/* Row: Avatar & Tombol */}
               <div className="flex justify-between items-start">
                 
                 {/* Avatar Wrapper */}
-                <div className="-mt-20 sm:-mt-24 relative z-10 group">
-                   <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-slate-100 relative cursor-pointer"
+                {/* PERBAIKAN: Menghapus 'group' dari div wrapper ini */}
+                <div className="-mt-20 sm:-mt-24 relative z-10">
+                   
+                   {/* PERBAIKAN: Menambahkan 'group' ke div container gambar ini saja */}
+                   <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-slate-100 relative cursor-pointer group"
                         onClick={() => setIsViewModalOpen(true)}>
                       
                       {previewImage ? (
