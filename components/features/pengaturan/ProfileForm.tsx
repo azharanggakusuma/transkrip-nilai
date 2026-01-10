@@ -263,7 +263,7 @@ export default function ProfileForm({
             {/* WRAPPER UTAMA */}
             <div className="relative group flex flex-col items-center justify-center">
                 
-                {/* CONTAINER GAMBAR (Parent Relative) */}
+                {/* CONTAINER GAMBAR */}
                 <div className="relative w-[85vw] h-[85vw] sm:w-[500px] sm:h-[500px] rounded-2xl overflow-hidden bg-neutral-950">
                     
                     {previewImage ? (
@@ -286,7 +286,7 @@ export default function ProfileForm({
                     {/* Gradient Overlay (Atas - agar tombol close terlihat jelas) */}
                     <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
 
-                    {/* --- TOMBOL CLOSE (Di dalam gambar, Pojok Kanan Atas) --- */}
+                    {/* --- TOMBOL CLOSE --- */}
                     <Button
                         onClick={() => setIsViewModalOpen(false)}
                         className="absolute top-4 right-4 rounded-full w-9 h-9 p-0 bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border-none transition-all z-50 shadow-none opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0 duration-300"
@@ -295,7 +295,7 @@ export default function ProfileForm({
                         <X size={18} />
                     </Button>
 
-                    {/* --- TOOLBAR AKSI (Di dalam gambar, Tengah Bawah) --- */}
+                    {/* --- TOOLBAR AKSI --- */}
                     {previewImage && (
                       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 ease-out">
                         <div className="flex items-center gap-2 p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 shadow-none">
@@ -404,14 +404,12 @@ export default function ProfileForm({
             {/* PROFILE SECTION */}
             <div className="relative mb-6">
               
-              {/* Row: Avatar & Tombol */}
               <div className="flex justify-between items-start">
                 
                 {/* Avatar Wrapper */}
-                {/* PERBAIKAN: Menghapus 'group' dari div wrapper ini */}
                 <div className="-mt-20 sm:-mt-24 relative z-10">
                    
-                   {/* PERBAIKAN: Menambahkan 'group' ke div container gambar ini saja */}
+                   {/* Container Gambar */}
                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-slate-100 relative cursor-pointer group"
                         onClick={() => setIsViewModalOpen(true)}>
                       
@@ -429,8 +427,9 @@ export default function ProfileForm({
                          </div>
                       )}
 
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Maximize2 className="text-white" size={32} />
+                      {/* HOVER OVERLAY: Transparan Blur XS & Rounded-Full agar tidak keluar border */}
+                      <div className="absolute inset-0 bg-black/5 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center rounded-full">
+                        <Maximize2 className="text-white drop-shadow-md" size={32} />
                       </div>
                    </div>
 
