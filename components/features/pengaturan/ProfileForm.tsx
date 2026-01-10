@@ -264,8 +264,8 @@ export default function ProfileForm({
             <div className="relative group flex flex-col items-center justify-center">
                 
                 {/* CONTAINER GAMBAR (Parent Relative) */}
-                {/* UPDATE: Menghapus 'border border-white/10 ring-1 ring-black/50' */}
-                <div className="relative w-[85vw] h-[85vw] sm:w-[500px] sm:h-[500px] rounded-2xl overflow-hidden bg-neutral-950 shadow-2xl">
+                {/* UPDATE: Menghapus 'shadow-2xl' */}
+                <div className="relative w-[85vw] h-[85vw] sm:w-[500px] sm:h-[500px] rounded-2xl overflow-hidden bg-neutral-950">
                     
                     {previewImage ? (
                         <Image 
@@ -290,7 +290,7 @@ export default function ProfileForm({
                     {/* --- TOMBOL CLOSE (Di dalam gambar, Pojok Kanan Atas) --- */}
                     <Button
                         onClick={() => setIsViewModalOpen(false)}
-                        className="absolute top-4 right-4 rounded-full w-9 h-9 p-0 bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border-none transition-all z-50 shadow-lg opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0 duration-300"
+                        className="absolute top-4 right-4 rounded-full w-9 h-9 p-0 bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border-none transition-all z-50 shadow-none opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0 duration-300"
                         title="Tutup"
                     >
                         <X size={18} />
@@ -299,7 +299,7 @@ export default function ProfileForm({
                     {/* --- TOOLBAR AKSI (Di dalam gambar, Tengah Bawah) --- */}
                     {previewImage && (
                       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 ease-out">
-                        <div className="flex items-center gap-2 p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 shadow-2xl">
+                        <div className="flex items-center gap-2 p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 shadow-none">
                             <Button
                                 onClick={() => setIsDeleteConfirmOpen(true)}
                                 disabled={isDeleting}
