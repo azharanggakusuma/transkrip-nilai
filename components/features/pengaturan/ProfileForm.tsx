@@ -11,6 +11,7 @@ import {
   X,
   Maximize2,
   Trash2,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -238,6 +239,8 @@ export default function ProfileForm({
     }
   };
 
+  const isDisabled = user.role !== "admin";
+
   return (
     <>
       {/* --- CONFIRMATION MODAL --- */}
@@ -260,12 +263,9 @@ export default function ProfileForm({
         >
             <DialogTitle className="sr-only">Lihat Foto Profil</DialogTitle>
 
-            {/* WRAPPER UTAMA */}
             <div className="relative group flex flex-col items-center justify-center">
                 
-                {/* CONTAINER GAMBAR */}
                 <div className="relative w-[85vw] h-[85vw] sm:w-[500px] sm:h-[500px] rounded-2xl overflow-hidden bg-neutral-950">
-                    
                     {previewImage ? (
                         <Image 
                             src={previewImage} 
@@ -280,13 +280,9 @@ export default function ProfileForm({
                         </div>
                     )}
 
-                    {/* Gradient Overlay (Bawah) */}
                     <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
-                    
-                    {/* Gradient Overlay (Atas - agar tombol close terlihat jelas) */}
                     <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
 
-                    {/* --- TOMBOL CLOSE --- */}
                     <Button
                         onClick={() => setIsViewModalOpen(false)}
                         className="absolute top-4 right-4 rounded-full w-9 h-9 p-0 bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border-none transition-all z-50 shadow-none opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0 duration-300"
@@ -295,7 +291,6 @@ export default function ProfileForm({
                         <X size={18} />
                     </Button>
 
-                    {/* --- TOOLBAR AKSI --- */}
                     {previewImage && (
                       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 ease-out">
                         <div className="flex items-center gap-2 p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 shadow-none">
@@ -408,8 +403,6 @@ export default function ProfileForm({
                 
                 {/* Avatar Wrapper */}
                 <div className="-mt-20 sm:-mt-24 relative z-10">
-                   
-                   {/* Container Gambar */}
                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-slate-100 relative cursor-pointer group"
                         onClick={() => setIsViewModalOpen(true)}>
                       
@@ -427,7 +420,6 @@ export default function ProfileForm({
                          </div>
                       )}
 
-                      {/* HOVER OVERLAY: Transparan Blur XS & Rounded-Full agar tidak keluar border */}
                       <div className="absolute inset-0 bg-black/5 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center rounded-full">
                         <Maximize2 className="text-white drop-shadow-md" size={32} />
                       </div>
@@ -451,7 +443,6 @@ export default function ProfileForm({
                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                 </div>
 
-                {/* Tombol Simpan Teks (Desktop) */}
                 <div className="mt-4 hidden sm:block">
                   <Button
                     type="submit"
@@ -467,7 +458,6 @@ export default function ProfileForm({
                   </Button>
                 </div>
                 
-                {/* Tombol Simpan Teks (Mobile) */}
                 <div className="mt-4 sm:hidden">
                     <Button size="icon" type="submit" disabled={isSaving} className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground">
                         <Save size={18} />
@@ -492,20 +482,28 @@ export default function ProfileForm({
             <div className="space-y-6 max-w-3xl">
               <div className="grid md:grid-cols-2 gap-6">
                 
+                {/* --- BAGIAN USERNAME --- */}
                 <div className="space-y-2">
                   <Label htmlFor="username" className="text-slate-700 font-medium">Username</Label>
                   <div className="relative">
-                    <AtSign size={16} className="absolute left-3 top-3 text-slate-400" />
+                    {/* Icon AtSign Kiri */}
+                    <AtSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    
                     <Input
                         id="username"
                         value={formData.username}
-                        disabled={user.role !== "admin"} 
+                        disabled={isDisabled} 
                         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                        className="pl-9 bg-slate-50 border-slate-200 focus:bg-white transition-all h-11"
+                        className={`pl-9 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all ${isDisabled ? "pr-10 text-slate-500 opacity-70" : ""}`}
                     />
+                    
+                    {/* Icon Lock Kanan (Disabled) */}
+                    {isDisabled && (
+                        <Lock size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 opacity-50 pointer-events-none" />
+                    )}
                   </div>
-                  {user.role !== "admin" && (
-                    <p className="text-[11px] text-slate-400">Hubungi admin untuk mengubah username.</p>
+                  {isDisabled && (
+                    <p className="text-[11px] text-slate-400">Username tidak dapat diubah.</p>
                   )}
                 </div>
 
@@ -517,7 +515,7 @@ export default function ProfileForm({
                         id="nama"
                         value={formData.nama}
                         onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-                        className="pl-9 bg-slate-50 border-slate-200 focus:bg-white transition-all h-11"
+                        className="pl-9 bg-slate-50 border-slate-200 focus:bg-white transition-all h-10"
                     />
                   </div>
                 </div>
