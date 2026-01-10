@@ -8,6 +8,8 @@ import {
   Loader2,
   UserCircle,
   AtSign,
+  X,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -60,12 +62,14 @@ export default function ProfileForm({
   );
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
 
-  // --- STATE CROPPING ---
+  // --- STATE CROPPING & VIEW MODAL ---
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   if (!user) return null;
 
@@ -182,6 +186,46 @@ export default function ProfileForm({
 
   return (
     <>
+      {/* --- MODAL VIEW IMAGE FULL SCREEN --- */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent 
+          className="p-0 bg-transparent border-none shadow-none max-w-fit flex items-center justify-center overflow-hidden"
+          showCloseButton={false} 
+        >
+            <div className="relative group">
+                {/* UPDATE: 
+                   Menghapus class 'shadow-2xl' dan 'border border-white/20' 
+                   untuk menghilangkan bayangan dan garis tepi.
+                */}
+                <div className="relative w-[80vw] h-[80vw] sm:w-[500px] sm:h-[500px] rounded-xl overflow-hidden bg-black">
+                    {previewImage ? (
+                        <Image 
+                            src={previewImage} 
+                            alt="Full Avatar" 
+                            fill 
+                            className="object-cover"
+                            unoptimized={!!fileToUpload}
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-100">
+                            <User size={120} />
+                        </div>
+                    )}
+                </div>
+
+                {/* Custom Close Button */}
+                <Button
+                    onClick={() => setIsViewModalOpen(false)}
+                    // Button styling juga disederhanakan sedikit shadow-nya agar senada
+                    className="absolute top-3 right-3 rounded-full w-8 h-8 p-0 bg-black/50 hover:bg-black/70 text-white backdrop-blur-md transition-all z-50 border-none"
+                    title="Tutup"
+                >
+                    <X size={16} />
+                </Button>
+            </div>
+        </DialogContent>
+      </Dialog>
+
       {/* --- MODAL CROP --- */}
       <Dialog
         open={isCropModalOpen}
@@ -244,25 +288,19 @@ export default function ProfileForm({
       {/* --- MAIN CARD --- */}
       <Card className="h-full border-none shadow-xl bg-white rounded-xl ring-1 ring-slate-100 flex flex-col overflow-hidden">
         
-        {/* HEADER / BANNER GRADIENT + PATTERN BARU */}
+        {/* HEADER / BANNER GRADIENT */}
         <div className="h-32 sm:h-40 bg-gradient-to-r from-[#0077b5] to-[#00a0dc] relative shrink-0 overflow-hidden">
-          
-          {/* Pattern 1: Modern Grid Lines */}
           <div className="absolute inset-0 opacity-20"
                style={{
                    backgroundImage: `linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)`,
                    backgroundSize: '32px 32px'
                }}
           ></div>
-
-          {/* Pattern 2: Subtle Diagonal Overlay */}
           <div className="absolute inset-0 opacity-10"
                style={{
                    backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px)"
                }}
           ></div>
-          
-          {/* Shadow Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none"></div>
         </div>
 
@@ -277,8 +315,10 @@ export default function ProfileForm({
                 
                 {/* Avatar Wrapper (Stacked) */}
                 <div className="-mt-20 sm:-mt-24 relative z-10 group">
+                   {/* KLIK PADA FOTO: MEMBUKA MODAL VIEW */}
                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-slate-100 relative cursor-pointer"
-                        onClick={() => fileInputRef.current?.click()}>
+                        onClick={() => setIsViewModalOpen(true)}>
+                      
                       {previewImage ? (
                         <Image src={previewImage} alt="Profile" fill className="object-cover" unoptimized={!!fileToUpload} />
                       ) : (
@@ -286,20 +326,23 @@ export default function ProfileForm({
                           <User size={64} />
                         </div>
                       )}
+                      
+                      {/* Hover Overlay: Indikasi View */}
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Camera className="text-white" size={28} />
+                        <Eye className="text-white" size={32} />
                       </div>
                    </div>
 
-                   {/* TOMBOL KAMERA KECIL BARU (No Transparent Hover) */}
+                   {/* TOMBOL KAMERA KECIL: UPLOAD / GANTI FOTO */}
                    <button
                      type="button"
                      onClick={(e) => {
                        e.preventDefault();
+                       e.stopPropagation(); 
                        fileInputRef.current?.click();
                      }}
                      className="absolute bottom-0 right-0 sm:bottom-2 sm:right-2 p-2 rounded-full bg-primary text-primary-foreground shadow-lg border-2 border-white transition-transform hover:scale-105 active:scale-95 z-20 flex items-center justify-center"
-                     title="Ubah Foto"
+                     title="Ganti Foto"
                    >
                      <Camera size={16} />
                    </button>
