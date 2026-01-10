@@ -8,9 +8,15 @@ import { useLayout } from "@/app/context/LayoutContext";
 import {
   calculateIPK,
   calculateTotalSKSLulus,
-  calculateSemesterTrend,
+  calculateSemesterTrend, // Digunakan untuk tampilan Mahasiswa (Single)
 } from "@/lib/grade-calculations";
-import { calculateGradeDistribution } from "@/lib/dashboard-helper"; // Grade distribution masih oke pakai helper lama atau pindahkan jika mau
+
+// [UPDATE] Import helper untuk Admin (Agregat banyak mahasiswa)
+// Menggunakan 'as' (alias) untuk menghindari bentrok nama fungsi
+import { 
+  calculateGradeDistribution,
+  calculateSemesterTrend as calculateAdminTrend 
+} from "@/lib/dashboard-helper";
 
 import { getStudents } from "@/app/actions/students";
 import { getCourses } from "@/app/actions/courses";
@@ -90,12 +96,15 @@ export default function DashboardPage() {
     const currentUsername = user?.username;
 
     if (isMahasiswa && currentUsername) {
+      // === LOGIKA MAHASISWA ===
       const myData = studentData.find((s) => s.profile.nim === currentUsername);
       
       if (myData) {
         // [UPDATE] GUNAKAN LOGIKA TERPUSAT
         const myIPK = calculateIPK(myData.transcript);
         const totalSKS = calculateTotalSKSLulus(myData.transcript);
+        
+        // Menggunakan fungsi dari grade-calculations.ts (Single Student)
         trend = calculateSemesterTrend(myData.transcript);
         // --------------------------------
 
@@ -167,8 +176,9 @@ export default function DashboardPage() {
           : "0.00";
       
       dist = calculateGradeDistribution(studentData);
-      // Untuk trend admin, bisa pakai logika rata-rata (opsional, disederhanakan disini)
-      // trend = ... 
+      
+      // [PERBAIKAN] Menggunakan fungsi helper admin yang sudah di-alias
+      trend = calculateAdminTrend(studentData);
       
       const avgGradePoint =
         dist.totalGrades > 0
@@ -237,10 +247,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-7">
-         {/* Chart Section (Sama seperti sebelumnya) */}
+         {/* Chart Section */}
          <SemesterLineChart 
             data={trendData} 
-            title={user?.role === "mahasiswa" ? "Tren IPS Setiap Semester" : "Grafik Semester"} 
+            title={user?.role === "mahasiswa" ? "Tren IPS Setiap Semester" : "Tren Rata-rata IPS Mahasiswa"} 
           />
           <GradeDonutChart
             counts={gradeDistData.counts}
