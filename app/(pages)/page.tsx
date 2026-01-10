@@ -12,7 +12,6 @@ import {
 } from "@/lib/grade-calculations";
 
 // [UPDATE] Import helper untuk Admin (Agregat banyak mahasiswa)
-// Menggunakan 'as' (alias) untuk menghindari bentrok nama fungsi
 import { 
   calculateGradeDistribution,
   calculateSemesterTrend as calculateAdminTrend 
@@ -100,7 +99,6 @@ export default function DashboardPage() {
       const myData = studentData.find((s) => s.profile.nim === currentUsername);
       
       if (myData) {
-        // [UPDATE] GUNAKAN LOGIKA TERPUSAT
         const myIPK = calculateIPK(myData.transcript);
         const totalSKS = calculateTotalSKSLulus(myData.transcript);
         
@@ -126,7 +124,7 @@ export default function DashboardPage() {
         stats = [
           {
             label: "Total IPK",
-            value: myIPK, // String fixed(2)
+            value: myIPK, 
             description: "Skala Indeks 4.00", 
             icon: <AwardIcon className="w-6 h-6" />,
             themeColor: "chart-1",
@@ -177,7 +175,6 @@ export default function DashboardPage() {
       
       dist = calculateGradeDistribution(studentData);
       
-      // [PERBAIKAN] Menggunakan fungsi helper admin yang sudah di-alias
       trend = calculateAdminTrend(studentData);
       
       const avgGradePoint =
@@ -248,14 +245,56 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-7">
          {/* Chart Section */}
-         <SemesterLineChart 
-            data={trendData} 
-            title={user?.role === "mahasiswa" ? "Tren IPS Setiap Semester" : "Tren Rata-rata IPS Mahasiswa"} 
-          />
-          <GradeDonutChart
-            counts={gradeDistData.counts}
-            total={gradeDistData.totalGrades}
-          />
+         {isLoading ? (
+            <>
+              {/* Semester Line Chart Skeleton */}
+              <div className="lg:col-span-4 rounded-xl border border-border bg-card shadow-sm flex flex-col h-[450px]">
+                <div className="px-6 py-5 border-b border-border">
+                  <Skeleton className="h-6 w-64" /> {/* Judul */}
+                </div>
+                <div className="p-6 flex-1 flex flex-col justify-end gap-6">
+                  {/* Area Chart Placeholder */}
+                  <Skeleton className="w-full flex-1 rounded-lg" />
+                  {/* X-Axis Labels */}
+                  <div className="flex justify-between px-4">
+                    <Skeleton className="h-4 w-8" />
+                    <Skeleton className="h-4 w-8" />
+                    <Skeleton className="h-4 w-8" />
+                    <Skeleton className="h-4 w-8" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Grade Donut Chart Skeleton */}
+              <div className="lg:col-span-3 rounded-xl border border-border bg-card shadow-sm flex flex-col h-[450px]">
+                <div className="px-6 py-5 border-b border-border">
+                  <Skeleton className="h-6 w-40" /> {/* Judul */}
+                </div>
+                <div className="p-6 flex-1 flex flex-col items-center justify-center gap-8">
+                   {/* Donut Circle */}
+                   <Skeleton className="h-56 w-56 rounded-full" />
+                   {/* Legend Grid */}
+                   <div className="grid grid-cols-2 gap-3 w-full">
+                      <Skeleton className="h-10 w-full rounded-lg" />
+                      <Skeleton className="h-10 w-full rounded-lg" />
+                      <Skeleton className="h-10 w-full rounded-lg" />
+                      <Skeleton className="h-10 w-full rounded-lg" />
+                   </div>
+                </div>
+              </div>
+            </>
+         ) : (
+            <>
+              <SemesterLineChart 
+                  data={trendData} 
+                  title={user?.role === "mahasiswa" ? "Tren IPS Setiap Semester" : "Tren Rata-rata IPS Mahasiswa"} 
+                />
+                <GradeDonutChart
+                  counts={gradeDistData.counts}
+                  total={gradeDistData.totalGrades}
+                />
+            </>
+         )}
       </div>
     </div>
   );
