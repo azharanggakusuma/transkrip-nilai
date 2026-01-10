@@ -219,12 +219,12 @@ export default function AdminKRSValidationView() {
                 {isLoading ? (
                     <div className="flex flex-col justify-between h-full gap-6">
                         <div className="space-y-2">
-                             <Skeleton className="h-4 w-32 bg-white/20" />
-                             <Skeleton className="h-8 w-64 bg-white/20" />
+                             <Skeleton className="h-4 w-32 opacity-25" />
+                             <Skeleton className="h-8 w-64 opacity-25" />
                         </div>
                         <div className="flex gap-4">
-                            <Skeleton className="h-10 w-[240px] bg-white/20" />
-                            <Skeleton className="h-10 w-32 bg-white/20 hidden sm:block" />
+                            <Skeleton className="h-10 w-[240px] opacity-25" />
+                            <Skeleton className="h-10 w-32 opacity-25 hidden sm:block" />
                         </div>
                     </div>
                 ) : (

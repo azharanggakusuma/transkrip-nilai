@@ -415,14 +415,14 @@ export default function StudentKRSView({ user }: { user: any }) {
                     <div className="flex flex-col justify-between h-full gap-6">
                         <div className="flex justify-between items-start">
                             <div className="space-y-3">
-                                <Skeleton className="h-4 w-32 bg-white/20" />
-                                <Skeleton className="h-8 w-48 bg-white/20" />
+                                <Skeleton className="h-4 w-32 opacity-25" />
+                                <Skeleton className="h-8 w-48 opacity-25" />
                             </div>
-                            <Skeleton className="h-9 w-24 bg-white/20" />
+                            <Skeleton className="h-9 w-24 opacity-25" />
                         </div>
                         <div className="flex flex-wrap items-center gap-4">
-                            <Skeleton className="h-10 w-[240px] bg-white/20" />
-                            <Skeleton className="h-10 w-32 bg-white/20" />
+                            <Skeleton className="h-10 w-[240px] opacity-25" />
+                            <Skeleton className="h-10 w-32 opacity-25" />
                         </div>
                     </div>
                 ) : (
@@ -439,13 +439,13 @@ export default function StudentKRSView({ user }: { user: any }) {
                         </div>
                         <div className="flex gap-2">
                             {krsGlobalStatus === 'REJECTED' && (
-                                <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                                <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-white hover:opacity-25 hover:text-white"
                                     onClick={() => setIsResetOpen(true)}>
                                     <RotateCcw className="w-4 h-4 mr-2" /> Isi Ulang
                                 </Button>
                             )}
                             {(krsGlobalStatus === 'SUBMITTED' || krsGlobalStatus === 'APPROVED') && (
-                                <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                                <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-white hover:opacity-25 hover:text-white"
                                     onClick={() => setIsPrintModalOpen(true)}>
                                     <Printer className="w-4 h-4 mr-2" /> Cetak KRS
                                 </Button>
@@ -487,15 +487,15 @@ export default function StudentKRSView({ user }: { user: any }) {
                 {isLoading ? (
                     <div className="space-y-6">
                         <div className="space-y-3">
-                             <Skeleton className="h-4 w-32 bg-white/20" />
+                             <Skeleton className="h-4 w-32 opacity-25" />
                              <div className="flex items-baseline gap-2">
-                                <Skeleton className="h-10 w-16 bg-white/20" />
-                                <Skeleton className="h-6 w-12 bg-white/20" />
+                                <Skeleton className="h-10 w-16 opacity-25" />
+                                <Skeleton className="h-6 w-12 opacity-25" />
                              </div>
                         </div>
                         <div className="space-y-2">
-                            <Skeleton className="h-3 w-full bg-white/20 rounded-full" />
-                            <Skeleton className="h-3 w-3/4 bg-white/20 rounded-full" />
+                            <Skeleton className="h-3 w-full opacity-25 rounded-full" />
+                            <Skeleton className="h-3 w-3/4 opacity-25 rounded-full" />
                         </div>
                     </div>
                 ) : (
