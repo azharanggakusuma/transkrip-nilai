@@ -17,8 +17,9 @@ export default function NotFound() {
             Halaman Tidak Ditemukan
           </h2>
           <p className="text-muted-foreground">
-            Maaf, halaman yang Anda cari tidak tersedia atau telah dipindahkan.
-            Silakan periksa kembali URL atau kembali ke halaman utama.
+            Maaf, halaman yang Anda cari tidak ditemukan atau telah dipindahkan.
+            Silakan periksa kembali URL yang Anda masukkan. Atau kembali ke
+            halaman utama.
           </p>
         </div>
 
@@ -32,10 +33,11 @@ export default function NotFound() {
           </Button>
         </div>
       </div>
-      
+
       {/* Footer Decoration */}
       <div className="absolute bottom-8 text-xs text-muted-foreground">
-        &copy; {new Date().getFullYear()} STMIK IKMI Cirebon. All rights reserved.
+        &copy; {new Date().getFullYear()} STMIK IKMI Cirebon. All rights
+        reserved.
       </div>
     </div>
   );
