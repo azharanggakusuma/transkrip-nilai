@@ -12,12 +12,59 @@ export type UserSession = {
   role: string;
   student_id?: string | null; 
   error?: string;
-  avatar_url?: string | null; // Tambahkan field ini
+  avatar_url?: string | null;
 };
+
+// --- [BARU] Fungsi Verifikasi Turnstile ---
+async function verifyTurnstile(token: string) {
+  const secretKey = process.env.TURNSTILE_SECRET_KEY;
+  
+  // Jika di development dan tidak ada key, bisa di-bypass (opsional)
+  // Tapi sebaiknya tetap gunakan key dummy atau key asli
+  if (!secretKey) {
+    console.warn("Peringatan: TURNSTILE_SECRET_KEY tidak ditemukan.");
+    return false; 
+  }
+
+  const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+  const formData = new FormData();
+  formData.append('secret', secretKey);
+  formData.append('response', token);
+
+  try {
+    const result = await fetch(url, {
+      body: formData,
+      method: 'POST',
+    });
+
+    const outcome = await result.json();
+    return outcome.success;
+  } catch (e) {
+    console.error("Turnstile verification error:", e);
+    return false;
+  }
+}
 
 export async function authenticate(formData: FormData) {
   try {
+    // --- [BARU] Logika Verifikasi Captcha ---
+    const token = formData.get("cf-turnstile-response") as string;
+    
+    if (!token) {
+      return { success: false, error: "CaptchaRequired" };
+    }
+
+    const isHuman = await verifyTurnstile(token);
+    if (!isHuman) {
+      return { success: false, error: "CaptchaFailed" };
+    }
+    // ----------------------------------------
+
     const data = Object.fromEntries(formData);
+    
+    // Hapus field token agar tidak mengganggu proses login credential
+    delete data["cf-turnstile-response"];
+
     const username = data.username as string;
     let name = "Pengguna";
 
@@ -83,7 +130,7 @@ export async function getSession(): Promise<UserSession | null> {
     name: session.user.name || "",
     role: session.user.role || "mahasiswa",
     student_id: session.user.student_id || null,
-    avatar_url: userData?.avatar_url || null, // Sertakan URL avatar
+    avatar_url: userData?.avatar_url || null, 
     error: session.user.error, 
   };
 }
@@ -120,7 +167,6 @@ export async function updateUserSettings(
   const updates: any = {};
   if (nama) updates.name = nama;
   
-  // Logic update avatar_url
   if (avatar_url !== undefined) {
     updates.avatar_url = avatar_url;
   }
@@ -174,6 +220,6 @@ export async function updateUserSettings(
   }
 
   revalidatePath("/pengaturan");
-  revalidatePath("/", "layout"); // Revalidate layout agar foto header juga berubah
+  revalidatePath("/", "layout"); 
   return { success: true };
 }

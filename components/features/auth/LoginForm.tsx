@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Eye, EyeOff, Loader2, Lock, User, ChevronRight } from "lucide-react";
 import { toast } from "sonner"; 
+import { Turnstile } from "@marsidev/react-turnstile"; // [BARU] Import Library
 
 import { authenticate } from "@/app/actions/auth"; 
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ export function LoginForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState(""); // [BARU] State Token
 
   const handleForgotPassword = (e: React.MouseEvent) => {
     e.preventDefault(); 
@@ -27,9 +29,20 @@ export function LoginForm() {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // [BARU] Validasi Client Side
+    if (!turnstileToken) {
+      toast.error("Validasi Diperlukan", {
+        description: "Silakan selesaikan CAPTCHA terlebih dahulu.",
+      });
+      return;
+    }
+
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
+    // [BARU] Append token ke FormData
+    formData.append("cf-turnstile-response", turnstileToken);
 
     try {
       const result = await authenticate(formData);
@@ -43,20 +56,23 @@ export function LoginForm() {
         router.push("/");
         router.refresh();
       } else {
-        // [LOGIKA ERROR CLIENT-SIDE DENGAN PESAN YANG LEBIH BAGUS]
-        if (result?.error === "InactiveAccount") {
-           // 1. Kasus Akun Non-Aktif (KUNING)
+        // [BARU] Handling Error Captcha
+        if (result?.error === "CaptchaFailed" || result?.error === "CaptchaRequired") {
+           toast.error("Verifikasi Keamanan Gagal", {
+             description: "Gagal memverifikasi CAPTCHA. Silakan muat ulang halaman.",
+           });
+           setTurnstileToken(""); // Reset token
+        } else if (result?.error === "InactiveAccount") {
            toast.warning("Akses Akun Ditangguhkan", {
              description: "Status akun Anda saat ini tidak aktif. Harap hubungi Bagian Akademik untuk penyelesaian.", 
              duration: 6000,
            });
         } else if (result?.error === "CredentialsSignin") {
-           // 2. Kasus Salah Password/Username (MERAH)
            toast.error("Kredensial Tidak Valid", {
              description: "Username atau kata sandi yang Anda masukkan tidak sesuai. Mohon periksa kembali.",
            });
+           setTurnstileToken(""); // Reset token jika password salah
         } else {
-           // 3. Error Lainnya
            toast.error("Gagal Masuk", {
              description: "Terjadi kendala saat menghubungi server. Silakan coba beberapa saat lagi.",
            });
@@ -186,9 +202,27 @@ export function LoginForm() {
               </div>
 
             </div>
+
+            {/* [BARU] Widget Cloudflare Turnstile */}
+            <div className="flex justify-center w-full pt-1">
+              <Turnstile 
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} 
+                onSuccess={(token) => setTurnstileToken(token)}
+                onError={() => {
+                   setTurnstileToken("");
+                   toast.error("Gagal memuat CAPTCHA");
+                }}
+                onExpire={() => setTurnstileToken("")}
+                options={{
+                  theme: 'light',
+                  size: 'flexible'
+                }}
+              />
+            </div>
+
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-5 p-0 pt-8">
+          <CardFooter className="flex flex-col gap-5 p-0 pt-6">
             <Button
               className="w-full h-12 lg:h-11 text-base font-semibold bg-[#1B3F95] hover:bg-[#15327a] shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 transition-all active:scale-[0.98] rounded-xl lg:rounded-md"
               type="submit"
