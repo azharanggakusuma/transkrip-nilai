@@ -96,7 +96,7 @@ export default function NilaiPage() {
   if (user.role === 'mahasiswa') {
     return (
       <div className="pb-10">
-        <PageHeader title="Kartu Hasil Studi" breadcrumb={["Beranda", "Nilai & Transkrip"]} />
+        <PageHeader title="Nilai Mahasiswa" breadcrumb={["Beranda", "Nilai"]} />
         <StudentGradeView user={user} />
       </div>
     );
@@ -105,7 +105,7 @@ export default function NilaiPage() {
   // 3. View Admin / Dosen
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
-      <PageHeader title="Input Nilai Mahasiswa" breadcrumb={["Beranda", "Nilai"]} />
+      <PageHeader title="Nilai Mahasiswa" breadcrumb={["Beranda", "Nilai"]} />
 
       <Card className="border-none shadow-sm ring-1 ring-gray-200">
         <CardContent className="p-6">
