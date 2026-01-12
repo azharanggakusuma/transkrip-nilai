@@ -47,8 +47,7 @@ export default function StudentGradeView({ user }: { user: any }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Helper warna badge nilai (TETAP PERTAHANKAN WARNA)
-  // Menambahkan opacity border agar lebih halus
+  // Helper warna badge nilai
   const getGradeBadge = (grade: string) => {
     switch (grade) {
       case "A": return "bg-emerald-100 text-emerald-700 border-emerald-200/60";
@@ -111,12 +110,6 @@ export default function StudentGradeView({ user }: { user: any }) {
         className: "text-center w-[100px]",
         render: (row) => (
            <div className="flex justify-center">
-             {/* UPDATE: 
-                 - w-7 h-7 (lebih kecil dari w-8)
-                 - rounded-full (lingkaran) 
-                 - p-0 (reset padding badge bawaan)
-                 - text-xs (font lebih kecil)
-             */}
              <Badge variant="outline" className={`${getGradeBadge(row.hm)} w-7 h-7 p-0 flex items-center justify-center rounded-full text-xs font-bold shadow-none`}>
                 {row.hm}
              </Badge>
@@ -131,14 +124,8 @@ export default function StudentGradeView({ user }: { user: any }) {
     {
         header: "Mutu (NM)",
         className: "text-center w-[100px]",
-        render: (row) => (
-            <div className="flex justify-center">
-                {/* NM juga disesuaikan sedikit agar tidak terlalu kotak kaku */}
-                <span className="font-bold text-slate-700 text-xs bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200 min-w-[30px] text-center">
-                    {row.nm}
-                </span>
-            </div>
-        )
+        // UPDATE: Hapus badge, gunakan teks biasa (semibold) agar sama seperti kolom Bobot
+        render: (row) => <span className="font-semibold text-slate-600 text-sm">{row.nm}</span>
     }
   ];
 
