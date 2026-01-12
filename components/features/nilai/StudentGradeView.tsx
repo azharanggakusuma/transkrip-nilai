@@ -70,6 +70,9 @@ export default function StudentGradeView({ user }: { user: any }) {
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
 
+  // Persentase kelulusan (Contoh: minimal 144 SKS)
+  const progressPercent = Math.min((summary.totalSKS / 144) * 100, 100);
+
   // --- COLUMN DEFINITION ---
   const columns: Column<any>[] = [
     {
@@ -133,38 +136,44 @@ export default function StudentGradeView({ user }: { user: any }) {
       {/* --- HEADER STATS --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">  
         
-        {/* CARD 1: IPK */}
+        {/* CARD 1: IPK (Style matched with KRS Status Card) */}
         <Card className="col-span-1 md:col-span-2 border-none shadow-md text-white overflow-hidden relative bg-gradient-to-br from-indigo-600 to-violet-800">
           <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Trophy size={140} />
+            <Trophy size={120} />
           </div>
           <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
             {isLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-32 opacity-25" />
-                <Skeleton className="h-12 w-24 opacity-25" />
-                <div className="flex gap-2"><Skeleton className="h-6 w-24 opacity-25" /></div>
+              <div className="flex flex-col justify-between h-full gap-6">
+                <div className="flex justify-between items-start">
+                    <div className="space-y-3">
+                        <Skeleton className="h-4 w-32 opacity-25" />
+                        <Skeleton className="h-8 w-48 opacity-25" />
+                    </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-4">
+                    <Skeleton className="h-10 w-[240px] opacity-25" />
+                </div>
               </div>
             ) : (
               <>
                 <div className="flex justify-between items-start">
                   <div>
                       <p className="text-indigo-100 font-medium text-sm mb-1">Indeks Prestasi Kumulatif</p>
-                      <h2 className="text-5xl font-bold tracking-tight">{summary.ipk}</h2>
+                      <h2 className="text-4xl md:text-5xl font-bold tracking-tight">{summary.ipk}</h2>
                   </div>
-                  <div className="p-3 bg-white/10 rounded-full backdrop-blur-sm shadow-inner border border-white/10">
-                      <Star className="w-6 h-6 text-yellow-300 fill-yellow-300" />
+                  <div className="hidden sm:block p-3 bg-white/10 rounded-full backdrop-blur-sm shadow-inner border border-white/10">
+                      <Star className="w-8 h-8 text-yellow-300 fill-yellow-300" />
                   </div>
                 </div>
                 
-                <div className="mt-8 flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full text-xs font-medium text-indigo-50 border border-white/10 backdrop-blur-sm">
-                    <GraduationCap className="w-3.5 h-3.5" />
-                    <span>Total Nilai Mutu: {summary.totalNM}</span>
+                <div className="mt-6 flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-md border border-white/10 backdrop-blur-sm">
+                    <GraduationCap className="w-4 h-4" />
+                    <span className="text-sm font-medium">Total Nilai Mutu: {summary.totalNM}</span>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full text-xs font-medium text-indigo-50 border border-white/10 backdrop-blur-sm">
-                    <ScrollText className="w-3.5 h-3.5" />
-                    <span>Total Mata Kuliah: {data.length}</span>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-md border border-white/10 backdrop-blur-sm">
+                    <ScrollText className="w-4 h-4" />
+                    <span className="text-sm font-medium">Total Mata Kuliah: {data.length}</span>
                   </div>
                 </div>
               </>
@@ -172,17 +181,25 @@ export default function StudentGradeView({ user }: { user: any }) {
           </CardContent>
         </Card>
 
-        {/* CARD 2: Total SKS */}
+        {/* CARD 2: Total SKS (Style matched with KRS SKS Card) */}
         <Card className="border-none shadow-md text-white overflow-hidden relative bg-gradient-to-br from-pink-600 to-rose-600">
           <div className="absolute -bottom-6 -right-6 opacity-20 rotate-12">
             <BookOpen size={140} />
           </div>
           <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
             {isLoading ? (
-               <div className="space-y-4">
-                 <Skeleton className="h-4 w-32 opacity-25" />
-                 <Skeleton className="h-10 w-16 opacity-25" />
-                 <Skeleton className="h-2 w-full opacity-25 rounded-full" />
+               <div className="space-y-6">
+                 <div className="space-y-3">
+                     <Skeleton className="h-4 w-32 opacity-25" />
+                     <div className="flex items-baseline gap-2">
+                        <Skeleton className="h-10 w-16 opacity-25" />
+                        <Skeleton className="h-6 w-12 opacity-25" />
+                     </div>
+                 </div>
+                 <div className="space-y-2">
+                    <Skeleton className="h-3 w-full opacity-25 rounded-full" />
+                    <Skeleton className="h-3 w-3/4 opacity-25 rounded-full" />
+                 </div>
                </div>
             ) : (
               <>
@@ -196,11 +213,11 @@ export default function StudentGradeView({ user }: { user: any }) {
                   </div>
                 </div>
                 <div className="mt-4">
-                   <div className="w-full bg-black/20 rounded-full h-2 mb-2 overflow-hidden backdrop-blur-sm">
-                      <div className="h-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ width: `${Math.min((summary.totalSKS / 144) * 100, 100)}%` }} />
+                   <div className="w-full bg-black/20 rounded-full h-3 mb-3 overflow-hidden backdrop-blur-sm">
+                      <div className="h-full rounded-full transition-all duration-1000 ease-out bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ width: `${progressPercent}%` }} />
                    </div>
-                   <p className="text-xs text-pink-50/90 font-medium mt-1">
-                      {((summary.totalSKS / 144) * 100).toFixed(0)}% dari minimal 144 SKS
+                   <p className="text-xs text-pink-50/90 leading-relaxed font-medium">
+                      {progressPercent.toFixed(0)}% dari minimal 144 SKS untuk kelulusan Sarjana.
                    </p>
                 </div>
               </>
