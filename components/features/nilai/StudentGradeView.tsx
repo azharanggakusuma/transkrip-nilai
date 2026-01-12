@@ -44,7 +44,6 @@ export default function StudentGradeView({ user }: { user: any }) {
   }, [user]);
 
   // Helper warna badge nilai
-  // [UPDATE] Hover effect dihapus (warna hover disamakan dengan background asli)
   const getGradeBadge = (grade: string) => {
     switch (grade) {
       case "A": return "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100";
@@ -129,10 +128,10 @@ export default function StudentGradeView({ user }: { user: any }) {
   ];
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-500">
+    <div className="flex flex-col gap-6 animate-in fade-in duration-500 mt-4">
       
-      {/* --- HEADER STATS (Layout Grid persis KRS) --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* --- HEADER STATS --- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">  
         
         {/* CARD 1: IPK */}
         <Card className="col-span-1 md:col-span-2 border-none shadow-md text-white overflow-hidden relative bg-gradient-to-br from-indigo-600 to-violet-800">
