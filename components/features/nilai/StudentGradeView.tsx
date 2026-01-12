@@ -117,7 +117,7 @@ export default function StudentGradeView({ user }: { user: any }) {
   ];
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-500">
+    <div className="flex flex-col gap-6 animate-in fade-in duration-500 mt-4">
       
       {/* --- HEADER STATS (Layout Grid persis KRS) --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
