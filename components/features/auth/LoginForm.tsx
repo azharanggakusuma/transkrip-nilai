@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Eye, EyeOff, Loader2, Lock, User, ChevronRight } from "lucide-react";
 import { toast } from "sonner"; 
-import { Turnstile } from "@marsidev/react-turnstile"; // [BARU] Import Library
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile"; 
 
 import { authenticate } from "@/app/actions/auth"; 
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,10 @@ export function LoginForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState(""); // [BARU] State Token
+  const [turnstileToken, setTurnstileToken] = useState("");
+  
+  // [PERBAIKAN] Ref untuk mengakses kontrol widget Turnstile
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   const handleForgotPassword = (e: React.MouseEvent) => {
     e.preventDefault(); 
@@ -30,7 +33,6 @@ export function LoginForm() {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // [BARU] Validasi Client Side
     if (!turnstileToken) {
       toast.error("Validasi Diperlukan", {
         description: "Silakan selesaikan CAPTCHA terlebih dahulu.",
@@ -41,7 +43,6 @@ export function LoginForm() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    // [BARU] Append token ke FormData
     formData.append("cf-turnstile-response", turnstileToken);
 
     try {
@@ -56,12 +57,14 @@ export function LoginForm() {
         router.push("/");
         router.refresh();
       } else {
-        // [BARU] Handling Error Captcha
+        // [PERBAIKAN] Reset token dan widget jika login gagal agar bisa mencoba lagi tanpa refresh
+        setTurnstileToken("");
+        turnstileRef.current?.reset(); 
+
         if (result?.error === "CaptchaFailed" || result?.error === "CaptchaRequired") {
            toast.error("Verifikasi Keamanan Gagal", {
-             description: "Gagal memverifikasi CAPTCHA. Silakan muat ulang halaman.",
+             description: "Gagal memverifikasi CAPTCHA. Silakan coba lagi.",
            });
-           setTurnstileToken(""); // Reset token
         } else if (result?.error === "InactiveAccount") {
            toast.warning("Akses Akun Ditangguhkan", {
              description: "Status akun Anda saat ini tidak aktif. Harap hubungi Bagian Akademik untuk penyelesaian.", 
@@ -71,7 +74,6 @@ export function LoginForm() {
            toast.error("Kredensial Tidak Valid", {
              description: "Username atau kata sandi yang Anda masukkan tidak sesuai. Mohon periksa kembali.",
            });
-           setTurnstileToken(""); // Reset token jika password salah
         } else {
            toast.error("Gagal Masuk", {
              description: "Terjadi kendala saat menghubungi server. Silakan coba beberapa saat lagi.",
@@ -84,6 +86,11 @@ export function LoginForm() {
       toast.error("Kesalahan Sistem", {
         description: "Layanan sedang sibuk. Silakan muat ulang halaman atau coba lagi nanti.",
       });
+      
+      // [PERBAIKAN] Reset widget juga saat terjadi error sistem
+      setTurnstileToken("");
+      turnstileRef.current?.reset();
+      
       setLoading(false);
     }
   };
@@ -203,9 +210,10 @@ export function LoginForm() {
 
             </div>
 
-            {/* [BARU] Widget Cloudflare Turnstile */}
+            {/* Widget Cloudflare Turnstile */}
             <div className="flex justify-center w-full pt-1">
               <Turnstile 
+                ref={turnstileRef} // [PERBAIKAN] Menghubungkan ref ke komponen
                 siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} 
                 onSuccess={(token) => setTurnstileToken(token)}
                 onError={() => {
