@@ -226,7 +226,7 @@ export default function ControlPanel(props: ControlPanelProps) {
           {!disablePrint && (
             <div className={sectionClass}>
                 <label className={labelClass}>Tanda Tangan</label>
-                <Select value={signatureType} onValueChange={(val: any) => onSignatureChange(val)}>
+                <Select value={signatureType} onValueChange={(val) => onSignatureChange(val as "basah" | "digital" | "none")}>
                 <SelectTrigger className="w-full h-9 bg-white text-xs rounded-xl border-gray-200">
                     <SelectValue placeholder="Pilih Tipe TTD" />
                 </SelectTrigger>
@@ -247,7 +247,7 @@ export default function ControlPanel(props: ControlPanelProps) {
               "w-full h-11 text-sm font-semibold shadow-sm rounded-xl transition-all duration-200",
               disablePrint 
                 ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none hover:bg-slate-100" 
-                : "bg-[#1B3F95] hover:bg-blue-900 text-white"
+                : "bg-primary hover:bg-primary/90 text-white"
             )}
           > 
              {disablePrint ? (

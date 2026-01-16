@@ -417,15 +417,15 @@ function NavItem({
             transition-all duration-200
             px-3 py-2
             ${isCollapsed ? "lg:justify-center lg:px-0 lg:py-3 lg:gap-0" : ""}
-            ${active ? "bg-blue-50 text-[#1B3F95]" : "text-slate-600 hover:bg-slate-50"}
+            ${active ? "bg-blue-50 text-primary" : "text-slate-600 hover:bg-slate-50"}
           `}
         >
           {active && (
-            <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#1B3F95]" />
+            <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-primary" />
           )}
           <span
             className={`transition-colors shrink-0 ${
-              active ? "text-[#1B3F95]" : "text-slate-400 group-hover:text-slate-600"
+              active ? "text-primary" : "text-slate-400 group-hover:text-slate-600"
             }`}
           >
             {icon}

@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function LoginBranding() {
   return (
-    <div className="hidden lg:flex flex-col justify-between bg-[#1B3F95] p-16 text-white relative overflow-hidden h-full">
+    <div className="hidden lg:flex flex-col justify-between bg-primary p-16 text-white relative overflow-hidden h-full">
       {/* Dekorasi Background */}
       <div className="absolute top-0 right-0 -mr-20 -mt-20 h-[400px] w-[400px] rounded-full bg-white/10 blur-3xl" />
       <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-[300px] w-[300px] rounded-full bg-blue-400/20 blur-3xl" />

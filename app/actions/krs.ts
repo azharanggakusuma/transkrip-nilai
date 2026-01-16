@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { KRS, KRSFormValues, Course } from "@/lib/types";
 import { revalidatePath } from "next/cache";
+import { calculateStudentSemester } from "@/lib/academic-utils";
 
 // Tipe Data Khusus
 export interface CourseOffering extends Course {
@@ -34,14 +35,14 @@ export async function validateStudentKrs(studentId: string) {
       .select("status")
       .eq("student_id", studentId)
       .eq("academic_year_id", activeYear.id)
-      .in("status", ["SUBMITTED", "APPROVED"]) 
+      .in("status", ["SUBMITTED", "APPROVED"])
       .limit(1);
 
     const hasValidKrs = krs && krs.length > 0;
 
     if (!hasValidKrs) {
-      return { 
-        allowed: false, 
+      return {
+        allowed: false,
         message: "Anda belum mengajukan atau menyelesaikan KRS untuk semester ini.",
         reason: "no_krs"
       };
@@ -55,24 +56,24 @@ export async function validateStudentKrs(studentId: string) {
 }
 
 export async function getStudentSksCount(studentId: string, academicYearId: string) {
-    const supabase = await createClient();
-    try {
-      const { data, error } = await supabase
-        .from("krs")
-        .select(`course:courses (sks)`)
-        .eq("student_id", studentId)
-        .eq("academic_year_id", academicYearId);
-      
-      if (error || !data) return 0;
+  const supabase = await createClient();
+  try {
+    const { data, error } = await supabase
+      .from("krs")
+      .select(`course:courses (sks)`)
+      .eq("student_id", studentId)
+      .eq("academic_year_id", academicYearId);
 
-      const totalSks = data.reduce((acc: number, curr: any) => {
-        return acc + (curr.course?.sks || 0);
-      }, 0);
-      
-      return totalSks;
-    } catch (error) {
-      return 0;
-    }
+    if (error || !data) return 0;
+
+    const totalSks = data.reduce((acc: number, curr: any) => {
+      return acc + (curr.course?.sks || 0);
+    }, 0);
+
+    return totalSks;
+  } catch (error) {
+    return 0;
+  }
 }
 
 // ==========================================
@@ -123,19 +124,8 @@ export async function getStudentCourseOfferings(studentId: string, academicYearI
     if (yearError) throw new Error("Tahun akademik tidak ditemukan");
 
     // --- LOGIKA HITUNG SEMESTER ---
-    let calculatedSemester = 1;
-    if (student.angkatan && academicYear.nama) {
-      const activeStartYear = parseInt(academicYear.nama.split('/')[0]);
-      const studentEntryYear = parseInt(student.angkatan);
-
-      if (!isNaN(activeStartYear) && !isNaN(studentEntryYear)) {
-        const yearDiff = activeStartYear - studentEntryYear;
-        calculatedSemester = (yearDiff * 2);
-        if (academicYear.semester === 'Ganjil') calculatedSemester += 1;
-        else if (academicYear.semester === 'Genap') calculatedSemester += 2;
-        if (calculatedSemester < 1) calculatedSemester = 1;
-      }
-    }
+    // --- LOGIKA HITUNG SEMESTER ---
+    const calculatedSemester = calculateStudentSemester(student.angkatan, academicYear);
 
     // C. Cek Status MBKM Mahasiswa
     const { data: mbkmData } = await supabase
@@ -149,7 +139,7 @@ export async function getStudentCourseOfferings(studentId: string, academicYearI
     let courseQuery = supabase
       .from("courses")
       .select("*")
-      .eq("smt_default", calculatedSemester) 
+      .eq("smt_default", calculatedSemester)
       .order("matkul", { ascending: true });
 
     if (mbkmData && mbkmData.jenis_mbkm === "Pertukaran Mahasiswa Merdeka") {
@@ -175,7 +165,7 @@ export async function getStudentCourseOfferings(studentId: string, academicYearI
       const taken = takenKRS.find((k) => k.course_id === course.id);
       return {
         ...course,
-        is_taken: !!taken, 
+        is_taken: !!taken,
         krs_id: taken?.id,
         krs_status: taken?.status
       };
@@ -183,9 +173,9 @@ export async function getStudentCourseOfferings(studentId: string, academicYearI
 
     return {
       student_semester: calculatedSemester,
-      student_profile: student, 
+      student_profile: student,
       offerings: offerings,
-      mbkm_data: mbkmData || null 
+      mbkm_data: mbkmData || null
     };
 
   } catch (error) {
@@ -198,12 +188,12 @@ export async function createKRS(payload: KRSFormValues) {
   const supabase = await createClient();
   try {
     const { data: existing } = await supabase
-        .from("krs")
-        .select("id")
-        .eq("student_id", payload.student_id)
-        .eq("course_id", payload.course_id)
-        .eq("academic_year_id", payload.academic_year_id)
-        .single();
+      .from("krs")
+      .select("id")
+      .eq("student_id", payload.student_id)
+      .eq("course_id", payload.course_id)
+      .eq("academic_year_id", payload.academic_year_id)
+      .single();
 
     if (existing) throw new Error("Mata kuliah ini sudah diambil.");
 
@@ -211,12 +201,12 @@ export async function createKRS(payload: KRSFormValues) {
       student_id: payload.student_id,
       course_id: payload.course_id,
       academic_year_id: payload.academic_year_id,
-      status: "DRAFT", 
+      status: "DRAFT",
     });
 
     if (error) {
-        if (error.code === '23505') throw new Error("Mata kuliah sudah diambil.");
-        throw error;
+      if (error.code === '23505') throw new Error("Mata kuliah sudah diambil.");
+      throw error;
     }
 
     revalidatePath("/krs");
@@ -238,21 +228,21 @@ export async function deleteKRS(id: string) {
 }
 
 export async function submitKRS(studentId: string, academicYearId: string) {
-    const supabase = await createClient();
-    try {
-      const { error } = await supabase
-        .from("krs")
-        .update({ status: "SUBMITTED" })
-        .eq("student_id", studentId)
-        .eq("academic_year_id", academicYearId)
-        .eq("status", "DRAFT"); 
-  
-      if (error) throw error;
-      revalidatePath("/krs");
-      revalidatePath("/validasi-krs"); 
-    } catch (error) {
-      throw new Error("Gagal mengajukan KRS.");
-    }
+  const supabase = await createClient();
+  try {
+    const { error } = await supabase
+      .from("krs")
+      .update({ status: "SUBMITTED" })
+      .eq("student_id", studentId)
+      .eq("academic_year_id", academicYearId)
+      .eq("status", "DRAFT");
+
+    if (error) throw error;
+    revalidatePath("/krs");
+    revalidatePath("/validasi-krs");
+  } catch (error) {
+    throw new Error("Gagal mengajukan KRS.");
+  }
 }
 
 export async function resetKRS(studentId: string, academicYearId: string) {
@@ -303,21 +293,9 @@ export async function getStudentsWithSubmittedKRS(academicYearId: string) {
 
     krsList.forEach((item: any) => {
       if (item.students && !studentMap.has(item.student_id)) {
-        let calculatedSemester = 1;
-        if (item.students.angkatan && academicYear?.nama) {
-           const activeStartYear = parseInt(academicYear.nama.split('/')[0]);
-           const studentEntryYear = parseInt(item.students.angkatan);
-           
-           if (!isNaN(activeStartYear) && !isNaN(studentEntryYear)) {
-             const yearDiff = activeStartYear - studentEntryYear;
-             calculatedSemester = (yearDiff * 2);
-             if (academicYear.semester === 'Ganjil') calculatedSemester += 1;
-             else if (academicYear.semester === 'Genap') calculatedSemester += 2;
-             if (calculatedSemester < 1) calculatedSemester = 1;
-           }
-        }
-        studentMap.set(item.student_id, { 
-            ...item.students, status: item.status, semester: calculatedSemester 
+        const calculatedSemester = calculateStudentSemester(item.students.angkatan, academicYear);
+        studentMap.set(item.student_id, {
+          ...item.students, status: item.status, semester: calculatedSemester
         });
       }
     });
@@ -337,10 +315,10 @@ export async function approveKRS(studentId: string, academicYearId: string) {
       .update({ status: "APPROVED" })
       .eq("student_id", studentId)
       .eq("academic_year_id", academicYearId)
-      .in("status", ["SUBMITTED", "DRAFT", "REJECTED"]); 
+      .in("status", ["SUBMITTED", "DRAFT", "REJECTED"]);
 
     if (error) throw error;
-    revalidatePath("/validasi-krs"); 
+    revalidatePath("/validasi-krs");
     return { success: true };
   } catch (error: any) {
     throw new Error(error.message || "Gagal menyetujui KRS.");
@@ -352,7 +330,7 @@ export async function rejectKRS(studentId: string, academicYearId: string) {
   try {
     const { error } = await supabase
       .from("krs")
-      .update({ status: "REJECTED" }) 
+      .update({ status: "REJECTED" })
       .eq("student_id", studentId)
       .eq("academic_year_id", academicYearId)
       .in("status", ["SUBMITTED", "APPROVED"]);

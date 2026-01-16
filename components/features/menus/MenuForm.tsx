@@ -219,7 +219,7 @@ export function MenuForm({
                      "flex items-center px-4 py-3 border rounded-lg cursor-pointer transition-all select-none gap-3",
                      "hover:bg-slate-50",
                      isSelected 
-                        ? "border-[#1B3F95] bg-blue-50/50 text-[#1B3F95]" 
+                        ? "border-primary bg-blue-50/50 text-primary" 
                         : "border-slate-200 text-slate-600"
                    )}
                  >
@@ -227,7 +227,7 @@ export function MenuForm({
                      <CheckCircle2 
                         size={20} 
                         strokeWidth={1} 
-                        className="text-[#1B3F95] fill-blue-100 shrink-0" 
+                        className="text-primary fill-blue-100 shrink-0" 
                      />
                    ) : (
                      <Circle 
@@ -239,7 +239,7 @@ export function MenuForm({
                    
                    <span className={cn(
                        "text-sm font-medium",
-                       isSelected ? "text-[#1B3F95]" : "text-slate-600"
+                       isSelected ? "text-primary" : "text-slate-600"
                    )}>
                        {role.label}
                    </span>
@@ -260,7 +260,7 @@ export function MenuForm({
         <Button type="button" variant="outline" onClick={onCancel}>
           Batal
         </Button>
-        <Button type="submit" className="bg-[#1B3F95] hover:bg-[#153275]">
+        <Button type="submit" className="bg-primary hover:bg-primary/90">
           {isEditing ? "Simpan Perubahan" : "Buat Menu Baru"}
         </Button>
       </div>

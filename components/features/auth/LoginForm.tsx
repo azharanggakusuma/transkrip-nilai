@@ -140,14 +140,14 @@ export function LoginForm() {
                 Username
               </Label>
               <div className="relative group transition-all duration-300">
-                <User className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-blue-600" />
+                <User className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-primary" />
                 <Input
                   id="username"
                   name="username"
                   placeholder="Username / NIM / NIDN"
                   type="text"
                   disabled={loading}
-                  className="pl-10 h-12 lg:h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all rounded-xl lg:rounded-lg"
+                  className="pl-10 h-12 lg:h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all rounded-xl lg:rounded-lg"
                   required
                 />
               </div>
@@ -167,21 +167,21 @@ export function LoginForm() {
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-xs font-medium text-blue-600 hover:text-blue-500 hover:underline focus:outline-none"
+                  className="text-xs font-medium text-primary hover:text-primary/90 hover:underline focus:outline-none"
                 >
                   Lupa password?
                 </button>
 
               </div>
               <div className="relative group transition-all duration-300">
-                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-blue-600" />
+                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-primary" />
                 <Input
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   disabled={loading}
-                  className="pl-10 pr-10 h-12 lg:h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all rounded-xl lg:rounded-lg"
+                  className="pl-10 pr-10 h-12 lg:h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all rounded-xl lg:rounded-lg"
                   required
                 />
                 <button
@@ -202,7 +202,7 @@ export function LoginForm() {
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-xs font-medium text-blue-600 hover:text-blue-500 hover:underline focus:outline-none"
+                  className="text-xs font-medium text-primary hover:text-primary/90 hover:underline focus:outline-none"
                 >
                   Lupa password?
                 </button>
@@ -232,7 +232,7 @@ export function LoginForm() {
 
           <CardFooter className="flex flex-col gap-5 p-0 pt-6">
             <Button
-              className="w-full h-12 lg:h-11 text-base font-semibold bg-[#1B3F95] hover:bg-[#15327a] shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 transition-all active:scale-[0.98] rounded-xl lg:rounded-md"
+              className="w-full h-12 lg:h-11 text-base font-semibold bg-primary hover:bg-primary/90 shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 transition-all active:scale-[0.98] rounded-xl lg:rounded-md"
               type="submit"
               disabled={loading}
             >
