@@ -1,11 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+  /* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/ui/data-table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, CheckCircle, Award, GraduationCap, AlertCircle } from "lucide-react";
+import { BookOpen } from "lucide-react";
+import {
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 import { getMbkmStudents } from "@/app/actions/mbkm";
 import { StudentMBKM } from "@/lib/types";
@@ -15,6 +21,11 @@ export default function StudentMbkmView() {
   const { user } = useLayout();
   const [dataList, setDataList] = useState<StudentMBKM[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Filters & Pagination
+  const [searchQuery, setSearchQuery] = useState("");
+  const [jenisFilter, setJenisFilter] = useState<string>("ALL");
+  const [periodeFilter, setPeriodeFilter] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -41,16 +52,39 @@ export default function StudentMbkmView() {
     }
   }, [user]);
 
-  // Statistics
-  const totalPrograms = dataList.length;
-  // Assumption: If data exists, student is active in MBKM. If status field exists in future, update logic.
-  const isActive = totalPrograms > 0; 
-  
+  // --- FILTER LOGIC ---
+  const filteredData = useMemo(() => {
+    return dataList.filter((item) => {
+      const query = searchQuery.toLowerCase();
+      // Search by Mitra or Jenis MBKM or Keterangan
+      const matchSearch =
+        item.mitra.toLowerCase().includes(query) ||
+        item.jenis_mbkm.toLowerCase().includes(query) ||
+        (item.keterangan || "").toLowerCase().includes(query);
+
+      const matchJenis = jenisFilter === "ALL" || item.jenis_mbkm === jenisFilter;
+      const matchPeriode = periodeFilter === "ALL" || item.academic_year?.nama === periodeFilter;
+
+      return matchSearch && matchJenis && matchPeriode;
+    });
+  }, [dataList, searchQuery, jenisFilter, periodeFilter]);
+
   // Pagination Logic
-  const totalPages = Math.ceil(dataList.length / itemsPerPage) || 1;
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentData = dataList.slice(startIndex, endIndex);
+  const currentData = filteredData.slice(startIndex, endIndex);
+
+  // Derive unique values for filters from existing data
+  const uniquePeriods = useMemo(() => {
+    const periods = dataList.map(item => item.academic_year?.nama).filter(Boolean) as string[];
+    return Array.from(new Set(periods)).sort().reverse();
+  }, [dataList]);
+
+  const uniqueTypes = useMemo(() => {
+      const types = dataList.map(item => item.jenis_mbkm).filter(Boolean);
+      return Array.from(new Set(types)).sort();
+  }, [dataList]);
 
   // --- COLUMNS ---
   const columns: Column<StudentMBKM>[] = [
@@ -86,17 +120,28 @@ export default function StudentMbkmView() {
       },
   ];
 
-  if (isLoading) {
-      return (
-          <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Skeleton className="h-32 w-full rounded-xl" />
-                  <Skeleton className="h-32 w-full rounded-xl" />
-              </div>
-              <Skeleton className="h-[300px] w-full rounded-xl" />
-          </div>
-      );
-  }
+  // --- FILTER DROPDOWN CONTENT ---
+  const filterContent = (
+    <>
+      <DropdownMenuLabel>Periode Akademik</DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={periodeFilter} onValueChange={(v) => { setPeriodeFilter(v); setCurrentPage(1); }}>
+        <DropdownMenuRadioItem value="ALL">Semua</DropdownMenuRadioItem>
+        {uniquePeriods.map((p) => (
+           <DropdownMenuRadioItem key={p} value={p}>{p}</DropdownMenuRadioItem>
+        ))}
+      </DropdownMenuRadioGroup>
+      
+      <DropdownMenuSeparator />
+      
+      <DropdownMenuLabel>Jenis MBKM</DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={jenisFilter} onValueChange={(v) => { setJenisFilter(v); setCurrentPage(1); }}>
+        <DropdownMenuRadioItem value="ALL">Semua</DropdownMenuRadioItem>
+        {uniqueTypes.map((t) => (
+            <DropdownMenuRadioItem key={t} value={t}>{t}</DropdownMenuRadioItem>
+        ))}
+      </DropdownMenuRadioGroup>
+    </>
+  );
 
   // --- EMPTY STATE ---
   if (!isLoading && dataList.length === 0) {
@@ -128,16 +173,23 @@ export default function StudentMbkmView() {
                 data={currentData}
                 columns={columns}
                 isLoading={isLoading}
-                searchQuery=""
-                // Student View hanya view data
-                onSearchChange={() => {}} 
-                isSearchVisible={false}
+                
+                // Search & Filter
+                searchQuery={searchQuery}
+                onSearchChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                searchPlaceholder="Cari Mitra atau Program..."
+                isSearchVisible={true}
+                
+                filterContent={filterContent}
+                isFilterActive={jenisFilter !== "ALL" || periodeFilter !== "ALL"}
+                onResetFilter={() => { setJenisFilter("ALL"); setPeriodeFilter("ALL"); setSearchQuery(""); }}
+
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
                 startIndex={startIndex}
                 endIndex={endIndex} 
-                totalItems={dataList.length}
+                totalItems={filteredData.length}
                 />
             </CardContent>
         </Card>
