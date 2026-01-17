@@ -9,7 +9,7 @@ import { useToastMessage } from "@/hooks/use-toast-message";
 
 import PrintableKHS from "@/components/features/khs/PrintableKHS"; // Keep for Modal
 import KHSTable from "@/components/features/khs/KHSTable"; // New Table
-import { calculateIPS, calculateIPK } from "@/lib/grade-calculations";
+import { calculateIPS, calculateIPK, calculateTotalSKSLulus, calculateTotalMutu } from "@/lib/grade-calculations";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { Printer, Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { Printer, Check, ChevronsUpDown, Loader2, TrendingUp, Award, PieChart, GraduationCap, FileText, Trophy, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function AdminKHSView() {
@@ -138,15 +138,34 @@ export default function AdminKHSView() {
   // Data Kumulatif (Sampai Semester Ini)
   const cumulativeData = useMemo(() => {
     if (!currentStudent?.transcript) return [];
+    if (selectedSemester === 0) {
+         return currentStudent.transcript.filter((t: TranscriptItem) => t.hm !== '-');
+    }
     return currentStudent.transcript.filter((t: TranscriptItem) => Number(t.smt) <= selectedSemester && t.hm !== '-');
   }, [currentStudent, selectedSemester]);
 
   const ips = useMemo(() => {
+    if (selectedSemester === 0) {
+        // Jika "Semua Semester", gunakan IPK sebagai representasi "Rata-rata"
+        return calculateIPK(cumulativeData).replace('.', ',');
+    }
     return calculateIPS(currentStudent?.transcript || [], selectedSemester).replace('.', ',');
-  }, [currentStudent, selectedSemester]);
+  }, [currentStudent, selectedSemester, cumulativeData]);
 
   const ipk = useMemo(() => {
     return calculateIPK(cumulativeData).replace('.', ',');
+  }, [cumulativeData]);
+
+  const totalSKS = useMemo(() => {
+    return calculateTotalSKSLulus(cumulativeData);
+  }, [cumulativeData]);
+
+  const totalMutu = useMemo(() => {
+    return calculateTotalMutu(cumulativeData);
+  }, [cumulativeData]);
+
+  const totalCourses = useMemo(() => {
+    return cumulativeData.length;
   }, [cumulativeData]);
 
   // Handle Print with delay to ensure state updates
@@ -204,6 +223,89 @@ export default function AdminKHSView() {
 
       <div className="space-y-6 print:hidden">
          {/* HEADER SECTION */}
+
+
+         {/* HEADER SECTION - SUMMARY CARDS (IPK & Total SKS) */}
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+             {/* CARD 1: IPK (Left) - Spans 2 columns */}
+             <Card className="col-span-1 md:col-span-2 border-none shadow-md text-white overflow-hidden relative" style={{ background: '#1e40af' }}>
+                <div className="absolute top-1/2 -translate-y-1/2 right-8 opacity-20">
+                    <Trophy size={120} />
+                </div>
+                <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
+                     {loading ? (
+                         <div className="space-y-6">
+                            <div className="space-y-3">
+                                <div className="h-4 w-32 bg-white/20 rounded animate-pulse" />
+                                <div className="h-10 w-24 bg-white/20 rounded animate-pulse" />
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="h-8 w-40 bg-white/20 rounded animate-pulse" />
+                                <div className="h-8 w-40 bg-white/20 rounded animate-pulse" />
+                            </div>
+                         </div>
+                    ) : (
+                        <>
+                            <div>
+                                <p className="text-blue-100 font-medium text-sm mb-1">Indeks Prestasi Kumulatif</p>
+                                <div className="flex items-baseline gap-2">
+                                    <h2 className="text-4xl font-extrabold tracking-tight">{ipk}</h2>
+                                    <span className="text-blue-200 text-lg font-medium">/ 4.00</span>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-3 mt-4">
+                                <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-md backdrop-blur-sm border border-white/10">
+                                    <GraduationCap className="w-3.5 h-3.5 text-blue-100" />
+                                    <span className="text-xs font-medium text-blue-50">Total Nilai Mutu: {totalMutu}</span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-md backdrop-blur-sm border border-white/10">
+                                    <FileText className="w-3.5 h-3.5 text-blue-100" />
+                                    <span className="text-xs font-medium text-blue-50">Total Mata Kuliah: {totalCourses}</span>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </CardContent>
+             </Card>
+
+             {/* CARD 2: Total SKS (Right) - Spans 1 column */}
+             <Card className="border-none shadow-md text-white overflow-hidden relative bg-gradient-to-br from-cyan-600 to-blue-600">
+                <div className="absolute -bottom-2 -right-2 opacity-20 rotate-12">
+                    <BookOpen size={120} />
+                </div>
+                <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
+                    {loading ? (
+                         <div className="space-y-2">
+                             <Loader2 className="h-8 w-8 animate-spin text-white/50" />
+                             <div className="h-4 w-24 bg-white/20 rounded animate-pulse" />
+                         </div>
+                    ) : (
+                        <>
+                            <div>
+                                <p className="text-cyan-50 font-medium text-sm mb-1">Total SKS Lulus</p>
+                                <div className="flex items-baseline gap-2">
+                                    <h2 className="text-4xl font-extrabold tracking-tight">{totalSKS}</h2>
+                                    <span className="text-cyan-100 text-lg font-medium">/ 144 SKS</span>
+                                </div>
+                            </div>
+                            
+                            <div className="mt-4">
+                                <div className="w-full bg-black/20 rounded-full h-2.5 mb-2 overflow-hidden backdrop-blur-sm">
+                                    <div 
+                                        className="h-full rounded-full transition-all duration-1000 ease-out bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)]" 
+                                        style={{ width: `${Math.min((totalSKS / 144) * 100, 100)}%` }} 
+                                    />
+                                </div>
+                                <p className="text-[10px] text-cyan-50/90 leading-relaxed font-medium">
+                                    {Math.round((totalSKS / 144) * 100)}% dari minimal 144 SKS untuk kelulusan Sarjana.
+                                </p>
+                            </div>
+                        </>
+                    )}
+                </CardContent>
+             </Card>
+         </div>
 
 
          {/* CONTENT SECTION (TABLE) */}
