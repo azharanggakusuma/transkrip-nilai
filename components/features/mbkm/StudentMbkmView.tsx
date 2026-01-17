@@ -121,51 +121,6 @@ export default function StudentMbkmView() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
-        {/* CARDS HEADER */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* CARD 1: TOTAL PROGRAMS */}
-            <Card className="border-none shadow-md overflow-hidden relative bg-gradient-to-br from-indigo-600 to-violet-700 text-white">
-                <div className="absolute top-0 right-0 p-6 opacity-10">
-                    <BookOpen size={100} />
-                </div>
-                <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
-                    <div>
-                         <p className="text-indigo-100 font-medium text-sm mb-1">Total Program Diikuti</p>
-                         <h2 className="text-4xl font-extrabold tracking-tight">{totalPrograms}</h2>
-                    </div>
-                    <div className="mt-4 flex items-center gap-2">
-                        <Badge className="bg-white/20 hover:bg-white/30 border-none text-white">
-                            {totalPrograms} MBKM
-                        </Badge>
-                        <span className="text-xs text-indigo-200">Terdaftar di sistem</span>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* CARD 2: STATUS */}
-            <Card className={`border-none shadow-md overflow-hidden relative text-white
-                ${isActive ? 'bg-gradient-to-br from-emerald-600 to-teal-700' : 'bg-gradient-to-br from-slate-600 to-gray-700'}`}>
-                <div className="absolute top-0 right-0 p-6 opacity-10">
-                    <CheckCircle size={100} />
-                </div>
-                <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
-                    <div>
-                         <p className="text-white/80 font-medium text-sm mb-1">Status Keaktifan MBKM</p>
-                         <h2 className="text-3xl font-bold tracking-tight">
-                             {isActive ? "Aktif Mengikuti" : "Tidak Aktif"}
-                         </h2>
-                    </div>
-                    <div className="mt-4">
-                         <p className="text-xs text-white/90 leading-relaxed font-medium bg-black/10 p-2 rounded-lg inline-block">
-                             {isActive 
-                                ? "Anda sedang mengikuti kegiatan MBKM. Tetap semangat!" 
-                                : "Tidak ada kegiatan MBKM yang sedang berlangsung."}
-                         </p>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-
         {/* TABLE DATA */}
         <Card className="border-none shadow-sm ring-1 ring-gray-200">
             <CardContent className="p-6">
