@@ -12,6 +12,8 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
+import Image from "next/image";
+import { User } from "lucide-react";
 
 interface StudentTableProps {
   data: StudentData[];
@@ -69,9 +71,24 @@ export function StudentTable({
       render: (_, index) => <span className="text-muted-foreground">{startIndex + index + 1}</span>
     },
     {
-      header: "Nama Mahasiswa",
+      header: "Mahasiswa",
       render: (row) => (
-         <p className="font-semibold text-slate-800">{row.profile.nama}</p>
+        <div className="flex items-center gap-3">
+            {/* Avatar */}
+            <div className="relative h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden shrink-0">
+                {row.profile.avatar_url ? (
+                    <Image 
+                        src={row.profile.avatar_url} 
+                        alt={row.profile.nama} 
+                        fill 
+                        className="object-cover"
+                    />
+                ) : (
+                    <User className="h-4 w-4 text-slate-400" />
+                )}
+            </div>
+            <p className="font-semibold text-slate-800">{row.profile.nama}</p>
+        </div>
       )
     },
     {
