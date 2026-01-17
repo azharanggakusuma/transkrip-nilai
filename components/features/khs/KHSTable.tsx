@@ -124,6 +124,9 @@ export default function KHSTable({
                 value={String(selectedSemester)} 
                 onValueChange={(val) => onSemesterChange?.(Number(val))}
             >
+                <DropdownMenuRadioItem value="0">
+                    Semua Semester
+                </DropdownMenuRadioItem>
                 {availableSemesters.map((smt) => (
                     <DropdownMenuRadioItem key={smt} value={String(smt)}>
                         Semester {smt}
@@ -154,7 +157,7 @@ export default function KHSTable({
       addIcon={<Printer className="mr-2 h-4 w-4" />}
       // Filter Props
       filterContent={filterContent}
-      isFilterActive={true} // Always active as we always show a semester
+      isFilterActive={selectedSemester !== 0 && selectedSemester !== undefined}
       onResetFilter={() => {}} // No reset needed for radio behavior
     />
   );

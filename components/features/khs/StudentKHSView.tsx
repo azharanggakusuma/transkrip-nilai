@@ -34,12 +34,16 @@ export default function StudentKHSView() {
   const [official, setOfficial] = useState<Official | null>(null);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [selectedSemester, setSelectedSemester] = useState<number>(1);
+  const [selectedSemester, setSelectedSemester] = useState<number>(0);
+  const [printSemester, setPrintSemester] = useState<number>(0); // Decoupled state for printing
   const { signatureType, setSignatureType, secureImage } = useSignature("none");
   const { isCollapsed, user } = useLayout();
   
   const [totalPages, setTotalPages] = useState(1);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+
+  // Auto-select latest semester for printing if "All Semesters" is active
+
 
   // === FETCH DATA ===
   useEffect(() => {
@@ -80,10 +84,21 @@ export default function StudentKHSView() {
     return Array.from({ length: limit }, (_, i) => i + 1);
   }, [currentStudent]);
 
+  // Auto-select latest semester for printing if "All Semesters" is active
+  useEffect(() => {
+    if (isPrintModalOpen && availableSemesters.length > 0) {
+        if (selectedSemester !== 0) {
+            setPrintSemester(selectedSemester);
+        } else {
+            setPrintSemester(availableSemesters[availableSemesters.length - 1]);
+        }
+    }
+  }, [isPrintModalOpen, selectedSemester, availableSemesters]);
+
   useEffect(() => {
     if (availableSemesters.length > 0) {
-        if (!availableSemesters.includes(selectedSemester)) {
-            setSelectedSemester(availableSemesters[availableSemesters.length - 1]);
+        if (selectedSemester !== 0 && !availableSemesters.includes(selectedSemester)) {
+            setSelectedSemester(0);
         }
     }
   }, [availableSemesters, selectedSemester]);
@@ -91,6 +106,7 @@ export default function StudentKHSView() {
   // Data Semester Ini
   const semesterData = useMemo(() => {
     if (!currentStudent?.transcript) return [];
+    if (selectedSemester === 0) return currentStudent.transcript;
     return currentStudent.transcript.filter((t: TranscriptItem) => Number(t.smt) === selectedSemester);
   }, [currentStudent, selectedSemester]);
 
@@ -108,6 +124,27 @@ export default function StudentKHSView() {
     return calculateIPK(cumulativeData).replace('.', ',');
   }, [cumulativeData]);
 
+  // Data for Printing (Based on printSemester)
+  const printSemesterData = useMemo(() => {
+    if (!currentStudent?.transcript) return [];
+    return currentStudent.transcript.filter((t: TranscriptItem) => Number(t.smt) === printSemester);
+  }, [currentStudent, printSemester]);
+
+  // IPS for Printing
+  const printIPS = useMemo(() => {
+    return calculateIPS(currentStudent?.transcript || [], printSemester).replace('.', ',');
+  }, [currentStudent, printSemester]);
+
+  // IPK for Printing
+  const printCumulativeData = useMemo(() => {
+    if (!currentStudent?.transcript) return [];
+    return currentStudent.transcript.filter((t: TranscriptItem) => Number(t.smt) <= printSemester && t.hm !== '-');
+  }, [currentStudent, printSemester]);
+
+  const printIPK = useMemo(() => {
+    return calculateIPK(printCumulativeData).replace('.', ',');
+  }, [printCumulativeData]);
+
   // Handle Print with delay
   const handlePrintProcess = () => {
     setIsPrintModalOpen(false);
@@ -123,10 +160,10 @@ export default function StudentKHSView() {
           <PrintableKHS 
             loading={loading}
             currentStudent={currentStudent}
-            selectedSemester={selectedSemester}
-            semesterData={semesterData}
-            ips={ips}
-            ipk={ipk}
+            selectedSemester={printSemester} // Use printSemester
+            semesterData={printSemesterData} // Use printSemesterData
+            ips={printIPS} // Use printIPS
+            ipk={printIPK} // Use printIPK
             signatureType={signatureType}
             signatureBase64={secureImage}
             official={official}
@@ -168,8 +205,8 @@ export default function StudentKHSView() {
                       <div className="space-y-2">
                           <label className="text-sm font-medium">Semester</label>
                           <Select
-                              value={String(selectedSemester)}
-                              onValueChange={(val) => setSelectedSemester(Number(val))}
+                              value={String(printSemester)}
+                              onValueChange={(val) => setPrintSemester(Number(val))}
                           >
                               <SelectTrigger className="w-full">
                                   <SelectValue placeholder="Pilih Semester" />
