@@ -69,27 +69,32 @@ export function StudentTable({
       render: (_, index) => <span className="text-muted-foreground">{startIndex + index + 1}</span>
     },
     {
-      header: "NIM",
-      className: "w-[120px]",
-      render: (row) => <span className="font-mono font-medium">{row.profile.nim}</span>
-    },
-    {
       header: "Nama Mahasiswa",
       render: (row) => (
          <p className="font-semibold text-slate-800">{row.profile.nama}</p>
       )
     },
     {
-      header: "Prodi",
-      className: "w-[180px]",
-      // Perbaikan: Ambil nama dari relasi
-      render: (row) => <span className="text-slate-600 text-sm">{row.profile.study_program?.nama || "-"}</span>
+      header: "NIM",
+      className: "w-[120px]",
+      render: (row) => <span className="font-mono font-medium">{row.profile.nim}</span>
     },
     {
-      header: "Jenjang",
-      className: "w-[100px] text-center",
-      // Perbaikan: Ambil jenjang dari relasi
-      render: (row) => <span className="text-slate-600 text-sm">{row.profile.study_program?.jenjang || "-"}</span>
+      header: "Prodi",
+      className: "w-[240px]",
+      // [UPDATE] Menggabungkan Prodi dan Jenjang
+      render: (row) => {
+        const prodi = row.profile.study_program?.nama || "-";
+        const jenjang = row.profile.study_program?.jenjang || "-";
+        return <span className="text-slate-600 text-sm">{`${prodi} (${jenjang})`}</span>;
+      }
+    },
+    {
+       header: "Angkatan",
+       className: "w-[100px] text-center",
+       render: (row) => (
+         <span className="font-medium text-slate-700">{row.profile.angkatan || "-"}</span>
+       )
     },
     {
       header: "Semester",
