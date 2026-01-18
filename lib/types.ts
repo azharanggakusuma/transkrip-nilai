@@ -35,10 +35,47 @@ export interface AcademicYearFormValues {
 // Interface untuk Pejabat (Official)
 export interface Official {
   id: string;
-  nama: string;
-  nidn: string | null;
   jabatan: string;
   is_active: boolean;
+  ttd_basah_url?: string | null;
+  ttd_digital_url?: string | null;
+  lecturer_id: string;
+  study_program_id?: string | null;
+
+  // Relations
+  lecturer: Lecturer;
+  study_program?: StudyProgram | null;
+}
+
+export interface OfficialFormValues {
+  jabatan: string;
+  is_active: boolean;
+  ttd_basah_url?: string | null;
+  ttd_digital_url?: string | null;
+  lecturer_id: string;
+  study_program_id?: string | null;
+}
+
+// =========================================
+// LECTURER (DOSEN)
+// =========================================
+export interface Lecturer {
+  id: string;
+  nidn: string | null;
+  nama: string;
+  email: string | null;
+  phone: string | null;
+  is_active: boolean;
+  avatar_url?: string | null;
+}
+
+export interface LecturerFormValues {
+  nidn: string;
+  nama: string;
+  email: string;
+  phone: string;
+  is_active: boolean;
+  avatar_url?: string | null;
 }
 
 // =========================================
@@ -61,7 +98,7 @@ export interface CourseFormValues {
   kategori: CourseCategory | "";
 }
 
-export type CoursePayload = CourseFormValues; 
+export type CoursePayload = CourseFormValues;
 
 // =========================================
 // STUDENT (MAHASISWA)
@@ -71,8 +108,8 @@ export interface StudentProfile {
   nim: string;
   nama: string;
   alamat: string;
-  angkatan: number; 
-  semester: number; 
+  angkatan: number;
+  semester: number;
   study_program_id: string | null;
   study_program?: StudyProgram | null;
   is_active: boolean;
@@ -102,14 +139,14 @@ export interface TranscriptItem {
   hm: string;
   am: number;
   nm: number;
-  kategori?: CourseCategory; 
+  kategori?: CourseCategory;
 }
 
 export interface StudentData {
   id: string;
   profile: StudentProfile;
   transcript: TranscriptItem[];
-  total_sks?: number; 
+  total_sks?: number;
 }
 
 // =========================================
@@ -122,7 +159,7 @@ export interface UserData {
   role: Role | string;
   student_id?: string | null;
   is_active: boolean;
-  avatar_url?: string | null; 
+  avatar_url?: string | null;
 }
 
 export interface UserPayload {
@@ -168,7 +205,7 @@ export type Grade = {
   id: string;
   student_id: string;
   course_id: string;
-  hm: string; 
+  hm: string;
 };
 
 export type GradeData = Grade & {
@@ -176,8 +213,8 @@ export type GradeData = Grade & {
     nim: string;
     nama: string;
     study_program?: {
-        nama: string;
-        jenjang: string;
+      nama: string;
+      jenjang: string;
     };
   };
   course: {
@@ -235,10 +272,10 @@ export interface KRS {
   course_id: string;
   academic_year_id: string;
   status: KRSStatus;
-  
-  grade_letter?: string | null; 
-  grade_point?: number | null;  
-  
+
+  grade_letter?: string | null;
+  grade_point?: number | null;
+
   created_at?: string;
   updated_at?: string;
 
@@ -250,7 +287,7 @@ export interface KRS {
       jenjang: string;
     };
   } | null;
-  
+
   course?: {
     kode: string;
     matkul: string;
@@ -281,7 +318,7 @@ export interface StudentMBKM {
   jenis_mbkm: string;
   mitra: string;
   keterangan?: string;
-  
+
   // Relations
   student?: {
     nim: string;

@@ -146,14 +146,14 @@ export default function PrintableSuratKeterangan({
                           style={valueStyle}
                           className="font-bold break-words uppercase"
                         >
-                          {official ? official.nama : "..."}
+                          {official ? official.lecturer?.nama : "..."}
                         </td>
                       </tr>
                       <tr>
                         <td style={labelStyle}>NIDN</td>
                         <td style={colonStyle}>:</td>
                         <td style={valueStyle} className="break-words">
-                          {official ? official.nidn || "-" : "..."}
+                          {official ? official.lecturer?.nidn || "-" : "..."}
                         </td>
                       </tr>
                     </tbody>

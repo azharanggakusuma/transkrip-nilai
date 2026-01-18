@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { getStudents, getActiveOfficial } from "@/app/actions/students";
+import { getStudents, getOfficialForDocument } from "@/app/actions/students";
 import { type StudentData, type TranscriptItem, type Official } from "@/lib/types";
 import { useSignature } from "@/hooks/useSignature";
 import { useLayout } from "@/app/context/LayoutContext";
@@ -38,7 +38,16 @@ export default function StudentKHSView() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedSemester, setSelectedSemester] = useState<number>(0);
   const [printSemester, setPrintSemester] = useState<number>(0); // Decoupled state for printing
-  const { signatureType, setSignatureType, secureImage, isLoading: isSigLoading } = useSignature("none");
+
+  const { signatureType, setSignatureType } = useSignature("none");
+  
+  // Derive Signature
+  const secureImage = useMemo(() => {
+    if (!official) return null;
+    if (signatureType === "basah") return official.ttd_basah_url || null;
+    if (signatureType === "digital") return official.ttd_digital_url || null;
+    return null;
+  }, [official, signatureType]);
   const { isCollapsed, user } = useLayout();
   const { showLoading, dismiss } = useToastMessage();
   
@@ -48,15 +57,8 @@ export default function StudentKHSView() {
   const toastIdRef = useRef<string | number | null>(null);
 
   useEffect(() => {
-    if (isSigLoading) {
-        if (!toastIdRef.current) toastIdRef.current = showLoading("Menyiapkan dokumen...");
-    } else {
-        if (toastIdRef.current) {
-            dismiss(toastIdRef.current);
-            toastIdRef.current = null;
-        }
-    }
-  }, [isSigLoading, showLoading, dismiss]);
+    // Optional loading state
+  }, []);
 
   // Auto-select latest semester for printing if "All Semesters" is active
 
@@ -65,12 +67,11 @@ export default function StudentKHSView() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [data, activeOfficial] = await Promise.all([
-           getStudents(),
-           getActiveOfficial()
+        const [data] = await Promise.all([
+           getStudents()
         ]);
         setStudentsData(data);
-        setOfficial(activeOfficial);
+        // setOfficial(activeOfficial);
       } catch (err) {
         console.error(err);
       } finally {
@@ -98,6 +99,20 @@ export default function StudentKHSView() {
     const maxDataSem = Math.max(0, ...transcriptSmts);
     const limit = Math.max(currentSem, maxDataSem);
     return Array.from({ length: limit }, (_, i) => i + 1);
+  }, [currentStudent]);
+
+  // Fetch Official based on Student Prodi
+  useEffect(() => {
+    const fetchOfficial = async () => {
+        if (currentStudent?.profile?.study_program_id) {
+            const off = await getOfficialForDocument(currentStudent.profile.study_program_id);
+            setOfficial(off);
+        } else {
+            const off = await getOfficialForDocument();
+            setOfficial(off);
+        }
+    }
+    fetchOfficial();
   }, [currentStudent]);
 
   // Auto-select latest semester for printing if "All Semesters" is active

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { getStudents, getActiveOfficial } from "@/app/actions/students";
+import { getStudents, getOfficialForDocument } from "@/app/actions/students";
 import { type StudentData, type Official, type TranscriptItem } from "@/lib/types";
 import { useSignature } from "@/hooks/useSignature";
 import { useLayout } from "@/app/context/LayoutContext";
@@ -35,7 +35,16 @@ export default function StudentTranskripView() {
   const [official, setOfficial] = useState<Official | null>(null);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const { signatureType, setSignatureType, secureImage, isLoading: isSigLoading } = useSignature("none");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const { signatureType, setSignatureType } = useSignature("none");
+  
+  // Derive Signature
+  const secureImage = useMemo(() => {
+    if (!official) return null;
+    if (signatureType === "basah") return official.ttd_basah_url || null;
+    if (signatureType === "digital") return official.ttd_digital_url || null;
+    return null;
+  }, [official, signatureType]);
   const { isCollapsed, user } = useLayout();
   const { showLoading, dismiss } = useToastMessage();
 
@@ -45,26 +54,18 @@ export default function StudentTranskripView() {
   const toastIdRef = useRef<string | number | null>(null);
 
   useEffect(() => {
-    if (isSigLoading) {
-        if (!toastIdRef.current) toastIdRef.current = showLoading("Menyiapkan dokumen...");
-    } else {
-        if (toastIdRef.current) {
-            dismiss(toastIdRef.current);
-            toastIdRef.current = null;
-        }
-    }
-  }, [isSigLoading, showLoading, dismiss]);
+     // Optional loading state
+  }, []);
 
   // Fetch Data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [data, activeOfficial] = await Promise.all([
-           getStudents(),
-           getActiveOfficial()
+        const [data] = await Promise.all([
+           getStudents()
         ]);
         setStudentsData(data);
-        setOfficial(activeOfficial);
+        // setOfficial(activeOfficial); // Removed static fetch
       } catch (err) {
         console.error(err);
       } finally {
@@ -83,6 +84,20 @@ export default function StudentTranskripView() {
   }, [studentsData, user]);
 
   const currentStudent = useMemo(() => studentsData[selectedIndex], [studentsData, selectedIndex]);
+
+  // Fetch Official based on Student Prodi
+  useEffect(() => {
+    const fetchOfficial = async () => {
+        if (currentStudent?.profile?.study_program_id) {
+            const off = await getOfficialForDocument(currentStudent.profile.study_program_id);
+            setOfficial(off);
+        } else {
+            const off = await getOfficialForDocument();
+            setOfficial(off);
+        }
+    }
+    fetchOfficial();
+  }, [currentStudent]);
 
   // === LOGIC SEMESTER ===
   const availableSemesters = useMemo<number[]>(() => {

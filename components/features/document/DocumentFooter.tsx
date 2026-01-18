@@ -24,8 +24,8 @@ export default function DocumentFooter({
     }).format(new Date()));
   }, []);
 
-  const namaPejabat = official?.nama || "...";
-  const nidnPejabat = official?.nidn || "...";
+  const namaPejabat = official?.lecturer?.nama || "...";
+  const nidnPejabat = official?.lecturer?.nidn || "...";
   const jabatanPejabat = official?.jabatan || "Ketua Program Studi";
 
   return (

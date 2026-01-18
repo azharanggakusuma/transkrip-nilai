@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { getStudents, getActiveAcademicYear, getActiveOfficial } from "@/app/actions/students";
+import { getStudents, getActiveAcademicYear, getOfficialForDocument } from "@/app/actions/students";
 import { type StudentData, type Official } from "@/lib/types";
 
 import { useSignature } from "@/hooks/useSignature";
@@ -28,21 +28,28 @@ export default function AdminSuratView() {
   const [namaOrangTua, setNamaOrangTua] = useState("");
   const [pekerjaanOrangTua, setPekerjaanOrangTua] = useState("");
 
-  const { signatureType, setSignatureType, secureImage } = useSignature("none");
+  // const { signatureType, setSignatureType, secureImage } = useSignature("none");
+  const [signatureType, setSignatureType] = useState<"basah" | "digital" | "none">("none");
+  
+  const secureImage = useMemo(() => {
+    if (!official) return null;
+    if (signatureType === "basah") return official.ttd_basah_url || null;
+    if (signatureType === "digital") return official.ttd_digital_url || null;
+    return null;
+  }, [official, signatureType]);
   const { isCollapsed } = useLayout();
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [students, activeYear, activeOfficial] = await Promise.all([
+        const [students, activeYear] = await Promise.all([
             getStudents(),
-            getActiveAcademicYear(),
-            getActiveOfficial()
+            getActiveAcademicYear()
         ]);
 
         setStudentsData(students);
-        setOfficial(activeOfficial);
+        setStudentsData(students);
 
         if (activeYear) {
             setTahunAkademik(activeYear.nama);
@@ -59,12 +66,27 @@ export default function AdminSuratView() {
   const currentStudent = useMemo(() => studentsData[selectedIndex], [studentsData, selectedIndex]);
 
   // Update Alamat saat mahasiswa berganti
+
   useEffect(() => {
     if (currentStudent?.profile?.alamat) {
       setAlamat(currentStudent.profile.alamat);
     } else {
       setAlamat("");
     }
+    
+    // Fetch Official sesuai Prodi
+    const fetchOfficial = async () => {
+        if (currentStudent?.profile?.study_program_id) {
+            const off = await getOfficialForDocument(currentStudent.profile.study_program_id);
+            setOfficial(off);
+        } else {
+            // Fallback default
+            const off = await getOfficialForDocument();
+            setOfficial(off);
+        }
+    }
+    fetchOfficial();
+
   }, [currentStudent]);
 
   return (

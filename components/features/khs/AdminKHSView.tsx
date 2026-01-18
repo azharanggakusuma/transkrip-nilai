@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 
-import { getStudents, getStudyPrograms, getActiveOfficial } from "@/app/actions/students";
+import { getStudents, getStudyPrograms, getOfficialForDocument } from "@/app/actions/students";
 import { StudentData, StudyProgram, Official, TranscriptItem } from "@/lib/types";
 import { StudentTable } from "@/components/features/nilai/StudentTable";
 import { useLayout } from "@/app/context/LayoutContext";
@@ -43,8 +43,17 @@ export default function AdminKHSView() {
   
   // Print Configuration State
   const [printSemester, setPrintSemester] = useState<number>(0);
-  const { signatureType, setSignatureType, secureImage, isLoading: isSigLoading } = useSignature("none");
+
+  const { signatureType, setSignatureType } = useSignature("none");
   const { showLoading, dismiss } = useToastMessage();
+  
+  // Derive Signature from Official
+  const secureImage = useMemo(() => {
+      if (!official) return null;
+      if (signatureType === "basah") return official.ttd_basah_url || null;
+      if (signatureType === "digital") return official.ttd_digital_url || null;
+      return null;
+  }, [official, signatureType]);
   const [totalPages, setTotalPages] = useState(1);
   
   const toastIdRef = useRef<string | number | null>(null);
@@ -53,15 +62,14 @@ export default function AdminKHSView() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [students, programs, activeOfficial] = await Promise.all([
+      const [students, programs] = await Promise.all([
         getStudents(),
-        getStudyPrograms(),
-        getActiveOfficial()
+        getStudyPrograms()
       ]);
       
       setStudentList(students);
       setStudyPrograms(programs || []);
-      setOfficial(activeOfficial);
+      // setOfficial(activeOfficial); 
     } catch (error) {
       toast.error("Gagal Memuat Data", { description: "Terjadi kesalahan koneksi." });
     } finally {
@@ -74,16 +82,10 @@ export default function AdminKHSView() {
   }, []);
 
   // === LOADING TOAST SIGNATURE ===
+  // === LOADING TOAST ===
   useEffect(() => {
-    if (isSigLoading) {
-        if (!toastIdRef.current) toastIdRef.current = showLoading("Menyiapkan dokumen...");
-    } else {
-        if (toastIdRef.current) {
-            dismiss(toastIdRef.current);
-            toastIdRef.current = null;
-        }
-    }
-  }, [isSigLoading, showLoading, dismiss]);
+     // Optional: loading state
+  }, []);
 
   // === LOGIC SEMESTERS ===
   const availableSemesters = useMemo<number[]>(() => {
@@ -122,9 +124,17 @@ export default function AdminKHSView() {
   }, [printCumulativeData]);
 
   // === HANDLERS ===
-  const handleOpenPrintModal = (student: StudentData) => {
+  const handleOpenPrintModal = async (student: StudentData) => {
     setSelectedStudent(student);
     setIsPrintModalOpen(true);
+
+    if (student.profile.study_program_id) {
+       const off = await getOfficialForDocument(student.profile.study_program_id);
+       setOfficial(off);
+    } else {
+       const off = await getOfficialForDocument();
+       setOfficial(off);
+    }
   };
 
   const handlePrintProcess = () => {

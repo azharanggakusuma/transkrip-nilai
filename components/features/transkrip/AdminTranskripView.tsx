@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 
-import { getStudents, getStudyPrograms, getActiveOfficial } from "@/app/actions/students";
+import { getStudents, getStudyPrograms, getOfficialForDocument } from "@/app/actions/students";
 import { StudentData, StudyProgram, Official, TranscriptItem } from "@/lib/types";
 import { StudentTable } from "@/components/features/nilai/StudentTable";
 import { useLayout } from "@/app/context/LayoutContext";
@@ -42,9 +42,17 @@ export default function AdminTranskripView() {
   const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(null);
   
   // Print Configuration State
-  const { signatureType, setSignatureType, secureImage, isLoading: isSigLoading } = useSignature("none");
+  const { signatureType, setSignatureType } = useSignature("none");
   const { showLoading, dismiss } = useToastMessage();
   const [totalPages, setTotalPages] = useState(1);
+  
+  // Derive Signature from Official
+  const secureImage = useMemo(() => {
+      if (!official) return null;
+      if (signatureType === "basah") return official.ttd_basah_url || null;
+      if (signatureType === "digital") return official.ttd_digital_url || null;
+      return null;
+  }, [official, signatureType]);
   
   const toastIdRef = useRef<string | number | null>(null);
 
@@ -52,15 +60,15 @@ export default function AdminTranskripView() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [students, programs, activeOfficial] = await Promise.all([
+      const [students, programs] = await Promise.all([
         getStudents(),
-        getStudyPrograms(),
-        getActiveOfficial()
+        getStudyPrograms()
       ]);
       
       setStudentList(students);
       setStudyPrograms(programs || []);
-      setOfficial(activeOfficial);
+      // Default Global Official (optional, maybe for dashboard stats)
+      // setOfficial(activeOfficial); 
     } catch (error) {
       toast.error("Gagal Memuat Data", { description: "Terjadi kesalahan koneksi." });
     } finally {
@@ -73,16 +81,10 @@ export default function AdminTranskripView() {
   }, []);
 
   // === LOADING TOAST SIGNATURE ===
+  // === LOADING TOAST ===
   useEffect(() => {
-    if (isSigLoading) {
-        if (!toastIdRef.current) toastIdRef.current = showLoading("Menyiapkan dokumen...");
-    } else {
-        if (toastIdRef.current) {
-            dismiss(toastIdRef.current);
-            toastIdRef.current = null;
-        }
-    }
-  }, [isSigLoading, showLoading, dismiss]);
+    // Optional: Add loading state if needed for image loading
+  }, []);
 
   // === DATA TRANSKRIP (Clean Data) ===
   const transcriptData = useMemo(() => {
@@ -102,9 +104,18 @@ export default function AdminTranskripView() {
   }, [transcriptData]);
 
   // === HANDLERS ===
-  const handleOpenPrintModal = (student: StudentData) => {
+  const handleOpenPrintModal = async (student: StudentData) => {
     setSelectedStudent(student);
     setIsPrintModalOpen(true);
+
+    // Fetch dynamic official based on student's prodi
+    if (student.profile.study_program_id) {
+        const off = await getOfficialForDocument(student.profile.study_program_id);
+        setOfficial(off);
+    } else {
+        const off = await getOfficialForDocument();
+        setOfficial(off);
+    }
   };
 
   const handlePrintProcess = () => {

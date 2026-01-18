@@ -29,7 +29,15 @@ export default function StudentSuratView() {
   const [namaOrangTua, setNamaOrangTua] = useState("");
   const [pekerjaanOrangTua, setPekerjaanOrangTua] = useState("");
 
-  const { signatureType, setSignatureType, secureImage } = useSignature("none");
+  // const { signatureType, setSignatureType, secureImage } = useSignature("none");
+  const [signatureType, setSignatureType] = useState<"basah" | "digital" | "none">("none");
+
+  const secureImage = useMemo(() => {
+    if (!official) return null;
+    if (signatureType === "basah") return official.ttd_basah_url || null;
+    if (signatureType === "digital") return official.ttd_digital_url || null;
+    return null;
+  }, [official, signatureType]);
   const { isCollapsed, user } = useLayout();
   const [totalPages, setTotalPages] = useState(1);
 

@@ -93,17 +93,57 @@ export async function getActiveAcademicYear(): Promise<AcademicYear | null> {
 }
 
 export async function getActiveOfficial(): Promise<Official | null> {
-  const { data, error } = await supabaseAdmin
-    .from('officials')
-    .select('*')
-    .eq('is_active', true)
-    .single();
+  // Legacy support or default fallback
+  return getOfficialForDocument(undefined);
+}
 
-  if (error) {
-    if (error.code !== 'PGRST116') console.error("Error fetching active official:", error.message);
-    return null;
+export async function getOfficialForDocument(studyProgramId?: string): Promise<Official | null> {
+  // 1. Coba cari Kaprodi sesuai Prodi Mahasiswa
+  if (studyProgramId) {
+    // Prioritas 1: Filter by Prodi AND Jabatan contains 'Kaprodi' or 'Ketua'
+    const { data: kaprodi } = await supabaseAdmin
+      .from('officials')
+      .select('*, lecturer:lecturers(*), study_program:study_programs(*)')
+      .eq('study_program_id', studyProgramId)
+      .ilike('jabatan', '%Kaprodi%') // Prioritize explicitly named Kaprodi
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (kaprodi) return kaprodi as unknown as Official;
+
+    // Prioritas 2: Filter by Prodi only (Fallback if jabatan name differs)
+    const { data: prodiOfficial } = await supabaseAdmin
+      .from('officials')
+      .select('*, lecturer:lecturers(*), study_program:study_programs(*)')
+      .eq('study_program_id', studyProgramId)
+      .eq('is_active', true)
+      .limit(1) // Avoid crash if multiple
+      .maybeSingle();
+
+    if (prodiOfficial) return prodiOfficial as unknown as Official;
   }
-  return data as Official;
+
+  // 2. Jika tidak ada (atau prodi beda), cari Ketua STMIK (Global)
+  const { data: ketua } = await supabaseAdmin
+    .from('officials')
+    .select('*, lecturer:lecturers(*), study_program:study_programs(*)')
+    .ilike('jabatan', '%Ketua%') // Flexible match for Ketua STMIK / Ketua
+    .is('study_program_id', null) // Ensure general official (not bound to specific prodi)
+    .eq('is_active', true)
+    .limit(1)
+    .maybeSingle();
+
+  if (ketua) return ketua as unknown as Official;
+
+  // 3. Fallback: Ambil sembarang official aktif (bisa jadi Waket dsb)
+  const { data: anyOfficial } = await supabaseAdmin
+    .from('officials')
+    .select('*, lecturer:lecturers(*), study_program:study_programs(*)')
+    .eq('is_active', true)
+    .limit(1)
+    .maybeSingle();
+
+  return anyOfficial as unknown as Official || null;
 }
 
 export async function getStudents(): Promise<StudentData[]> {
