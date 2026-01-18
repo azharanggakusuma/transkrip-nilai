@@ -139,6 +139,7 @@ export default function UsersPage() {
                   username: selectedUser.username,
                   role: selectedUser.role,
                   student_id: selectedUser.student_id,
+                  lecturer_id: selectedUser.lecturer_id,
                   is_active: selectedUser.is_active,
                 }
               : undefined
