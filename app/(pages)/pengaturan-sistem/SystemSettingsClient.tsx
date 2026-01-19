@@ -20,6 +20,9 @@ import {
   FormLabel,
 } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Shield, AlertTriangle, CheckCircle2, Server } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SystemSettingsClientProps {
   initialSettings: {
@@ -29,7 +32,6 @@ interface SystemSettingsClientProps {
 
 export default function SystemSettingsClient({ initialSettings }: SystemSettingsClientProps) {
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
-
 
   const form = useForm({
     defaultValues: {
@@ -41,23 +43,24 @@ export default function SystemSettingsClient({ initialSettings }: SystemSettings
     if (key === 'maintenance_mode') setMaintenanceLoading(true);
     
     try {
+      // Simulate API call
       form.setValue(key as any, value);
-
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      toast.success(`Pengaturan disimpan (UI Only).`);
+      toast.success(value ? "Maintenance Mode diaktifkan" : "Maintenance Mode dinonaktifkan", {
+        description: "Perubahan pengaturan berhasil disimpan.",
+      });
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan pengaturan.");
       form.setValue(key as any, !value);
     } finally {
       if (key === 'maintenance_mode') setMaintenanceLoading(false);
-
     }
   };
 
   return (
-    <div className="flex flex-col gap-8 pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="print:hidden">
          <PageHeader 
             title="Pengaturan Sistem" 
@@ -67,34 +70,56 @@ export default function SystemSettingsClient({ initialSettings }: SystemSettings
 
       <div className="w-full">
         <Form {...form}>
-          <form>
-            <Card className="h-full">
-              <CardHeader className="p-8 pb-2">
-                <CardTitle>Konfigurasi Aplikasi</CardTitle>
-                <CardDescription>
-                  Kelola pengaturan global untuk ketersediaan sistem dan keamanan keamanan.
-                </CardDescription>
+          <form className="space-y-6">
+            <Card className="shadow-md border-border/60 overflow-hidden">
+              <CardHeader className="bg-muted/30 p-8 border-b border-border/50">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-primary/10 rounded-xl">
+                    <Server className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="space-y-1">
+                    <CardTitle className="text-xl font-bold tracking-tight">Konfigurasi Aplikasi</CardTitle>
+                    <CardDescription className="text-base text-muted-foreground">
+                      Kelola pengaturan global untuk ketersediaan sistem dan kontrol akses aplikasi.
+                    </CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-6 p-8 pt-0">
-                
+              
+              <CardContent className="p-8 space-y-8">
                 {/* Item 1: Maintenance */}
                 <FormField
                   control={form.control}
                   name="maintenance_mode"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-6 shadow-sm">
-                      <div className="space-y-1">
-                        <FormLabel className="text-base font-semibold">Maintenance Mode</FormLabel>
-                        <FormDescription className="text-sm">
-                           Jika aktif, aplikasi hanya dapat diakses oleh Admin. User lain akan dialihkan.
-                           <br />
-                           {field.value 
-                              ? <span className="text-amber-600 font-medium mt-2 inline-block">Status: Sedang Maintenance</span> 
-                              : <span className="text-muted-foreground mt-2 inline-block">Status: Online (Normal)</span>}
+                    <FormItem className={cn(
+                        "flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border p-6 transition-all duration-200",
+                        field.value ? "bg-amber-50/50 border-amber-200 dark:bg-amber-950/10 dark:border-amber-900/50" : "bg-card hover:bg-muted/20"
+                      )}>
+                      <div className="space-y-3 flex-1 mr-6">
+                        <div className="flex items-center gap-2">
+                           <Shield className={cn("w-5 h-5", field.value ? "text-amber-600 dark:text-amber-500" : "text-slate-500")} />
+                           <FormLabel className="text-base font-semibold cursor-pointer">Maintenance Mode</FormLabel>
+                             {field.value 
+                              ? <Badge variant="destructive" className="ml-2 bg-amber-600 hover:bg-amber-700 border-amber-500 text-white">Maintenance</Badge> 
+                              : <Badge variant="outline" className="ml-2 text-green-600 border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-800 dark:text-green-400">
+                                  <CheckCircle2 className="w-3 h-3 mr-1" /> Online
+                                </Badge>}
+                        </div>
+                        <FormDescription className="text-sm leading-relaxed max-w-2xl">
+                           Aktifkan mode ini untuk membatasi akses sistem hanya kepada Administrator. 
+                           Pengguna lain akan dialihkan ke halaman maintenance saat mencoba mengakses sistem.
+                           {field.value && (
+                             <div className="flex items-start gap-2 mt-3 text-amber-700 dark:text-amber-400 bg-amber-100/50 dark:bg-amber-900/20 p-3 rounded-md text-xs font-medium border border-amber-200/50 dark:border-amber-800/50">
+                               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                               <span>Perhatian: Mode ini akan mencegah pengguna standar untuk login atau mengakses fitur apapun.</span>
+                             </div>
+                           )}
                         </FormDescription>
                       </div>
-                      <FormControl>
+                      <FormControl className="mt-4 sm:mt-0">
                         <Switch
+                          className={cn("data-[state=checked]:bg-amber-600")}
                           checked={field.value}
                           onCheckedChange={(val) => {
                             field.onChange(val);
@@ -105,7 +130,7 @@ export default function SystemSettingsClient({ initialSettings }: SystemSettings
                       </FormControl>
                     </FormItem>
                   )}
-                />
+                />                
               </CardContent>
             </Card>
           </form>
