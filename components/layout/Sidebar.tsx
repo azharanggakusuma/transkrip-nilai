@@ -174,6 +174,10 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
           [&::-webkit-scrollbar-thumb]:rounded-full
           hover:[&::-webkit-scrollbar-thumb]:bg-slate-300
         `}
+          style={{
+            maskImage: "linear-gradient(to bottom, transparent, black 20px, black calc(100% - 20px), transparent)",
+            WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20px, black calc(100% - 20px), transparent)",
+          }}
         >
           {menuSections.map((section, idx) => (
             <div key={idx} className="space-y-0.5">
