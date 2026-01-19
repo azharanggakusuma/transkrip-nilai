@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { updateSystemSetting } from '@/app/actions/system-settings';
+// import { updateSystemSetting } from '@/app/actions/system-settings';
 import PageHeader from '@/components/layout/PageHeader';
 import {
   Card,
@@ -47,11 +47,14 @@ export default function SystemSettingsClient({ initialSettings }: SystemSettings
     
     try {
       form.setValue(key as any, value);
-      const result = await updateSystemSetting(key, value);
       
-      if (!result.success) throw new Error(result.error);
+      // Simuasi loading & sukses (tanpa panggil backend)
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      toast.success(`Pengaturan disimpan.`);
+      // const result = await updateSystemSetting(key, value);
+      // if (!result.success) throw new Error(result.error);
+      
+      toast.success(`Pengaturan disimpan (UI Only).`);
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan pengaturan.");
