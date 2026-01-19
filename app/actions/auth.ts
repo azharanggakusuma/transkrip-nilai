@@ -206,7 +206,7 @@ export async function updateUserSettings(
     if (studentError) console.error("Gagal update tabel student:", studentError.message);
   }
 
-  revalidatePath("/pengaturan");
+  revalidatePath("/pengaturan-akun");
   revalidatePath("/", "layout");
   return { success: true };
 }

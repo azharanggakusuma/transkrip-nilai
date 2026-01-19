@@ -351,3 +351,10 @@ export interface StudentMBKMFormValues {
   mitra: string;
   keterangan: string;
 }
+
+export interface SystemSettings {
+  key: string;
+  value: any;
+  description?: string;
+  updated_at?: string;
+}

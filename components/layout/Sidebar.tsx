@@ -287,9 +287,9 @@ export default function Sidebar({ open, setOpen, isCollapsed = false, menus }: S
               <DropdownMenuSeparator />
               
               <DropdownMenuItem asChild>
-                <Link href="/pengaturan" className="cursor-pointer w-full flex items-center gap-2 text-slate-600 text-xs">
+                <Link href="/pengaturan-akun" className="cursor-pointer w-full flex items-center gap-2 text-slate-600 text-xs">
                   <SettingsIcon size={14} />
-                  <span>Pengaturan</span>
+                  <span>Pengaturan Akun</span>
                 </Link>
               </DropdownMenuItem>
               

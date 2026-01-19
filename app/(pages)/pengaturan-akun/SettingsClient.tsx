@@ -18,7 +18,7 @@ export default function SettingsClient({ initialUser }: SettingsClientProps) {
       <div className="print:hidden">
         <PageHeader 
             title="Pengaturan Akun" 
-            breadcrumb={["Beranda", "Pengaturan"]} 
+            breadcrumb={["Beranda", "Pengaturan Akun"]} 
         />
       </div>
       

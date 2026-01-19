@@ -147,9 +147,9 @@ export default function Navbar({
               <DropdownMenuSeparator className="md:hidden" />
               
               <DropdownMenuItem asChild>
-                <Link href="/pengaturan" className="cursor-pointer w-full flex items-center">
+                <Link href="/pengaturan-akun" className="cursor-pointer w-full flex items-center">
                   <Settings className="mr-2 h-4 w-4 text-slate-500" />
-                  <span>Pengaturan</span>
+                  <span>Pengaturan Akun</span>
                 </Link>
               </DropdownMenuItem>
               
