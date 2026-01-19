@@ -17,10 +17,14 @@ import { getMbkmStudents } from "@/app/actions/mbkm";
 import { StudentMBKM } from "@/lib/types";
 import { useLayout } from "@/app/context/LayoutContext";
 
-export default function StudentMbkmView() {
+interface StudentMbkmViewProps {
+  initialData: StudentMBKM[];
+}
+
+export default function StudentMbkmView({ initialData }: StudentMbkmViewProps) {
   const { user } = useLayout();
-  const [dataList, setDataList] = useState<StudentMBKM[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [dataList, setDataList] = useState<StudentMBKM[]>(initialData || []);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Filters & Pagination
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,28 +33,8 @@ export default function StudentMbkmView() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // === FETCH DATA ===
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const mbkmData = await getMbkmStudents();
-      // Filter hanya data mahasiswa yang sedang login
-      const myMbkm = mbkmData.filter(item => item.student_id === user?.student_id);
-      setDataList(myMbkm);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user?.student_id) {
-        fetchData();
-    } else {
-        setIsLoading(false);
-    }
-  }, [user]);
+  // === FETCH DATA (REMOVED) ===
+  // initialData passed from Server Component
 
   // --- FILTER LOGIC ---
   const filteredData = useMemo(() => {

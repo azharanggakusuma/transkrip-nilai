@@ -28,14 +28,19 @@ import { useToastMessage } from "@/hooks/use-toast-message";
 import PrintableKHS from "@/components/features/khs/PrintableKHS";
 import { calculateIPS, calculateIPK } from "@/lib/grade-calculations";
 
-export default function AdminKHSView() {
+interface AdminKHSViewProps {
+  initialStudents: StudentData[];
+  initialStudyPrograms: StudyProgram[];
+}
+
+export default function AdminKHSView({ initialStudents, initialStudyPrograms }: AdminKHSViewProps) {
   const { isCollapsed } = useLayout();
   // --- STATE ---
-  const [studentList, setStudentList] = useState<StudentData[]>([]);
-  const [studyPrograms, setStudyPrograms] = useState<StudyProgram[]>([]);
+  const [studentList, setStudentList] = useState<StudentData[]>(initialStudents || []);
+  const [studyPrograms, setStudyPrograms] = useState<StudyProgram[]>(initialStudyPrograms || []);
   const [official, setOfficial] = useState<Official | null>(null);
   
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Modal Cetak State
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -57,29 +62,6 @@ export default function AdminKHSView() {
   const [totalPages, setTotalPages] = useState(1);
   
   const toastIdRef = useRef<string | number | null>(null);
-
-  // === FETCH DATA ===
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const [students, programs] = await Promise.all([
-        getStudents(),
-        getStudyPrograms()
-      ]);
-      
-      setStudentList(students);
-      setStudyPrograms(programs || []);
-      // setOfficial(activeOfficial); 
-    } catch (error) {
-      toast.error("Gagal Memuat Data", { description: "Terjadi kesalahan koneksi." });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   // === LOADING TOAST SIGNATURE ===
   // === LOADING TOAST ===

@@ -28,14 +28,19 @@ import { useToastMessage } from "@/hooks/use-toast-message";
 import PrintableTranskrip from "@/components/features/transkrip/PrintableTranskrip";
 import { calculateIPK, calculateTotalSKSLulus, calculateTotalMutu } from "@/lib/grade-calculations";
 
-export default function AdminTranskripView() {
+interface AdminTranskripViewProps {
+  initialStudents: StudentData[];
+  initialStudyPrograms: StudyProgram[];
+}
+
+export default function AdminTranskripView({ initialStudents, initialStudyPrograms }: AdminTranskripViewProps) {
   const { isCollapsed } = useLayout();
   // --- STATE ---
-  const [studentList, setStudentList] = useState<StudentData[]>([]);
-  const [studyPrograms, setStudyPrograms] = useState<StudyProgram[]>([]);
+  const [studentList, setStudentList] = useState<StudentData[]>(initialStudents || []);
+  const [studyPrograms, setStudyPrograms] = useState<StudyProgram[]>(initialStudyPrograms || []);
   const [official, setOfficial] = useState<Official | null>(null);
   
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Modal Cetak State
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -55,30 +60,6 @@ export default function AdminTranskripView() {
   }, [official, signatureType]);
   
   const toastIdRef = useRef<string | number | null>(null);
-
-  // === FETCH DATA ===
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const [students, programs] = await Promise.all([
-        getStudents(),
-        getStudyPrograms()
-      ]);
-      
-      setStudentList(students);
-      setStudyPrograms(programs || []);
-      // Default Global Official (optional, maybe for dashboard stats)
-      // setOfficial(activeOfficial); 
-    } catch (error) {
-      toast.error("Gagal Memuat Data", { description: "Terjadi kesalahan koneksi." });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   // === LOADING TOAST SIGNATURE ===
   // === LOADING TOAST ===

@@ -12,10 +12,16 @@ import { useToastMessage } from "@/hooks/use-toast-message";
 // Import DataTable Components
 import { DataTable, type Column } from "@/components/ui/data-table";
 
-export default function StudentGradeView({ user }: { user: any }) {
-  const [data, setData] = useState<any[]>([]);
-  const [summary, setSummary] = useState({ totalSKS: 0, totalNM: 0, ipk: "0.00" });
-  const [isLoading, setIsLoading] = useState(true);
+interface StudentGradeViewProps {
+  user: any;
+  initialGrades: any[];
+  initialSummary: { totalSKS: number; totalNM: number; ipk: string };
+}
+
+export default function StudentGradeView({ user, initialGrades, initialSummary }: StudentGradeViewProps) {
+  const [data, setData] = useState<any[]>(initialGrades);
+  const [summary, setSummary] = useState(initialSummary);
+  const [isLoading, setIsLoading] = useState(false);
   
   // State untuk DataTable
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,24 +34,7 @@ export default function StudentGradeView({ user }: { user: any }) {
   const MIN_SKS_LULUS = 144;
   const MAX_IPK = "4.00";
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        if (user?.student_id) {
-          const res = await getStudentGradeSummary(user.student_id);
-          setData(res.grades);
-          setSummary(res.summary);
-        }
-      } catch (error: any) {
-        showError("Gagal", "Gagal memuat data nilai.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  // useEffect removed as data comes from props
 
   // Helper warna badge nilai
   const getGradeBadge = (grade: string) => {

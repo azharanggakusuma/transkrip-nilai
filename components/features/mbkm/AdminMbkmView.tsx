@@ -22,13 +22,19 @@ import { getStudents } from "@/app/actions/students";
 import { getAcademicYears } from "@/app/actions/academic-years";
 import { StudentMBKM, StudentData, AcademicYear, StudentMBKMFormValues } from "@/lib/types";
 
-export default function AdminMbkmView() {
+interface AdminMbkmViewProps {
+  initialData: StudentMBKM[];
+  initialStudents: StudentData[];
+  initialAcademicYears: AcademicYear[];
+}
+
+export default function AdminMbkmView({ initialData, initialStudents, initialAcademicYears }: AdminMbkmViewProps) {
   const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
 
-  const [dataList, setDataList] = useState<StudentMBKM[]>([]);
-  const [students, setStudents] = useState<StudentData[]>([]);
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [dataList, setDataList] = useState<StudentMBKM[]>(initialData || []);
+  const [students, setStudents] = useState<StudentData[]>(initialStudents || []);
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>(initialAcademicYears || []);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Filters & Pagination
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,7 +52,7 @@ export default function AdminMbkmView() {
   const [deleteName, setDeleteName] = useState<string>("");
   const [formData, setFormData] = useState<StudentMBKMFormValues | undefined>(undefined);
 
-  // === FETCH DATA ===
+  // === FETCH DATA (REUSED FOR REFRESH) ===
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -65,10 +71,6 @@ export default function AdminMbkmView() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   // --- FILTER LOGIC ---
   const filteredData = useMemo(() => {

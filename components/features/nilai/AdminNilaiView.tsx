@@ -14,13 +14,18 @@ import { StudentData, StudyProgram } from "@/lib/types";
 import { StudentGradeForm } from "@/components/features/nilai/StudentGradeForm";
 import { StudentTable } from "@/components/features/nilai/StudentTable";
 
-export default function AdminNilaiView() {
+interface AdminNilaiViewProps {
+  initialStudents: StudentData[];
+  initialPrograms: StudyProgram[];
+}
+
+export default function AdminNilaiView({ initialStudents, initialPrograms }: AdminNilaiViewProps) {
   const { user } = useLayout(); 
 
   // --- STATE ADMIN ---
-  const [studentList, setStudentList] = useState<StudentData[]>([]);
-  const [studyPrograms, setStudyPrograms] = useState<StudyProgram[]>([]); 
-  const [isLoading, setIsLoading] = useState(true);
+  const [studentList, setStudentList] = useState<StudentData[]>(initialStudents);
+  const [studyPrograms, setStudyPrograms] = useState<StudyProgram[]>(initialPrograms); 
+  const [isLoading, setIsLoading] = useState(false);
 
   // Modal State Admin
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -30,7 +35,7 @@ export default function AdminNilaiView() {
 
   // === FETCH DATA ADMIN ===
   const fetchAdminData = async () => {
-    setIsLoading(true);
+    // setIsLoading(true); // No longer needed for initial load
     try {
       const [students, programs] = await Promise.all([
         getStudents(),
@@ -45,10 +50,8 @@ export default function AdminNilaiView() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchAdminData();
-  }, []);
+  
+  // useEffect removed
 
   // === HANDLERS ADMIN ===
   const handleOpenEdit = async (student: StudentData) => {

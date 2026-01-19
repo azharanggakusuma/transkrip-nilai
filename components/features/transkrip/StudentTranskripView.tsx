@@ -29,10 +29,15 @@ import {
 } from "@/components/ui/dialog";
 import { Printer, Loader2, TrendingUp, Award, PieChart, GraduationCap, FileText, Trophy, BookOpen } from "lucide-react";
 
-export default function StudentTranskripView() {
-  const [studentsData, setStudentsData] = useState<StudentData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [official, setOfficial] = useState<Official | null>(null);
+interface StudentTranskripViewProps {
+  initialStudentData: StudentData | null;
+  initialOfficial: Official | null;
+}
+
+export default function StudentTranskripView({ initialStudentData, initialOfficial }: StudentTranskripViewProps) {
+  const [studentsData, setStudentsData] = useState<StudentData[]>(initialStudentData ? [initialStudentData] : []);
+  const [loading, setLoading] = useState(false);
+  const [official, setOfficial] = useState<Official | null>(initialOfficial);
 
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -57,47 +62,19 @@ export default function StudentTranskripView() {
      // Optional loading state
   }, []);
 
-  // Fetch Data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [data] = await Promise.all([
-           getStudents()
-        ]);
-        setStudentsData(data);
-        // setOfficial(activeOfficial); // Removed static fetch
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  // Use props directly, no fetch
 
-  // Auto Select for Student User
+  // Auto Select for Student User (Always 0)
   useEffect(() => {
-    if (studentsData.length > 0 && user?.role === "mahasiswa" && user?.student_id) {
-       const myIndex = studentsData.findIndex((s) => s.id === user.student_id);
-       if (myIndex !== -1) setSelectedIndex(myIndex); 
+    if (studentsData.length > 0) {
+       setSelectedIndex(0); 
     }
-  }, [studentsData, user]);
+  }, [studentsData]);
 
   const currentStudent = useMemo(() => studentsData[selectedIndex], [studentsData, selectedIndex]);
 
   // Fetch Official based on Student Prodi
-  useEffect(() => {
-    const fetchOfficial = async () => {
-        if (currentStudent?.profile?.study_program_id) {
-            const off = await getOfficialForDocument(currentStudent.profile.study_program_id);
-            setOfficial(off);
-        } else {
-            const off = await getOfficialForDocument();
-            setOfficial(off);
-        }
-    }
-    fetchOfficial();
-  }, [currentStudent]);
+  // Fetch Official based on Student Prodi (REMOVED - Passed via Props)
 
   // === LOGIC SEMESTER ===
   const availableSemesters = useMemo<number[]>(() => {

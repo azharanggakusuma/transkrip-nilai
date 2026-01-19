@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useToastMessage } from "@/hooks/use-toast-message";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,13 +24,23 @@ import {
 import { getAcademicYears } from "@/app/actions/academic-years";
 import { AcademicYear, KRS } from "@/lib/types";
 
-export default function AdminKRSValidationView() {
+interface AdminKRSValidationViewProps {
+  initialAcademicYears: AcademicYear[];
+  initialSelectedYear: string;
+  initialStudents: any[];
+}
+
+export default function AdminKRSValidationView({
+  initialAcademicYears,
+  initialSelectedYear,
+  initialStudents
+}: AdminKRSValidationViewProps) {
   const { successAction, showError, showLoading } = useToastMessage();
 
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
-  const [selectedYear, setSelectedYear] = useState<string>("");
-  const [students, setStudents] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>(initialAcademicYears);
+  const [selectedYear, setSelectedYear] = useState<string>(initialSelectedYear);
+  const [students, setStudents] = useState<any[]>(initialStudents || []);
+  const [isLoading, setIsLoading] = useState(false);
 
   // State untuk DataTable
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,20 +54,14 @@ export default function AdminKRSValidationView() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
-  useEffect(() => {
-    async function init() {
-        try {
-            const years = await getAcademicYears();
-            const active = years.find((y) => y.is_active);
-            setAcademicYears(years);
-            if (active) setSelectedYear(active.id);
-            else if (years.length > 0) setSelectedYear(years[0].id);
-        } catch(e) { console.error(e); }
-    }
-    init();
-  }, []);
+  // Filter & Fetch when selectedYear changes from initial
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
+    if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return;
+    }
     if (!selectedYear) return;
     fetchStudents();
   }, [selectedYear]);

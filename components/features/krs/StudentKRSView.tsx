@@ -35,19 +35,38 @@ import { getActiveOfficial } from "@/app/actions/students";
 import { AcademicYear, Official } from "@/lib/types";
 import PrintableKRS from "./PrintableKRS";
 
-export default function StudentKRSView({ user }: { user: any }) {
+interface StudentKRSViewProps {
+  user: any;
+  initialAcademicYears: AcademicYear[];
+  initialOfficial: Official | null;
+  initialSelectedYear: string;
+  initialData: {
+    offerings: CourseOffering[];
+    student_semester: number;
+    student_profile: any;
+    mbkm_data: any;
+  } | null;
+}
+
+export default function StudentKRSView({ 
+  user, 
+  initialAcademicYears, 
+  initialOfficial, 
+  initialSelectedYear,
+  initialData
+}: StudentKRSViewProps) {
   const { successAction, showError, showLoading, dismiss } = useToastMessage();
   const { signatureType, setSignatureType, secureImage, isLoading: isSigLoading } = useSignature("none");
 
-  const [offerings, setOfferings] = useState<CourseOffering[]>([]);
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
-  const [selectedYear, setSelectedYear] = useState<string>("");
-  const [studentSemester, setStudentSemester] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [offerings, setOfferings] = useState<CourseOffering[]>(initialData?.offerings || []);
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>(initialAcademicYears);
+  const [selectedYear, setSelectedYear] = useState<string>(initialSelectedYear);
+  const [studentSemester, setStudentSemester] = useState<number>(initialData?.student_semester || 0);
+  const [isLoading, setIsLoading] = useState(false);
   
-  const [official, setOfficial] = useState<Official | null>(null);
-  const [studentProfile, setStudentProfile] = useState<any>(null);
-  const [mbkmData, setMbkmData] = useState<any>(null);
+  const [official, setOfficial] = useState<Official | null>(initialOfficial);
+  const [studentProfile, setStudentProfile] = useState<any>(initialData?.student_profile || null);
+  const [mbkmData, setMbkmData] = useState<any>(initialData?.mbkm_data || null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,25 +93,16 @@ export default function StudentKRSView({ user }: { user: any }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSigLoading]);
 
-  // === INIT DATA ===
-  useEffect(() => {
-    async function init() {
-      try {
-        const [years, activeOfficial] = await Promise.all([
-             getAcademicYears(),
-             getActiveOfficial()
-        ]);
-        const active = years.find(y => y.is_active);
-        setAcademicYears(years);
-        setOfficial(activeOfficial);
-        if (active) setSelectedYear(active.id);
-        else if (years.length > 0) setSelectedYear(years[0].id);
-      } catch (e) { console.error(e); }
-    }
-    init();
-  }, []);
+  // Initial Data is passed via props, so no init useEffect needed EXCEPT for year change logic
+  
+  // This effect handles fetching ONLY when selectedYear changes from the initial one OR if user switches back and forth
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
+    if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return;
+    }
     if (!selectedYear || !studentId) return;
     fetchData();
   }, [selectedYear, studentId]);

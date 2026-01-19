@@ -11,9 +11,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ControlPanel from "@/components/features/document/ControlPanel";
 import PrintableSuratKeterangan from "@/components/features/surat-keterangan/PrintableSuratKeterangan";
 
-export default function AdminSuratView() {
-  const [studentsData, setStudentsData] = useState<StudentData[]>([]);
-  const [loading, setLoading] = useState(true);
+interface AdminSuratViewProps {
+  initialStudents: StudentData[];
+  initialAcademicYear: string;
+}
+
+export default function AdminSuratView({ initialStudents, initialAcademicYear }: AdminSuratViewProps) {
+  const [studentsData, setStudentsData] = useState<StudentData[]>(initialStudents || []);
+  const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   
   // State Data Dinamis
@@ -21,7 +26,7 @@ export default function AdminSuratView() {
   
   // State Form
   const [nomorSurat, setNomorSurat] = useState(""); 
-  const [tahunAkademik, setTahunAkademik] = useState(""); 
+  const [tahunAkademik, setTahunAkademik] = useState(initialAcademicYear); 
   const [tempatLahir, setTempatLahir] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
   const [alamat, setAlamat] = useState("");
@@ -40,28 +45,7 @@ export default function AdminSuratView() {
   const { isCollapsed } = useLayout();
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [students, activeYear] = await Promise.all([
-            getStudents(),
-            getActiveAcademicYear()
-        ]);
-
-        setStudentsData(students);
-        setStudentsData(students);
-
-        if (activeYear) {
-            setTahunAkademik(activeYear.nama);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  // Removed internal fetch logic
 
   const currentStudent = useMemo(() => studentsData[selectedIndex], [studentsData, selectedIndex]);
 

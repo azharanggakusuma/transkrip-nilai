@@ -30,10 +30,15 @@ import {
 } from "@/components/ui/dialog";
 import { Printer, Loader2, TrendingUp, Award, PieChart, GraduationCap, FileText, Trophy, BookOpen } from "lucide-react";
 
-export default function StudentKHSView() {
-  const [studentsData, setStudentsData] = useState<StudentData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [official, setOfficial] = useState<Official | null>(null);
+interface StudentKHSViewProps {
+  initialStudentData: StudentData | null;
+  initialOfficial: Official | null;
+}
+
+export default function StudentKHSView({ initialStudentData, initialOfficial }: StudentKHSViewProps) {
+  const [studentsData, setStudentsData] = useState<StudentData[]>(initialStudentData ? [initialStudentData] : []);
+  const [loading, setLoading] = useState(false);
+  const [official, setOfficial] = useState<Official | null>(initialOfficial);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedSemester, setSelectedSemester] = useState<number>(0);
@@ -62,32 +67,12 @@ export default function StudentKHSView() {
 
   // Auto-select latest semester for printing if "All Semesters" is active
 
-
-  // === FETCH DATA ===
+  // Auto-select mahasiswa login (Always index 0 as we only pass 1 student)
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [data] = await Promise.all([
-           getStudents()
-        ]);
-        setStudentsData(data);
-        // setOfficial(activeOfficial);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // Auto-select mahasiswa login
-  useEffect(() => {
-    if (studentsData.length > 0 && user?.role === "mahasiswa" && user?.student_id) {
-       const myIndex = studentsData.findIndex((s) => s.id === user.student_id);
-       if (myIndex !== -1) setSelectedIndex(myIndex); 
+    if (studentsData.length > 0) {
+       setSelectedIndex(0);
     }
-  }, [studentsData, user]);
+  }, [studentsData]);
 
   const currentStudent = useMemo(() => studentsData[selectedIndex], [studentsData, selectedIndex]);
 
@@ -101,19 +86,7 @@ export default function StudentKHSView() {
     return Array.from({ length: limit }, (_, i) => i + 1);
   }, [currentStudent]);
 
-  // Fetch Official based on Student Prodi
-  useEffect(() => {
-    const fetchOfficial = async () => {
-        if (currentStudent?.profile?.study_program_id) {
-            const off = await getOfficialForDocument(currentStudent.profile.study_program_id);
-            setOfficial(off);
-        } else {
-            const off = await getOfficialForDocument();
-            setOfficial(off);
-        }
-    }
-    fetchOfficial();
-  }, [currentStudent]);
+  // (Removed internal fetch for official, rely on props)
 
   // Auto-select latest semester for printing if "All Semesters" is active
   useEffect(() => {

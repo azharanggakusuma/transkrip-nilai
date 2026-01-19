@@ -269,6 +269,117 @@ export async function getStudents(): Promise<StudentData[]> {
   });
 }
 
+export async function getStudentById(id: string): Promise<StudentData | null> {
+  const activeYear = await getActiveAcademicYear();
+
+  // 1. Get User Avatar
+  const { data: userData } = await supabaseAdmin
+    .from('users')
+    .select('avatar_url')
+    .eq('student_id', id)
+    .single();
+
+  // 2. Get Student Data
+  const { data, error } = await supabaseAdmin
+    .from('students')
+    .select(`
+      *,
+      study_programs (
+        id, kode, nama, jenjang
+      ),
+      grades (
+        id, hm,
+        courses (
+          id, kode, matkul, sks, smt_default
+        )
+      ),
+      krs (
+        status,
+        courses (
+          id, kode, matkul, sks, smt_default
+        )
+      )
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error || !data) {
+    if (error && error.code !== 'PGRST116') console.error("Error fetching student:", error.message);
+    return null;
+  }
+
+  const s = data as unknown as DBResponseStudent;
+  const userAvatar = userData?.avatar_url || null;
+  const dynamicSemester = calculateStudentSemester(s.angkatan, activeYear);
+
+  const totalSksApproved = (s.krs || []).reduce((acc, curr) => {
+    if (curr.status === "APPROVED") {
+      return acc + (curr.courses?.sks || 0);
+    }
+    return acc;
+  }, 0);
+
+  const gradesTranscript: TranscriptItem[] = (s.grades || []).map((g) => {
+    const course = g.courses;
+    const am = getAM(g.hm);
+    const sks = course?.sks || 0;
+    const nm = am * sks;
+
+    return {
+      no: 0,
+      course_id: course?.id,
+      kode: course?.kode || "CODE",
+      matkul: course?.matkul || "Unknown",
+      smt: course?.smt_default || 1,
+      sks: sks,
+      hm: g.hm,
+      am: am,
+      nm: nm
+    };
+  });
+
+  const gradeCourseIds = new Set(gradesTranscript.map(t => t.course_id));
+
+  const krsTranscript: TranscriptItem[] = (s.krs || [])
+    .filter(k => k.status === 'APPROVED' && k.courses && !gradeCourseIds.has(k.courses.id))
+    .map(k => {
+      const c = k.courses!;
+      return {
+        no: 0,
+        course_id: c.id,
+        kode: c.kode,
+        matkul: c.matkul,
+        smt: c.smt_default,
+        sks: c.sks,
+        hm: "-",
+        am: 0,
+        nm: 0
+      };
+    });
+
+  const fullTranscript = [...gradesTranscript, ...krsTranscript]
+    .sort((a, b) => a.smt - b.smt || a.kode.localeCompare(b.kode))
+    .map((item, index) => ({ ...item, no: index + 1 }));
+
+  return {
+    id: s.id,
+    profile: {
+      id: s.id,
+      nim: s.nim,
+      nama: s.nama,
+      alamat: s.alamat,
+      angkatan: s.angkatan || 0,
+      semester: dynamicSemester,
+      study_program_id: s.study_program_id,
+      study_program: s.study_programs,
+      is_active: s.is_active ?? true,
+      avatar_url: userAvatar,
+    },
+    transcript: fullTranscript,
+    total_sks: totalSksApproved
+  };
+}
+
 // --- CRUD OPERATIONS ---
 export async function createStudent(values: StudentFormValues) {
   const { error } = await supabaseAdmin.from('students').insert([{

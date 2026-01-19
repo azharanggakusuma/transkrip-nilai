@@ -11,18 +11,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ControlPanel from "@/components/features/document/ControlPanel";
 import PrintableSuratKeterangan from "@/components/features/surat-keterangan/PrintableSuratKeterangan";
 
-export default function StudentSuratView() {
-  const [studentsData, setStudentsData] = useState<StudentData[]>([]);
-  const [loading, setLoading] = useState(true);
+interface StudentSuratViewProps {
+  initialStudentData: StudentData | null;
+  initialAcademicYear: string;
+  initialOfficial: Official | null;
+}
+
+export default function StudentSuratView({ initialStudentData, initialAcademicYear, initialOfficial }: StudentSuratViewProps) {
+  const [studentsData, setStudentsData] = useState<StudentData[]>(initialStudentData ? [initialStudentData] : []);
+  const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   
   // State Data Dinamis
-  const [official, setOfficial] = useState<Official | null>(null);
+  const [official, setOfficial] = useState<Official | null>(initialOfficial);
   
-  // State Form - Mahasiswa bisa isi data tambahan (opsional) atau read-only
-  // Untuk fleksibilitas, kita biarkan bisa diedit agar bisa dicetak sesuai kebutuhan
+  // State Form
   const [nomorSurat, setNomorSurat] = useState(""); 
-  const [tahunAkademik, setTahunAkademik] = useState(""); 
+  const [tahunAkademik, setTahunAkademik] = useState(initialAcademicYear); 
   const [tempatLahir, setTempatLahir] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
   const [alamat, setAlamat] = useState("");
@@ -41,37 +46,17 @@ export default function StudentSuratView() {
   const { isCollapsed, user } = useLayout();
   const [totalPages, setTotalPages] = useState(1);
 
+  // Auto-select mahasiswa login (Always index 0 as we only pass 1 student)
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [students, activeYear, activeOfficial] = await Promise.all([
-            getStudents(),
-            getActiveAcademicYear(),
-            getActiveOfficial()
-        ]);
+    if (studentsData.length > 0) {
+       setSelectedIndex(0); 
+    }
+  }, [studentsData]);
 
-        setStudentsData(students);
-        setOfficial(activeOfficial);
-
-        if (activeYear) {
-            setTahunAkademik(activeYear.nama);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  // Removed internal fetch logic
 
   // Auto-select mahasiswa login
-  useEffect(() => {
-    if (studentsData.length > 0 && user?.role === "mahasiswa" && user?.student_id) {
-       const myIndex = studentsData.findIndex((s) => s.id === user.student_id);
-       if (myIndex !== -1) setSelectedIndex(myIndex); 
-    }
-  }, [studentsData, user]);
+  // Auto-select logic moved up passed via props
 
   const currentStudent = useMemo(() => studentsData[selectedIndex], [studentsData, selectedIndex]);
 
