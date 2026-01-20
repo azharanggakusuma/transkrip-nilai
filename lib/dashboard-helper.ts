@@ -1,6 +1,7 @@
 import { StudentData, TranscriptItem } from "@/lib/types";
 
 export function calculateIPK(transcript: TranscriptItem[]) {
+  if (!transcript) return 0;
   const totalSKS = transcript.reduce((acc, curr) => acc + curr.sks, 0);
   const totalNM = transcript.reduce((acc, curr) => acc + curr.nm, 0);
   if (totalSKS === 0) return 0;
@@ -9,6 +10,7 @@ export function calculateIPK(transcript: TranscriptItem[]) {
 
 // Helper Baru: Menghitung Total SKS
 export function calculateTotalSKS(transcript: TranscriptItem[]) {
+  if (!transcript) return 0;
   return transcript.reduce((acc, curr) => acc + curr.sks, 0);
 }
 
@@ -19,12 +21,13 @@ export function getCurrentSemester(transcript: TranscriptItem[]) {
 }
 
 export function calculateStudentIPS(transcript: TranscriptItem[], semester: number) {
+  if (!transcript) return null;
   const semesterItems = transcript.filter((t) => t.smt === semester);
   if (semesterItems.length === 0) return null;
 
   const totalSKS = semesterItems.reduce((acc, curr) => acc + curr.sks, 0);
   const totalNM = semesterItems.reduce((acc, curr) => acc + curr.nm, 0);
-  
+
   if (totalSKS === 0) return 0;
   return totalNM / totalSKS;
 }
@@ -32,7 +35,7 @@ export function calculateStudentIPS(transcript: TranscriptItem[], semester: numb
 export function calculateSemesterTrend(allStudents: StudentData[]) {
   let maxSmt = 0;
   allStudents.forEach(s => {
-    s.transcript.forEach(t => {
+    s.transcript?.forEach(t => {
       if (t.smt > maxSmt) maxSmt = t.smt;
     });
   });
@@ -71,10 +74,10 @@ export function calculateStudentSemesterTrend(student: StudentData) {
   // Loop fix dari semester 1 sampai 8
   for (let smt = 1; smt <= 8; smt++) {
     const ips = calculateStudentIPS(student.transcript, smt);
-    
+
     // Jika IPS null (belum ada mapel diambil), set nilai ke 0
     const val = ips !== null ? ips : 0;
-    
+
     // Hitung persentase tinggi bar (Skala 4.00)
     const heightPercentage = Math.min((val / 4) * 100, 100);
 
@@ -94,7 +97,7 @@ export function calculateGradeDistribution(allStudents: StudentData[]) {
   let totalAM = 0;
 
   allStudents.forEach((student) => {
-    student.transcript.forEach((item) => {
+    student.transcript?.forEach((item) => {
       // Pastikan casting key aman
       const grade = item.hm as keyof typeof counts;
       if (counts[grade] !== undefined) {

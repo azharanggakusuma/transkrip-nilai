@@ -1,6 +1,6 @@
 import React from "react";
 import { getSession } from "@/app/actions/auth";
-import { getStudents } from "@/app/actions/students"; // Need to ensure getStudentByNim exists or use query
+import { getStudents, getStudentByNim } from "@/app/actions/students"; // Need to ensure getStudentByNim exists or use query
 import { getCourses } from "@/app/actions/courses";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,7 +16,7 @@ import {
 } from "@/lib/dashboard-helper";
 
 import DashboardClient from "./DashboardClient";
-import { StudentData } from "@/lib/types";
+import { StudentData, StudentProfile, TranscriptItem } from "@/lib/types";
 
 export default async function DashboardPage() {
   const user = await getSession();
@@ -34,29 +34,14 @@ export default async function DashboardPage() {
   if (isMahasiswa) {
     // --- SERVER SIDE LOGIC FOR MAHASISWA ---
     // Fetch ONLY this student
-    const supabase = await createClient(); // Or use specific action
-    // Reuse existing action if available, or fetch directly.
-    // existing `getStudents` returns ALL. We don't want that.
-    // Let's assume we can fetch single student. using supabase client here is safe.
+    // Implement `getStudent(nim)` action or use Supabase directly here.
     
-    // We need 'transcript' which is in JSONB column or joined? 
-    // In `getStudents`: .select('*, study_program:study_programs(*)')
-    
-    // Let's use `getStudents` but we really should filter.
-    // Since `getStudents` returns all, it's bad for perf if we just filter in JS.
-    // But for now to fix LEAKAGE, fetching on server and filtering on server is "secure" (client doesn't see others), 
-    // even if inefficient for server.
-    // BETTER: Implement `getStudent(nim)` action or use Supabase directly here.
-    
-    const { data: myData } = await supabase
-       .from("students")
-       .select("*, study_program:study_programs(*)")
-       .eq("nim", username)
-       .single();
+    // FETCH DATA VIA ACTION (Correct Way)
+    const student = await getStudentByNim(username);
 
-    if (myData) {
-        // Cast to StudentData if compatible
-        const student = myData as unknown as StudentData; 
+    if (student) {
+        // Now student is fully populated with transcript, profile, semester etc.
+        // No need to cast manually or construct object. 
         
         const myIPK = calculateIPK(student.transcript);
         const totalSKS = calculateTotalSKSLulus(student.transcript);

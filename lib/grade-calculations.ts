@@ -34,15 +34,17 @@ export function getGradePoint(hm: string): number {
 function getBestUniqueCourses(transcript: TranscriptItem[]) {
   const uniqueMap = new Map<string, { sks: number; am: number; hm: string }>();
 
+  if (!transcript) return [];
+
   transcript.forEach((course) => {
     // Normalisasi Kode MK (hapus spasi, uppercase)
-    const kode = course.kode?.trim().toUpperCase(); 
+    const kode = course.kode?.trim().toUpperCase();
     if (!kode) return;
 
     // Pastikan AM ada, jika tidak, hitung dari HM
     const currentAM = course.am ?? getGradePoint(course.hm);
     const currentSKS = Number(course.sks) || 0;
-    
+
     // Filter nilai kosong/strip
     if (course.hm === '-') return;
 
@@ -99,10 +101,10 @@ export function calculateIPK(transcript: TranscriptItem[]): string {
  */
 export function calculateTotalSKSLulus(transcript: TranscriptItem[]): number {
   const bestCourses = getBestUniqueCourses(transcript);
-  
+
   return bestCourses.reduce((total, course) => {
     // Asumsi: AM >= 1.00 (D) adalah Lulus
-    if (course.am >= 1.00) { 
+    if (course.am >= 1.00) {
       return total + course.sks;
     }
     return total;
@@ -123,6 +125,7 @@ export function calculateTotalMutu(transcript: TranscriptItem[]): number {
  * Tanpa deduplikasi (apa yang diambil semester itu, itu yang dihitung).
  */
 export function calculateIPS(transcript: TranscriptItem[], semester: number): string {
+  if (!transcript) return "0.00";
   const semesterCourses = transcript.filter((t) => Number(t.smt) === semester && t.hm !== '-');
 
   if (!semesterCourses || semesterCourses.length === 0) return "0.00";
@@ -135,8 +138,8 @@ export function calculateIPS(transcript: TranscriptItem[], semester: number): st
     const sks = Number(course.sks) || 0;
 
     if (sks > 0) {
-        totalSKS += sks;
-        totalBobot += (sks * am);
+      totalSKS += sks;
+      totalBobot += (sks * am);
     }
   });
 
@@ -147,9 +150,11 @@ export function calculateIPS(transcript: TranscriptItem[], semester: number): st
  * Menghitung Tren IPS per Semester untuk Chart
  */
 export function calculateSemesterTrend(transcript: TranscriptItem[]) {
+  if (!transcript) return [];
+
   // Cari semester maksimal
-  const maxSemester = transcript.length > 0 
-    ? Math.max(...transcript.map((t) => Number(t.smt) || 0)) 
+  const maxSemester = transcript.length > 0
+    ? Math.max(...transcript.map((t) => Number(t.smt) || 0))
     : 8;
 
   const trend = [];
@@ -160,14 +165,14 @@ export function calculateSemesterTrend(transcript: TranscriptItem[]) {
 
     // Tampilkan jika ada nilai (>0) atau semester tersebut ada datanya
     const hasData = transcript.some(t => Number(t.smt) === i);
-    
-    if (hasData) { 
-        trend.push({
-          label: `Smt ${i}`,
-          val: ipsVal,
-          // Tinggi bar grafik (Skala max 4.00)
-          height: `${Math.min((ipsVal / 4) * 100, 100)}%` 
-        });
+
+    if (hasData) {
+      trend.push({
+        label: `Smt ${i}`,
+        val: ipsVal,
+        // Tinggi bar grafik (Skala max 4.00)
+        height: `${Math.min((ipsVal / 4) * 100, 100)}%`
+      });
     }
   }
   return trend;
