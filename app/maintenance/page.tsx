@@ -2,12 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Wrench, RefreshCcw, ArrowLeft } from "lucide-react";
+import { Wrench, RefreshCcw, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 
 export default function MaintenancePage() {
-  const router = useRouter();
+
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background p-4 relative overflow-hidden">
@@ -43,21 +43,21 @@ export default function MaintenancePage() {
 
         <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Button 
-            variant="outline" 
+            variant="outline"
             onClick={() => window.location.reload()}
             className="w-full sm:w-auto gap-2"
           >
             <RefreshCcw className="w-4 h-4" />
             Coba Lagi
           </Button>
-          
+
           <Button 
             asChild
             className="w-full sm:w-auto gap-2"
           >
-            <Link href="/">
-              <ArrowLeft className="w-4 h-4" />
-              Kembali ke Beranda
+            <Link href="#">
+              <Mail className="w-4 h-4" />
+              Hubungi Bantuan
             </Link>
           </Button>
         </div>
