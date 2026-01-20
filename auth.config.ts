@@ -42,6 +42,10 @@ async function refreshAccessToken(token: any) {
 }
 
 export const authConfig = {
+  session: {
+    strategy: "jwt",
+    maxAge: 24 * 60 * 60, // 1 Hari (86400 detik)
+  },
   pages: {
     signIn: "/login",
   },
