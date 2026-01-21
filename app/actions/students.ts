@@ -16,6 +16,14 @@ interface DBResponseStudent {
   angkatan: number;
   study_program_id: string | null;
   is_active: boolean;
+  jenis_kelamin: string | null;
+  tempat_lahir: string | null;
+  tanggal_lahir: string | null;
+  agama: string | null;
+  nik: string | null;
+  status: string | null;
+  no_hp: string | null;
+  email: string | null;
   study_programs: StudyProgram | null;
   grades: {
     id: string;
@@ -261,7 +269,16 @@ export async function getStudents(): Promise<StudentData[]> {
         study_program_id: s.study_program_id,
         study_program: s.study_programs,
         is_active: s.is_active ?? true,
+        is_active: s.is_active ?? true,
         avatar_url: userAvatar,
+        jenis_kelamin: s.jenis_kelamin,
+        tempat_lahir: s.tempat_lahir,
+        tanggal_lahir: s.tanggal_lahir,
+        agama: s.agama,
+        nik: s.nik,
+        status: s.status,
+        no_hp: s.no_hp,
+        email: s.email,
       },
       transcript: fullTranscript,
       total_sks: totalSksApproved
@@ -374,6 +391,14 @@ export async function getStudentById(id: string): Promise<StudentData | null> {
       study_program: s.study_programs,
       is_active: s.is_active ?? true,
       avatar_url: userAvatar,
+      jenis_kelamin: s.jenis_kelamin,
+      tempat_lahir: s.tempat_lahir,
+      tanggal_lahir: s.tanggal_lahir,
+      agama: s.agama,
+      nik: s.nik,
+      status: s.status,
+      no_hp: s.no_hp,
+      email: s.email,
     },
     transcript: fullTranscript,
     total_sks: totalSksApproved
@@ -389,6 +414,14 @@ export async function createStudent(values: StudentFormValues) {
     alamat: values.alamat,
     study_program_id: values.study_program_id || null,
     is_active: values.is_active,
+    jenis_kelamin: values.jenis_kelamin,
+    tempat_lahir: values.tempat_lahir,
+    tanggal_lahir: values.tanggal_lahir,
+    agama: values.agama,
+    nik: values.nik,
+    status: values.status,
+    no_hp: values.no_hp,
+    email: values.email,
   }]);
 
   if (error) handleDbError(error, "createStudent");
@@ -404,6 +437,14 @@ export async function updateStudent(id: string, values: StudentFormValues) {
     alamat: values.alamat,
     study_program_id: values.study_program_id || null,
     is_active: values.is_active,
+    jenis_kelamin: values.jenis_kelamin,
+    tempat_lahir: values.tempat_lahir,
+    tanggal_lahir: values.tanggal_lahir,
+    agama: values.agama,
+    nik: values.nik,
+    status: values.status,
+    no_hp: values.no_hp,
+    email: values.email,
   }).eq('id', id);
 
   if (error) handleDbError(error, "updateStudent");
@@ -525,6 +566,14 @@ export async function getStudentByNim(nim: string): Promise<StudentData | null> 
       study_program: s.study_programs,
       is_active: s.is_active ?? true,
       avatar_url: userAvatar,
+      jenis_kelamin: s.jenis_kelamin,
+      tempat_lahir: s.tempat_lahir,
+      tanggal_lahir: s.tanggal_lahir,
+      agama: s.agama,
+      nik: s.nik,
+      status: s.status,
+      no_hp: s.no_hp,
+      email: s.email,
     },
     transcript: fullTranscript,
     total_sks: totalSksApproved

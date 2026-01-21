@@ -30,7 +30,15 @@ const defaultValues: StudentFormValues = {
   angkatan: new Date().getFullYear(), // Default tahun sekarang
   alamat: "", 
   is_active: true,
-  avatar_url: null, // [!code ++] Default null
+  avatar_url: null,
+  jenis_kelamin: "",
+  tempat_lahir: "",
+  tanggal_lahir: "",
+  agama: "",
+  nik: "",
+  status: "",
+  no_hp: "",
+  email: "",
 };
 
 export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, onCancel }: StudentFormProps) {
@@ -44,7 +52,15 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
       angkatan: data.angkatan ? String(data.angkatan) : new Date().getFullYear().toString(),
       alamat: data.alamat || "",
       is_active: data.is_active ?? true,
-      avatar_url: data.avatar_url || null, // [!code ++] Keep avatar_url existing
+      avatar_url: data.avatar_url || null,
+      jenis_kelamin: data.jenis_kelamin || "",
+      tempat_lahir: data.tempat_lahir || "",
+      tanggal_lahir: data.tanggal_lahir || "",
+      agama: data.agama || "",
+      nik: data.nik || "",
+      status: data.status || "",
+      no_hp: data.no_hp || "",
+      email: data.email || "",
     };
   };
 
@@ -199,6 +215,111 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
         placeholder="Contoh: Budi Santoso"
         className={errorClass("nama")}
         />
+      </div>
+
+      {/* Baris Baru: NIK & Jenis Kelamin */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="nik">NIK</Label>
+          <Input
+            id="nik"
+            value={formData.nik}
+            onChange={(e) => handleNumericInput("nik", e.target.value, 16)}
+            placeholder="Nomor Induk Kependudukan"
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="jenis_kelamin">Jenis Kelamin</Label>
+          <Select 
+            value={formData.jenis_kelamin} 
+            onValueChange={(v) => handleInputChange("jenis_kelamin", v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Pilih Jenis Kelamin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+              <SelectItem value="Perempuan">Perempuan</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+       {/* Baris Baru: TTL */}
+       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid gap-2 md:col-span-2">
+          <Label htmlFor="tempat_lahir">Tempat Lahir</Label>
+          <Input
+            id="tempat_lahir"
+            value={formData.tempat_lahir}
+            onChange={(e) => handleInputChange("tempat_lahir", e.target.value)}
+            placeholder="Kota Lahir"
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="tanggal_lahir">Tanggal Lahir</Label>
+          <Input
+            id="tanggal_lahir"
+            type="date"
+            value={formData.tanggal_lahir}
+            onChange={(e) => handleInputChange("tanggal_lahir", e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Baris Baru: Agama & Status */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid gap-2">
+            <Label htmlFor="agama">Agama</Label>
+            <Select 
+                value={formData.agama} 
+                onValueChange={(v) => handleInputChange("agama", v)}
+            >
+                <SelectTrigger>
+                    <SelectValue placeholder="Pilih Agama" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="Islam">Islam</SelectItem>
+                    <SelectItem value="Kristen">Kristen</SelectItem>
+                    <SelectItem value="Katolik">Katolik</SelectItem>
+                    <SelectItem value="Hindu">Hindu</SelectItem>
+                    <SelectItem value="Buddha">Buddha</SelectItem>
+                    <SelectItem value="Konghucu">Konghucu</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+        <div className="grid gap-2">
+            <Label htmlFor="status">Status Perkawinan</Label>
+            <Input
+                id="status"
+                value={formData.status}
+                onChange={(e) => handleInputChange("status", e.target.value)}
+                placeholder="Contoh: Belum Menikah"
+            />
+        </div>
+      </div>
+
+      {/* Baris Baru: Kontak */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid gap-2">
+            <Label htmlFor="no_hp">No. Handphone</Label>
+            <Input
+                id="no_hp"
+                value={formData.no_hp}
+                onChange={(e) => handleNumericInput("no_hp", e.target.value, 15)}
+                placeholder="08xxxxxxxxxx"
+            />
+        </div>
+        <div className="grid gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                placeholder="email@example.com"
+            />
+        </div>
       </div>
 
       {/* Baris 3: Prodi */}

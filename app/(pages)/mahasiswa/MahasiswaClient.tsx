@@ -97,7 +97,15 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
       angkatan: student.profile.angkatan, 
       alamat: student.profile.alamat,
       is_active: student.profile.is_active,
-      avatar_url: student.profile.avatar_url 
+      avatar_url: student.profile.avatar_url,
+      jenis_kelamin: student.profile.jenis_kelamin || "",
+      tempat_lahir: student.profile.tempat_lahir || "",
+      tanggal_lahir: student.profile.tanggal_lahir || "",
+      agama: student.profile.agama || "",
+      nik: student.profile.nik || "",
+      status: student.profile.status || "",
+      no_hp: student.profile.no_hp || "",
+      email: student.profile.email || ""
     });
     setIsEditing(true);
     setIsFormOpen(true);
@@ -183,6 +191,16 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
       header: "NIM",
       className: "w-[120px]",
       render: (row) => <span className="font-mono font-medium text-gray-700">{row.profile.nim}</span>
+    },
+    {
+      header: "L/P",
+      className: "w-[50px] text-center",
+      render: (row) => <span className="text-gray-600">{row.profile.jenis_kelamin === 'Laki-laki' ? 'L' : (row.profile.jenis_kelamin === 'Perempuan' ? 'P' : '-')}</span>
+    },
+    {
+      header: "No HP",
+      className: "w-[120px]",
+      render: (row) => <span className="text-gray-600 text-xs">{row.profile.no_hp || "-"}</span>
     },
     { 
       header: "Program Studi", 

@@ -116,6 +116,14 @@ export interface StudentProfile {
   study_program?: StudyProgram | null;
   is_active: boolean;
   avatar_url?: string | null;
+  jenis_kelamin?: string | null;
+  tempat_lahir?: string | null;
+  tanggal_lahir?: string | null;
+  agama?: string | null;
+  nik?: string | null;
+  status?: string | null;
+  no_hp?: string | null;
+  email?: string | null;
 }
 
 export interface StudentFormValues {
@@ -126,6 +134,14 @@ export interface StudentFormValues {
   study_program_id: string;
   is_active: boolean;
   avatar_url?: string | null;
+  jenis_kelamin: string;
+  tempat_lahir: string;
+  tanggal_lahir: string;
+  agama: string;
+  nik: string;
+  status: string;
+  no_hp: string;
+  email: string;
 }
 
 // =========================================

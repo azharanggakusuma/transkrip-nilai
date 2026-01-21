@@ -86,6 +86,41 @@ export default function PrintableBiodata({ student }: PrintableBiodataProps) {
                                 <td>{student.profile.is_active ? "AKTIF" : "TIDAK AKTIF"}</td>
                             </tr>
                             <tr>
+                                <td>NIK</td>
+                                <td className="text-center">:</td>
+                                <td className="font-mono tracking-wide">{student.profile.nik || "-"}</td>
+                            </tr>
+                            <tr>
+                                <td>Tempat, Tanggal Lahir</td>
+                                <td className="text-center">:</td>
+                                <td>{student.profile.tempat_lahir ? `${student.profile.tempat_lahir}, ` : ""}{student.profile.tanggal_lahir || "-"}</td>
+                            </tr>
+                            <tr>
+                                <td>Jenis Kelamin</td>
+                                <td className="text-center">:</td>
+                                <td>{student.profile.jenis_kelamin || "-"}</td>
+                            </tr>
+                            <tr>
+                                <td>Agama</td>
+                                <td className="text-center">:</td>
+                                <td>{student.profile.agama || "-"}</td>
+                            </tr>
+                            <tr>
+                                <td>Status Perkawinan</td>
+                                <td className="text-center">:</td>
+                                <td>{student.profile.status || "-"}</td>
+                            </tr>
+                            <tr>
+                                <td>No. Telepon</td>
+                                <td className="text-center">:</td>
+                                <td>{student.profile.no_hp || "-"}</td>
+                            </tr>
+                            <tr>
+                                <td>Email</td>
+                                <td className="text-center">:</td>
+                                <td>{student.profile.email || "-"}</td>
+                            </tr>
+                            <tr>
                                 <td>Alamat Lengkap</td>
                                 <td className="text-center">:</td>
                                 <td className="leading-normal pt-2">{student.profile.alamat || "-"}</td>

@@ -112,6 +112,7 @@ export default function BiodataClient({ student }: BiodataClientProps) {
                 </div>
 
                 <div className="flex flex-col text-sm md:text-sm">
+                   {/* DATA AKADEMIK */}
                    <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
                         <span className="text-gray-500 font-medium w-[140px] shrink-0">Program Studi</span>
                         <span className="text-gray-800 font-medium">
@@ -137,7 +138,7 @@ export default function BiodataClient({ student }: BiodataClientProps) {
                         </span>
                    </div>
                    <div className="flex flex-col sm:flex-row sm:items-center border-b border-gray-100 py-3 gap-1 sm:gap-4">
-                        <span className="text-gray-500 font-medium w-[140px] shrink-0">Status</span>
+                        <span className="text-gray-500 font-medium w-[140px] shrink-0">Status Akademik</span>
                         <span>
                           <Badge 
                             variant={student.profile.is_active ? "default" : "destructive"} 
@@ -150,6 +151,52 @@ export default function BiodataClient({ student }: BiodataClientProps) {
                             )}
                             {student.profile.is_active ? "Aktif" : "Non-Aktif"}
                           </Badge>
+                        </span>
+                   </div>
+
+                   {/* DATA PRIBADI */}
+                   <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
+                        <span className="text-gray-500 font-medium w-[140px] shrink-0">NIK</span>
+                        <span className="text-gray-800 font-medium">
+                            {student.profile.nik || "-"}
+                        </span>
+                   </div>
+                   <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
+                        <span className="text-gray-500 font-medium w-[140px] shrink-0">Tempat, Tgl Lahir</span>
+                        <span className="text-gray-800 font-medium">
+                            {student.profile.tempat_lahir ? `${student.profile.tempat_lahir}, ` : ""}{student.profile.tanggal_lahir || "-"}
+                        </span>
+                   </div>
+                   <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
+                        <span className="text-gray-500 font-medium w-[140px] shrink-0">Jenis Kelamin</span>
+                        <span className="text-gray-800 font-medium">
+                            {student.profile.jenis_kelamin || "-"}
+                        </span>
+                   </div>
+                   <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
+                        <span className="text-gray-500 font-medium w-[140px] shrink-0">Agama</span>
+                        <span className="text-gray-800 font-medium">
+                            {student.profile.agama || "-"}
+                        </span>
+                   </div>
+                   <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
+                        <span className="text-gray-500 font-medium w-[140px] shrink-0">Status Perkawinan</span>
+                        <span className="text-gray-800 font-medium">
+                            {student.profile.status || "-"}
+                        </span>
+                   </div>
+
+                   {/* DATA KONTAK */}
+                   <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
+                        <span className="text-gray-500 font-medium w-[140px] shrink-0">No Telepon</span>
+                        <span className="text-gray-800 font-medium">
+                            {student.profile.no_hp || "-"}
+                        </span>
+                   </div>
+                   <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
+                        <span className="text-gray-500 font-medium w-[140px] shrink-0">Email</span>
+                        <span className="text-gray-800 font-medium">
+                            {student.profile.email || "-"}
                         </span>
                    </div>
                    <div className="flex flex-col sm:flex-row sm:items-start pt-3 gap-1 sm:gap-4">
