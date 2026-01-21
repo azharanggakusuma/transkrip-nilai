@@ -87,7 +87,7 @@ export default function PrintableBiodata({ student }: PrintableBiodataProps) {
                             <tr>
                                 <td>Status Akademik</td>
                                 <td className="text-center">:</td>
-                                <td>{student.profile.is_active ? "AKTIF" : "TIDAK AKTIF"}</td>
+                                <td>{student.profile.is_active ? "Aktif" : "Non-Aktif"}</td>
                             </tr>
                             <tr>
                                 <td>NIK</td>
