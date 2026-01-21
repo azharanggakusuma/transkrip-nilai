@@ -42,6 +42,21 @@ export default function AdminKRSValidationView({
   const [students, setStudents] = useState<any[]>(initialStudents || []);
   const [isLoading, setIsLoading] = useState(false);
 
+  const sortedAcademicYears = useMemo(() => {
+    return [...academicYears].sort((a, b) => {
+        const yearA = parseInt(a.nama.split('/')[0]) || 0;
+        const yearB = parseInt(b.nama.split('/')[0]) || 0;
+        if (yearA !== yearB) return yearB - yearA; // Descending Year
+
+        // Prioritize Genap over Ganjil
+        const isGenapA = a.semester.toLowerCase().includes('genap');
+        const isGenapB = b.semester.toLowerCase().includes('genap');
+        if (isGenapA && !isGenapB) return -1;
+        if (!isGenapA && isGenapB) return 1;
+        return 0;
+    });
+  }, [academicYears]);
+
   // State untuk DataTable
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -245,7 +260,7 @@ export default function AdminKRSValidationView({
                                 <SelectValue placeholder="Pilih Tahun Akademik" />
                             </SelectTrigger>
                             <SelectContent>
-                                {academicYears.map((ay) => (
+                                {sortedAcademicYears.map((ay) => (
                                 <SelectItem key={ay.id} value={ay.id}>TA {ay.nama} - {ay.semester}</SelectItem>
                                 ))}
                             </SelectContent>
