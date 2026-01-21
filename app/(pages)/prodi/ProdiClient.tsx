@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import { useToastMessage } from "@/hooks/use-toast-message";
 import { Pencil, Trash2 } from "lucide-react";
@@ -20,6 +21,7 @@ interface ProdiClientProps {
 
 export default function ProdiClient({ initialData }: ProdiClientProps) {
   const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
+  const router = useRouter();
 
   const [prodiList, setProdiList] = useState<StudyProgram[]>(initialData); 
   const [isLoading, setIsLoading] = useState(false);
@@ -119,7 +121,7 @@ export default function ProdiClient({ initialData }: ProdiClientProps) {
         successAction("Program Studi", "create", toastId);
       }
       setIsDialogOpen(false);
-      window.location.reload();
+      router.refresh();
     } catch (error: any) {
       showError("Gagal Menyimpan", error.message, toastId);
     } finally {

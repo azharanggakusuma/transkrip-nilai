@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import { useToastMessage } from "@/hooks/use-toast-message"; 
 import Image from "next/image"; 
@@ -28,6 +29,7 @@ interface MahasiswaClientProps {
 
 export default function MahasiswaClient({ initialStudents, initialPrograms }: MahasiswaClientProps) {
   const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
+  const router = useRouter();
 
   const [dataList, setDataList] = useState<StudentData[]>(initialStudents);
   const [studyPrograms, setStudyPrograms] = useState<StudyProgram[]>(initialPrograms); 
@@ -111,8 +113,7 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
         successAction("Mahasiswa", "create", toastId);
       }
       
-      // Manual refresh or window reload
-      window.location.reload(); 
+      router.refresh();
       setIsFormOpen(false);
     } catch (error: any) {
       showError("Gagal Menyimpan", error.message, toastId);

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import { useToastMessage } from "@/hooks/use-toast-message"; 
 import { Pencil, Trash2, CheckCircle2, XCircle } from "lucide-react"; 
@@ -20,6 +21,7 @@ interface OfficialsClientProps {
 
 export default function OfficialsClient({ initialData }: OfficialsClientProps) {
   const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
+  const router = useRouter();
 
   const [dataList, setDataList] = useState<Official[]>(initialData);
   const [isLoading, setIsLoading] = useState(false); 
@@ -95,7 +97,7 @@ export default function OfficialsClient({ initialData }: OfficialsClientProps) {
         successAction("Pejabat", "create", toastId);
       }
       setIsFormOpen(false);
-      window.location.reload();
+      router.refresh();
     } catch (error: any) {
       showError("Gagal Menyimpan", error.message, toastId);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import { useToastMessage } from "@/hooks/use-toast-message";
 import { Pencil, Trash2 } from "lucide-react";
@@ -28,7 +29,7 @@ interface MataKuliahClientProps {
 
 export default function MataKuliahClient({ initialData, studyPrograms }: MataKuliahClientProps) {
   const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
-  // const router = useRouter(); // Gunakan jika revalidatePath tidak cukup responsif
+  const router = useRouter();
 
   // State data lokal diinisialisasi dari props server
   const [courses, setCourses] = useState<CourseData[]>(initialData); 
@@ -141,16 +142,7 @@ export default function MataKuliahClient({ initialData, studyPrograms }: MataKul
         successAction("Mata Kuliah", "create", toastId);
       }
       
-      // router.refresh(); // Direkomendasikan jika ingin sinkron dengan Server Data
-      // Namun untuk UX cepat, user sudah melihat toast sukses.
-      // Kita perlu memastikan data diUI terupdate. 
-      // Karena server action `revalidatePath` sudah dipanggil, next navigasi akan fresh.
-      // Kita reload page manual atau biarkan `revalidatePath` bekerja?
-      // `revalidatePath` on server only updates the cache. The client needs to refetch.
-      // Cara paling clean di Next.js App Router:
-      window.location.reload(); // Simple brute force refresh untuk memastikan data server terbaru.
-                                // Atau gunakan router.refresh() dari next/navigation
-      
+      router.refresh();
       setIsDialogOpen(false);
     } catch (error: any) {
       showError("Gagal Menyimpan", error.message, toastId);

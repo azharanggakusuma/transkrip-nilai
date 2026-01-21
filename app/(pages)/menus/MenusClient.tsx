@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button"; 
 import { ArrowUpDown } from "lucide-react";    
@@ -21,6 +22,7 @@ interface MenusClientProps {
 export default function MenusClient({ initialData }: MenusClientProps) {
   const [dataList, setDataList] = useState<Menu[]>(initialData);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // 2. Gunakan Hook
   const { showLoading, showSuccess, successAction, errorAction, confirmDeleteMessage } = useToastMessage();
@@ -70,8 +72,7 @@ export default function MenusClient({ initialData }: MenusClientProps) {
         successAction("Menu", "create", toastId);
       }
       
-      // Reload page to get fresh data
-      window.location.reload();
+      router.refresh();
     } catch (error: any) {
       setIsFormOpen(true); // Buka form lagi jika gagal
       // Toast Error Save
@@ -165,8 +166,7 @@ export default function MenusClient({ initialData }: MenusClientProps) {
               initialItems={dataList} 
               onClose={() => setIsReorderOpen(false)}
               onSuccess={() => {
-                  // Reload needed for order update effectively everywhere
-                  window.location.reload();
+                  router.refresh();
                   showSuccess("Urutan Diperbarui", "Susunan menu sidebar berhasil disimpan.");
               }} 
            />

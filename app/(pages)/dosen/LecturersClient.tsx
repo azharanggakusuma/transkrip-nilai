@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import { useToastMessage } from "@/hooks/use-toast-message"; 
 import { Pencil, Trash2, CheckCircle2, XCircle, User } from "lucide-react"; 
@@ -21,6 +22,7 @@ interface LecturersClientProps {
 
 export default function LecturersClient({ initialData }: LecturersClientProps) {
   const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
+  const router = useRouter();
 
   const [dataList, setDataList] = useState<Lecturer[]>(initialData);
   const [isLoading, setIsLoading] = useState(false); 
@@ -95,7 +97,7 @@ export default function LecturersClient({ initialData }: LecturersClientProps) {
         successAction("Dosen", "create", toastId);
       }
       
-      window.location.reload(); 
+      router.refresh();
       setIsFormOpen(false);
     } catch (error: any) {
       showError("Gagal Menyimpan", error.message, toastId);

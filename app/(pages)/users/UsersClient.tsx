@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import { useToastMessage } from "@/hooks/use-toast-message";
 import { FormModal } from "@/components/shared/FormModal";
@@ -17,6 +18,7 @@ interface UsersClientProps {
 
 export default function UsersClient({ initialData }: UsersClientProps) {
   const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
+  const router = useRouter();
 
   const [dataList, setDataList] = useState<UserData[]>(initialData);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,7 +69,7 @@ export default function UsersClient({ initialData }: UsersClientProps) {
         successAction("User", "create", toastId);
       }
       setIsFormOpen(false);
-      window.location.reload(); 
+      router.refresh(); 
     } catch (error: any) {
       showError("Gagal Menyimpan", error.message, toastId);
     }
