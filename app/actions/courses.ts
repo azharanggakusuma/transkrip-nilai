@@ -68,19 +68,31 @@ export async function createCourse(values: CoursePayload) {
 
   if (courseError) handleDbError(courseError, "createCourse");
 
-  // Insert relasi ke junction table jika ada program studi yang dipilih
-  if (newCourse && values.study_program_ids && values.study_program_ids.length > 0) {
-    const junctionData = values.study_program_ids.map(spId => ({
-      course_id: newCourse.id,
-      study_program_id: spId
-    }));
+  if (newCourse) {
+    let prodiIds = values.study_program_ids || [];
 
-    const { error: junctionError } = await supabase
-      .from('course_study_programs')
-      .insert(junctionData);
+    // Jika kategori MBKM, ambil semua program studi
+    if (values.kategori === 'MBKM') {
+      const { data: allProdi } = await supabase
+        .from('study_programs')
+        .select('id');
+      prodiIds = allProdi?.map(p => p.id) || [];
+    }
 
-    if (junctionError) {
-      console.error("[DB_ERROR] Insert junction:", junctionError);
+    // Insert relasi ke junction table
+    if (prodiIds.length > 0) {
+      const junctionData = prodiIds.map(spId => ({
+        course_id: newCourse.id,
+        study_program_id: spId
+      }));
+
+      const { error: junctionError } = await supabase
+        .from('course_study_programs')
+        .insert(junctionData);
+
+      if (junctionError) {
+        console.error("[DB_ERROR] Insert junction:", junctionError);
+      }
     }
   }
 
@@ -105,15 +117,25 @@ export async function updateCourse(id: string, values: CoursePayload) {
 
   if (courseError) handleDbError(courseError, "updateCourse");
 
-  // Hapus relasi lama dan insert yang baru
+  // Hapus relasi lama
   await supabase
     .from('course_study_programs')
     .delete()
     .eq('course_id', id);
 
-  // Insert relasi baru jika ada
-  if (values.study_program_ids && values.study_program_ids.length > 0) {
-    const junctionData = values.study_program_ids.map(spId => ({
+  let prodiIds = values.study_program_ids || [];
+
+  // Jika kategori MBKM, ambil semua program studi
+  if (values.kategori === 'MBKM') {
+    const { data: allProdi } = await supabase
+      .from('study_programs')
+      .select('id');
+    prodiIds = allProdi?.map(p => p.id) || [];
+  }
+
+  // Insert relasi baru
+  if (prodiIds.length > 0) {
+    const junctionData = prodiIds.map(spId => ({
       course_id: id,
       study_program_id: spId
     }));
