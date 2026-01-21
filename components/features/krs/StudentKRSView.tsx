@@ -414,7 +414,7 @@ export default function StudentKRSView({
                                 </Button>
                             )}
                             {(krsGlobalStatus === 'SUBMITTED' || krsGlobalStatus === 'APPROVED') && (
-                                <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-white hover:opacity-25 hover:text-white"
+                                <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
                                     onClick={() => setIsPrintModalOpen(true)}>
                                     <Printer className="w-4 h-4 mr-2" /> Cetak KRS
                                 </Button>
