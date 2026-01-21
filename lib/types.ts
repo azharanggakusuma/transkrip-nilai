@@ -88,6 +88,7 @@ export interface Course {
   sks: number;
   smt_default: number;
   kategori: CourseCategory | string;
+  study_programs?: StudyProgram[];
 }
 
 export interface CourseFormValues {
@@ -96,6 +97,7 @@ export interface CourseFormValues {
   sks: number | string;
   smt_default: number | string;
   kategori: CourseCategory | "";
+  study_program_ids: string[];
 }
 
 export type CoursePayload = CourseFormValues;

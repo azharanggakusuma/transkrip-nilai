@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from "@/lib/supabase/server"; 
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { Course, CoursePayload } from "@/lib/types";
 
@@ -10,7 +10,7 @@ const handleDbError = (error: any, context: string) => {
 
   if (error.code === '23505') {
     if (error.message?.includes('kode')) {
-        throw new Error("Kode Mata Kuliah tersebut sudah ada. Harap gunakan kode lain.");
+      throw new Error("Kode Mata Kuliah tersebut sudah ada. Harap gunakan kode lain.");
     }
     throw new Error("Data duplikat terdeteksi dalam sistem.");
   }
@@ -22,25 +22,39 @@ const handleDbError = (error: any, context: string) => {
   throw new Error("Gagal memproses data. Terjadi kendala di server.");
 };
 
-// Ambil semua mata kuliah
+// Ambil semua mata kuliah beserta relasi program studi
 export async function getCourses() {
-  const supabase = await createClient(); 
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('courses')
-    .select('*')
+    .select(`
+      *,
+      course_study_programs (
+        study_program:study_programs (id, kode, nama, jenjang)
+      )
+    `)
     .order('matkul', { ascending: true });
 
   if (error) {
     console.error("Error fetching courses:", error.message);
     return [];
   }
-  return data as Course[];
+
+  // Transform data untuk flatten structure study_programs
+  const transformedData = data.map((course: any) => ({
+    ...course,
+    study_programs: course.course_study_programs?.map((csp: any) => csp.study_program).filter(Boolean) || []
+  }));
+
+  return transformedData as Course[];
 }
 
-// Tambah mata kuliah baru
+// Tambah mata kuliah baru dengan relasi program studi
 export async function createCourse(values: CoursePayload) {
-  const supabase = await createClient(); 
-  const { error } = await supabase
+  const supabase = await createClient();
+
+  // Insert mata kuliah terlebih dahulu
+  const { data: newCourse, error: courseError } = await supabase
     .from('courses')
     .insert([{
       kode: values.kode,
@@ -48,17 +62,37 @@ export async function createCourse(values: CoursePayload) {
       sks: Number(values.sks),
       smt_default: Number(values.smt_default),
       kategori: values.kategori
-    }]);
+    }])
+    .select('id')
+    .single();
 
-  if (error) handleDbError(error, "createCourse");
-  
+  if (courseError) handleDbError(courseError, "createCourse");
+
+  // Insert relasi ke junction table jika ada program studi yang dipilih
+  if (newCourse && values.study_program_ids && values.study_program_ids.length > 0) {
+    const junctionData = values.study_program_ids.map(spId => ({
+      course_id: newCourse.id,
+      study_program_id: spId
+    }));
+
+    const { error: junctionError } = await supabase
+      .from('course_study_programs')
+      .insert(junctionData);
+
+    if (junctionError) {
+      console.error("[DB_ERROR] Insert junction:", junctionError);
+    }
+  }
+
   revalidatePath('/matakuliah');
 }
 
-// Update mata kuliah
+// Update mata kuliah dengan relasi program studi
 export async function updateCourse(id: string, values: CoursePayload) {
-  const supabase = await createClient(); 
-  const { error } = await supabase
+  const supabase = await createClient();
+
+  // Update data mata kuliah
+  const { error: courseError } = await supabase
     .from('courses')
     .update({
       kode: values.kode,
@@ -69,20 +103,42 @@ export async function updateCourse(id: string, values: CoursePayload) {
     })
     .eq('id', id);
 
-  if (error) handleDbError(error, "updateCourse");
-  
+  if (courseError) handleDbError(courseError, "updateCourse");
+
+  // Hapus relasi lama dan insert yang baru
+  await supabase
+    .from('course_study_programs')
+    .delete()
+    .eq('course_id', id);
+
+  // Insert relasi baru jika ada
+  if (values.study_program_ids && values.study_program_ids.length > 0) {
+    const junctionData = values.study_program_ids.map(spId => ({
+      course_id: id,
+      study_program_id: spId
+    }));
+
+    const { error: junctionError } = await supabase
+      .from('course_study_programs')
+      .insert(junctionData);
+
+    if (junctionError) {
+      console.error("[DB_ERROR] Update junction:", junctionError);
+    }
+  }
+
   revalidatePath('/matakuliah');
 }
 
-// Hapus mata kuliah
+// Hapus mata kuliah (relasi junction otomatis terhapus karena ON DELETE CASCADE)
 export async function deleteCourse(id: string) {
-  const supabase = await createClient(); 
+  const supabase = await createClient();
   const { error } = await supabase
     .from('courses')
     .delete()
     .eq('id', id);
 
   if (error) handleDbError(error, "deleteCourse");
-  
+
   revalidatePath('/matakuliah');
 }

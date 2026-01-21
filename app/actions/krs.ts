@@ -105,10 +105,10 @@ export async function getKRSByStudent(studentId: string, academicYearId: string)
 export async function getStudentCourseOfferings(studentId: string, academicYearId: string) {
   const supabase = await createClient();
   try {
-    // A. Ambil Data Mahasiswa
+    // A. Ambil Data Mahasiswa beserta study_program_id
     const { data: student, error: studentError } = await supabase
       .from("students")
-      .select(`*, study_program:study_programs (nama, jenjang)`)
+      .select(`*, study_program:study_programs (id, nama, jenjang)`)
       .eq("id", studentId)
       .single();
 
@@ -123,8 +123,7 @@ export async function getStudentCourseOfferings(studentId: string, academicYearI
 
     if (yearError) throw new Error("Tahun akademik tidak ditemukan");
 
-    // --- LOGIKA HITUNG SEMESTER ---
-    // --- LOGIKA HITUNG SEMESTER ---
+    // Hitung semester mahasiswa
     const calculatedSemester = calculateStudentSemester(student.angkatan, academicYear);
 
     // C. Cek Status MBKM Mahasiswa
@@ -135,21 +134,40 @@ export async function getStudentCourseOfferings(studentId: string, academicYearI
       .eq("academic_year_id", academicYearId)
       .single();
 
-    // D. Build Query Mata Kuliah
-    let courseQuery = supabase
-      .from("courses")
-      .select("*")
-      .eq("smt_default", calculatedSemester)
-      .order("matkul", { ascending: true });
+    let courses: any[] = [];
 
     if (mbkmData && mbkmData.jenis_mbkm === "Pertukaran Mahasiswa Merdeka") {
-      courseQuery = courseQuery.eq("kategori", "MBKM");
-    } else {
-      courseQuery = courseQuery.neq("kategori", "MBKM");
-    }
+      // Mahasiswa MBKM: hanya tampilkan mata kuliah kategori MBKM
+      const { data: mbkmCourses, error: courseError } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("smt_default", calculatedSemester)
+        .eq("kategori", "MBKM")
+        .order("matkul", { ascending: true });
 
-    const { data: courses, error: courseError } = await courseQuery;
-    if (courseError) throw courseError;
+      if (courseError) throw courseError;
+      courses = mbkmCourses || [];
+    } else {
+      // Mahasiswa Reguler: filter berdasarkan program studi via junction table
+      const studentProdiId = student.study_program_id;
+
+      // Query mata kuliah yang terkait dengan program studi mahasiswa
+      const { data: coursesByProdi, error: prodiCourseError } = await supabase
+        .from("course_study_programs")
+        .select(`
+          course:courses (*)
+        `)
+        .eq("study_program_id", studentProdiId);
+
+      if (prodiCourseError) throw prodiCourseError;
+
+      // Flatten dan filter berdasarkan semester, exclude MBKM
+      const flatCourses = (coursesByProdi || [])
+        .map((item: any) => item.course)
+        .filter((c: any) => c && c.smt_default === calculatedSemester && c.kategori !== "MBKM");
+
+      courses = flatCourses.sort((a: any, b: any) => a.matkul.localeCompare(b.matkul));
+    }
 
     // E. Ambil Data KRS yang SUDAH diambil
     const { data: takenKRS, error: krsError } = await supabase

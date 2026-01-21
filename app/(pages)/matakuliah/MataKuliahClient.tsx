@@ -91,7 +91,8 @@ export default function MataKuliahClient({ initialData }: MataKuliahClientProps)
       matkul: course.matkul,
       sks: course.sks,
       smt_default: course.smt_default,
-      kategori: course.kategori as CourseCategory 
+      kategori: course.kategori as CourseCategory,
+      study_program_ids: course.study_programs?.map(sp => sp.id) || []
     });
     setIsEditing(true);
     setIsDialogOpen(true);
@@ -188,8 +189,37 @@ export default function MataKuliahClient({ initialData }: MataKuliahClientProps)
     {
       header: "Kategori",
       accessorKey: "kategori",
-      className: "w-[150px]",
+      className: "w-[100px]",
       render: (row) => <Badge variant="outline" className="font-normal border-gray-300 text-gray-600">{row.kategori}</Badge>
+    },
+    {
+      header: "Program Studi",
+      className: "max-w-[200px]",
+      render: (row) => {
+        if (row.kategori === "MBKM") {
+          return <span className="text-xs text-muted-foreground italic">Semua Prodi</span>;
+        }
+        const programs = row.study_programs || [];
+        if (programs.length === 0) {
+          return <span className="text-xs text-muted-foreground">-</span>;
+        }
+        return (
+          <div className="flex flex-wrap gap-1">
+            {programs.slice(0, 2).map((sp) => (
+              <Badge key={sp.id} variant="secondary" className="text-xs font-normal">
+                {sp.nama}
+              </Badge>
+            ))}
+            {programs.length > 2 && (
+              <Tooltip content={programs.slice(2).map(sp => sp.nama).join(", ")} position="top">
+                <Badge variant="secondary" className="text-xs font-normal cursor-default">
+                  +{programs.length - 2}
+                </Badge>
+              </Tooltip>
+            )}
+          </div>
+        );
+      }
     },
     {
       header: "Aksi",
