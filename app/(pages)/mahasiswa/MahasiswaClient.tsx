@@ -190,9 +190,39 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
       ),
     },
     {
+      header: "NIK",
+      className: "w-[130px]",
+      render: (row) => <span className="text-xs font-mono text-gray-600">{row.profile.nik || "-"}</span>
+    },
+    {
       header: "L/P",
       className: "w-[50px] text-center",
       render: (row) => <span className="text-gray-600">{row.profile.jenis_kelamin === 'Laki-laki' ? 'L' : (row.profile.jenis_kelamin === 'Perempuan' ? 'P' : '-')}</span>
+    },
+    {
+      header: "TTL",
+      className: "w-[150px]",
+      render: (row) => (
+        <div className="flex flex-col text-xs text-gray-600">
+           <span>{row.profile.tempat_lahir || "-"}</span>
+           <span className="text-muted-foreground">{row.profile.tanggal_lahir || "-"}</span>
+        </div>
+      )
+    },
+    {
+      header: "Agama",
+      className: "w-[100px]",
+      render: (row) => <span className="text-sm text-gray-600">{row.profile.agama || "-"}</span>
+    },
+    {
+      header: "Sts. Nikah",
+      className: "w-[100px]",
+      render: (row) => <span className="text-xs text-gray-600">{row.profile.status || "-"}</span>
+    },
+    {
+      header: "Alamat",
+      className: "w-[200px]",
+      render: (row) => <span className="text-xs text-gray-600 line-clamp-2" title={row.profile.alamat}>{row.profile.alamat || "-"}</span>
     },
     {
       header: "Kontak",
