@@ -107,11 +107,11 @@ export default function BiodataClient({ student }: BiodataClientProps) {
               <div className="flex-1 w-full">
                 {/* Desktop Name Header */}
                 <div className="hidden md:block mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">{student.profile.nama}</h2>
-                    <p className="text-gray-500 font-mono text-lg">{student.profile.nim}</p>
+                    <h2 className="text-xl font-bold text-gray-800">{student.profile.nama}</h2>
+                    <p className="text-gray-500 font-mono text-base">{student.profile.nim}</p>
                 </div>
 
-                <div className="flex flex-col text-sm md:text-base">
+                <div className="flex flex-col text-sm md:text-sm">
                    <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
                         <span className="text-gray-500 font-medium w-[140px] shrink-0">Program Studi</span>
                         <span className="text-gray-800 font-medium">
