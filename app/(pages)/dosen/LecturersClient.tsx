@@ -132,7 +132,7 @@ export default function LecturersClient({ initialData }: LecturersClientProps) {
       render: (_, index) => <span className="text-muted-foreground font-medium">{startIndex + index + 1}</span>
     },
     {
-        header: "Nama Dosen",
+        header: "Dosen",
         render: (row) => (
           <div className="flex items-center gap-3">
               {/* Avatar */}
