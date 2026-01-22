@@ -95,7 +95,7 @@ export function KtmCard({ student }: KtmCardProps) {
         </div>
 
         {/* Middle Content: QR & Title */}
-        <div className="flex items-start gap-3 relative z-10 mt-3 pl-1">
+        <div className="flex items-center gap-3 relative z-10 mt-3 pl-1">
             {/* QR Code */}
             <div className="relative w-[42px] h-[42px] bg-white">
                 <QRCode
@@ -107,7 +107,7 @@ export function KtmCard({ student }: KtmCardProps) {
             </div>
             
             {/* Title */}
-            <h2 className="text-[11px] font-bold text-slate-900 uppercase leading-3 w-32 tracking-tight mt-1" style={{ fontFamily: "Arial, sans-serif" }}>
+            <h2 className="text-[11px] font-bold text-slate-900 uppercase leading-3 w-32 tracking-tight" style={{ fontFamily: "Arial, sans-serif" }}>
               KARTU IDENTITAS<br/>MAHASISWA
             </h2>
         </div>
@@ -115,7 +115,7 @@ export function KtmCard({ student }: KtmCardProps) {
 
       {/* --- PHOTO (Overlapping Top and Bottom) --- */}
       {/* Photo size reduced as requested */}
-      <div className="absolute right-[18px] top-[44px] w-[19mm] h-[25.3mm] z-30 bg-slate-200 shadow-sm overflow-hidden">
+      <div className="absolute right-[19px] top-[44px] w-[14mm] h-[18mm] z-30 bg-slate-200 shadow-sm overflow-hidden pointer-events-none transform-gpu">
          {profile.avatar_url ? (
            <Image 
              src={profile.avatar_url} 
@@ -144,21 +144,21 @@ export function KtmCard({ student }: KtmCardProps) {
          />
 
          {/* Info Content */}
-         <div className="relative z-10 flex justify-between items-end h-full mb-0.5">
-            <div className="flex flex-col gap-0 mb-0.5 max-w-[65%] leading-tight">
+         <div className="relative z-10 flex justify-between items-center h-full w-full">
+            <div className="flex flex-col gap-[2px] max-w-[65%] leading-tight text-left justify-center">
               <h1 className="text-[12px] font-bold uppercase truncate tracking-wide text-white font-sans" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
                 {profile.nama}
               </h1>
-              <p className="text-[11px] font-bold tracking-wider font-sans opacity-100 text-slate-100 mt-[1px]" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
+              <p className="text-[11px] font-bold tracking-wider font-sans opacity-100 text-slate-100" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
                 {profile.nim}
               </p>
-              <p className="text-[10px] font-bold opacity-100 mt-[1px] text-slate-100" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
+              <p className="text-[10px] font-bold opacity-100 text-slate-100" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
                 {profile.study_program?.nama || "Mahasiswa"}
                 {profile.study_program?.jenjang ? ` (${profile.study_program.jenjang})` : ""}
               </p>
             </div>
             
-            <div className="flex flex-col items-end text-[7px] text-right opacity-100 mb-0.5 leading-tight text-white font-semibold" style={{ textShadow: '1px 1px 1px rgba(0,0,0,0.5)' }}>
+            <div className="flex flex-col items-end text-[7px] text-right opacity-100 leading-tight text-white font-semibold" style={{ textShadow: '1px 1px 1px rgba(0,0,0,0.5)' }}>
                <span>Berlaku sampai dengan :</span>
                <span className="font-bold text-[8px] mt-[1px]">{validUntil}</span>
             </div>
