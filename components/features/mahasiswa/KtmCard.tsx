@@ -96,7 +96,7 @@ export function KtmCard({ student }: KtmCardProps) {
 
         {/* Middle Content: QR & Title */}
         <div className="flex items-start gap-3 relative z-10 mt-3 pl-1">
-            {/* QR Code with Logo Overlay */}
+            {/* QR Code */}
             <div className="relative w-[42px] h-[42px] bg-white">
                 <QRCode
                   size={256}
@@ -104,17 +104,6 @@ export function KtmCard({ student }: KtmCardProps) {
                   value={profile.nim || "-"}
                   viewBox={`0 0 256 256`}
                 />
-                {/* Logo Overlay Center */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[20%] h-[20%] bg-white rounded-full flex items-center justify-center p-[1px]">
-                   <div className="relative w-full h-full">
-                      <Image 
-                        src="/img/logo-ikmi.png" 
-                        alt="Logo Center" 
-                        fill 
-                        className="object-contain"
-                      />
-                   </div>
-                </div>
             </div>
             
             {/* Title */}
@@ -148,7 +137,7 @@ export function KtmCard({ student }: KtmCardProps) {
             className="absolute inset-0 z-0 pointer-events-none opacity-30"
             style={{
                backgroundImage: "url('/img/mega_mendung.svg')",
-               backgroundSize: "cover",
+               backgroundSize: "105%",
                backgroundPosition: "center",
                backgroundRepeat: "no-repeat",
             }}
