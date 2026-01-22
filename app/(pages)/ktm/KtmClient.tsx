@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Printer, User } from "lucide-react";
+import { Printer, User, Download, ShieldCheck } from "lucide-react";
 import { StudentData } from "@/lib/types";
 import { KtmCard } from "@/components/features/mahasiswa/KtmCard";
 import Image from "next/image";
@@ -40,126 +40,142 @@ export default function KtmClient({ student }: KtmClientProps) {
             size: 85.6mm 53.98mm;
             margin: 0;
           }
-          body * { visibility: hidden; }
-          #ktm-print-wrapper, #ktm-print-wrapper * { visibility: visible; }
           
-          #ktm-print-wrapper {
-            position: absolute;
-            left: 0;
+          /* Hide everything by default */
+          body {
+            visibility: hidden;
+            background-color: white;
+          }
+
+          /* Hide screen-only content specifically to remove it from flow */
+          .screen-content {
+            display: none !important;
+          }
+          
+          /* Show print section */
+          #print-only-section {
+            visibility: visible !important;
+            display: block !important;
+            position: fixed;
             top: 0;
+            left: 0;
             margin: 0;
             padding: 0;
             width: 85.6mm;
             height: 53.98mm;
-            overflow: hidden;
             z-index: 9999;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+          
+          #print-only-section * {
+             visibility: visible !important;
           }
         }
       `}</style>
-
-      <div className="flex flex-col gap-6 pb-10 animate-in fade-in duration-500 print:hidden">
+      
+      {/* SCREEN CONTENT */}
+      <div className="screen-content flex flex-col gap-6 pb-10 animate-in fade-in duration-500">
         <PageHeader 
           title="Kartu Tanda Mahasiswa" 
           breadcrumb={["Beranda", "KTM"]} 
         />
 
-        <Card className="border-none shadow-sm ring-1 ring-gray-200">
-          <CardContent className="p-5 md:p-8">
-            <div className="flex flex-col md:flex-row gap-8 items-start">
-              
-              {/* DESKTOP SIDEBAR (Avatar + Button) - Hidden on Mobile */}
-              <div className="hidden md:flex w-[170px] flex-col items-center gap-4 shrink-0">
-                <div className="w-[150px] h-[200px] bg-slate-100 rounded-lg border border-slate-200 relative overflow-hidden shadow-sm">
-                  {student.profile.avatar_url ? (
-                    <Image
-                      src={student.profile.avatar_url}
-                      alt={student.profile.nama}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                      <User className="h-16 w-16 mb-2" />
-                      <span className="text-sm">Tidak ada foto</span>
+        <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 items-start">
+             
+             {/* SIDEBAR - Profil Ringkas */}
+             <Card className="border-slate-200 shadow-sm overflow-hidden h-fit md:sticky md:top-4">
+                <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+                    <div className="w-32 h-40 bg-slate-100 rounded-lg border border-slate-200 relative overflow-hidden shadow-inner">
+                        {student.profile.avatar_url ? (
+                            <Image
+                                src={student.profile.avatar_url}
+                                alt={student.profile.nama}
+                                fill
+                                className="object-cover"
+                            />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                                <User className="h-10 w-10 mb-2 opacity-50" />
+                                <span className="text-xs">No Photo</span>
+                            </div>
+                        )}
                     </div>
-                  )}
-                </div>
-                <Button 
-                   onClick={handlePrint} 
-                   className="w-full" 
-                   variant="default"
-                   disabled={isPrinting}
-                >
-                  <Printer className="mr-2 h-4 w-4" />
-                  Cetak KTM
-                </Button>
-              </div>
 
-              {/* MOBILE HEADER (Avatar + Name) - Hidden on Desktop */}
-              <div className="flex md:hidden w-full items-center gap-4 border-b border-gray-100 pb-4 mb-2">
-                 <div className="w-24 h-32 bg-slate-100 rounded-md border border-slate-200 relative overflow-hidden shrink-0">
-                    {student.profile.avatar_url ? (
-                        <Image
-                        src={student.profile.avatar_url}
-                        alt={student.profile.nama}
-                        fill
-                        className="object-cover"
-                        />
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                        <User className="h-8 w-8 mb-1" />
-                        <span className="text-[10px]">No Photo</span>
+                    <div className="space-y-1 w-full border-b border-slate-100 pb-4">
+                        <h3 className="font-semibold text-slate-900 leading-tight">{student.profile.nama}</h3>
+                        <p className="text-sm text-slate-500 font-mono">{student.profile.nim}</p>
+                    </div>
+
+                    <div className="w-full space-y-2">
+                        <div className="flex justify-between text-xs">
+                             <span className="text-slate-500">Status</span>
+                             <span className="font-medium text-emerald-600 flex items-center gap-1">
+                                <ShieldCheck className="w-3 h-3" />
+                                Aktif
+                             </span>
                         </div>
-                    )}
-                 </div>
-                 <div className="flex-1 min-w-0">
-                    <h2 className="text-lg font-bold text-gray-800 leading-tight mb-1">{student.profile.nama}</h2>
-                    <p className="text-gray-500 font-mono text-sm">{student.profile.nim}</p>
-                 </div>
-              </div>
+                        <div className="flex justify-between text-xs">
+                             <span className="text-slate-500">Prodi</span>
+                             <span className="font-medium text-slate-700 truncate max-w-[120px]" title={student.profile.study_program?.nama}>
+                                {student.profile.study_program?.nama || "-"}
+                             </span>
+                        </div>
+                    </div>
 
-              {/* MAIN CONTENT SECTION */}
-              <div className="flex-1 w-full flex flex-col items-center md:items-start">
-                
-                {/* Desktop Name Header */}
-                <div className="hidden md:block mb-6 w-full border-b border-gray-100 pb-4">
-                    <h2 className="text-xl font-bold text-gray-800">{student.profile.nama}</h2>
-                    <p className="text-gray-500 font-mono text-base">{student.profile.nim} - {student.profile.study_program?.nama}</p>
-                </div>
-
-                <div className="w-full flex flex-col items-center md:items-start gap-4">
-                   <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 w-full flex justify-center">
-                      <div id="ktm-print-wrapper" className="shadow-lg">
-                        <KtmCard student={student} />
-                      </div>
-                   </div>
-                   
-                   <div className="w-full text-left space-y-2 max-w-2xl">
-                      <p className="text-sm text-slate-500">
-                         * Gunakan tombol "Cetak KTM" di sebelah kiri (desktop) atau bawah (mobile) untuk mencetak.
-                      </p>
-                      <p className="text-sm text-slate-500">
-                         * Kartu ini sah digunakan selama status mahasiswa aktif.
-                      </p>
-                   </div>
-                </div>
-
-                {/* MOBILE BUTTON (Bottom) */}
-                <div className="mt-6 md:hidden w-full">
                     <Button 
-                    onClick={handlePrint} 
-                    className="w-full" 
-                    variant="default"
-                    disabled={isPrinting}
+                        onClick={handlePrint} 
+                        className="w-full mt-2" 
+                        disabled={isPrinting}
                     >
-                    <Printer className="mr-2 h-4 w-4" />
-                    Cetak KTM
+                        <Printer className="mr-2 h-4 w-4" />
+                        Cetak KTM
                     </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+             </Card>
+
+             {/* MAIN CONTENT - Card Preview */}
+             <Card className="border-slate-200 shadow-sm min-h-[500px] flex flex-col overflow-hidden">
+                <CardContent className="flex-1 p-0 flex flex-col bg-slate-50/50">
+                    
+                    {/* Header Section */}
+                    <div className="px-8 py-6 border-b border-slate-200 bg-white flex justify-between items-center">
+                        <div>
+                             <h2 className="text-lg font-semibold text-slate-900">Preview KTM Digital</h2>
+                             <p className="text-sm text-slate-500">Tampilan kartu identitas mahasiswa.</p>
+                        </div>
+                        {/* Download Prompt (Visual only) */}
+                        <div className="hidden md:flex items-center gap-2 text-xs text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                            <Download className="w-3 h-3" />
+                            Siap dicetak
+                        </div>
+                    </div>
+
+                    {/* Canvas Area */}
+                    <div className="flex-1 flex flex-col items-center justify-center p-12 bg-slate-50 opacity-100">
+                         {/* Card Container - Screen Only */}
+                         <div className="relative shadow-md rounded-xl overflow-hidden bg-white mobile-card-wrapper">
+                             <KtmCard student={student} />
+                         </div>
+                    </div>
+
+                    {/* Footer Info */}
+                    <div className="px-8 py-4 bg-white border-t border-slate-200 text-center md:text-left md:flex justify-between items-center gap-4">
+                        <p className="text-xs text-slate-500 max-w-lg">
+                            Dokumen ini adalah identitas resmi yang diterbitkan oleh STMIK IKMI Cirebon. 
+                            Segala bentuk penyalahgunaan kartu ini dapat dikenakan sanksi akademik.
+                        </p>
+                    </div>
+
+                </CardContent>
+             </Card>
+
+        </div>
+      </div>
+
+      {/* PRINT ONLY CONTENT - Dedicated Isolated Element */}
+      <div id="print-only-section" className="hidden">
+           <KtmCard student={student} />
       </div>
     </>
   );

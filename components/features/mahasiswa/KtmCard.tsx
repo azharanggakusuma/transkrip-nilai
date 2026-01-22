@@ -115,7 +115,7 @@ export function KtmCard({ student }: KtmCardProps) {
 
       {/* --- PHOTO (Overlapping Top and Bottom) --- */}
       {/* Photo size reduced as requested */}
-      <div className="absolute right-[19px] top-[44px] w-[14mm] h-[18mm] z-30 bg-slate-200 shadow-sm overflow-hidden pointer-events-none transform-gpu">
+      <div className="absolute right-[19px] top-[44px] w-[14mm] h-[18mm] z-30 bg-slate-200 shadow-sm overflow-hidden pointer-events-none">
          {profile.avatar_url ? (
            <Image 
              src={profile.avatar_url} 
