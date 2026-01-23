@@ -104,4 +104,4 @@ siakad-ikmi/
 Kontribusi selalu diterima! Silakan buat *Pull Request* baru untuk fitur atau perbaikan bug.
 
 ---
-Dikembangkan oleh Tim IT STMIK IKMI Cirebon.
+Dikembangkan oleh Azharangga Kusuma.
