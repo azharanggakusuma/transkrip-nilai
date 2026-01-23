@@ -117,8 +117,21 @@ export default function KtmClient({ student }: KtmClientProps) {
                         </div>
                         <div className="flex justify-between text-xs">
                              <span className="text-slate-500">Prodi</span>
-                             <span className="font-medium text-slate-700 truncate max-w-[120px]" title={student.profile.study_program?.nama}>
+                             <span className="font-medium text-slate-700 truncate max-w-[160px]" title={`${student.profile.study_program?.nama || "-"}${student.profile.study_program?.jenjang ? ` (${student.profile.study_program.jenjang})` : ""}`}>
                                 {student.profile.study_program?.nama || "-"}
+                                {student.profile.study_program?.jenjang && ` (${student.profile.study_program.jenjang})`}
+                             </span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                             <span className="text-slate-500">Angkatan</span>
+                             <span className="font-medium text-slate-700">
+                                {student.profile.angkatan || "-"}
+                             </span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                             <span className="text-slate-500">Semester</span>
+                             <span className="font-medium text-slate-700">
+                                {student.profile.semester || "-"}
                              </span>
                         </div>
                     </div>
