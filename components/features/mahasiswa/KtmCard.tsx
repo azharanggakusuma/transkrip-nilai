@@ -44,6 +44,7 @@ export function KtmCard({ student }: KtmCardProps) {
                alt="Logo" 
                fill 
                className="object-contain"
+               priority
              />
           </div>
           
