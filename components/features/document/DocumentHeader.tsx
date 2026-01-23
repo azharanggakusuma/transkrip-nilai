@@ -84,7 +84,7 @@ export default function DocumentHeader({ title = "TRANSKRIP NILAI" }: DocumentHe
             </p>
             <p>Jl. Perjuangan No. 10 B Majasem</p>
             <p>Kec. Kesambi Kota Cirebon</p>
-            <p>Tlp. 0231) 490480 - 490481</p>
+            <p>Tlp. (0231) 490480 - 490481</p>
             <p className="mt-[1px]">
               Website :{" "}
               <span className="text-[#00ADEE]">https://ikmi.ac.id</span> Email :{" "}
