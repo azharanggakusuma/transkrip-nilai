@@ -124,8 +124,8 @@ export function KtmCard({ student }: KtmCardProps) {
              className="object-cover"
            />
          ) : (
-           <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-500 text-[8px] text-center p-1">
-             Tanpa Foto
+           <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-500 text-[7px] text-center p-1">
+             Foto Tidak Tersedia
            </div>
          )}
       </div>
