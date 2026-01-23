@@ -18,6 +18,7 @@ import {
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { FormModal } from "@/components/shared/FormModal";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import Tooltip from "@/components/shared/Tooltip";
 import { StudentForm } from "@/components/features/mahasiswa/StudentForm";
 import PrintableBiodata from "@/components/features/mahasiswa/PrintableBiodata";
 import { KtmCard } from "@/components/features/mahasiswa/KtmCard";
@@ -247,7 +248,13 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
     {
       header: "Alamat",
       className: "w-[200px]",
-      render: (row) => <span className="text-xs text-gray-600 line-clamp-2" title={row.profile.alamat}>{row.profile.alamat || "-"}</span>
+      render: (row) => (
+        <Tooltip content={row.profile.alamat || "-"} position="bottom">
+            <span className="text-xs text-gray-600 truncate block cursor-default max-w-[200px]">
+                {row.profile.alamat || "-"}
+            </span>
+        </Tooltip>
+      )
     },
     {
       header: "Kontak",
