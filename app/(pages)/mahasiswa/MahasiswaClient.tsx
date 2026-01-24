@@ -24,6 +24,7 @@ import PrintableBiodata from "@/components/features/mahasiswa/PrintableBiodata";
 import { KtmCard } from "@/components/features/mahasiswa/KtmCard";
 import { type StudentData, type StudentFormValues, type StudyProgram } from "@/lib/types";
 import { createStudent, updateStudent, deleteStudent } from "@/app/actions/students";
+import { formatDate } from "@/lib/utils";
 
 interface MahasiswaClientProps {
   initialStudents: StudentData[];
@@ -231,7 +232,7 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
       render: (row) => (
         <div className="flex flex-col text-xs text-gray-600">
            <span>{row.profile.tempat_lahir || "-"}</span>
-           <span className="text-muted-foreground">{row.profile.tanggal_lahir || "-"}</span>
+           <span className="text-muted-foreground">{formatDate(row.profile.tanggal_lahir)}</span>
         </div>
       )
     },

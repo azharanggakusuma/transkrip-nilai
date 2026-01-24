@@ -1,6 +1,7 @@
 import React from "react";
 import DocumentHeader from "@/components/features/document/DocumentHeader";
 import { StudentData } from "@/lib/types";
+import { formatDate } from "@/lib/utils";
 
 interface PrintableBiodataProps {
   student: StudentData | null;
@@ -95,7 +96,7 @@ export default function PrintableBiodata({ student }: PrintableBiodataProps) {
                             <tr>
                                 <td>Tempat, Tanggal Lahir</td>
                                 <td className="text-center">:</td>
-                                <td>{student.profile.tempat_lahir ? `${student.profile.tempat_lahir}, ` : ""}{student.profile.tanggal_lahir || "-"}</td>
+                                <td>{student.profile.tempat_lahir ? `${student.profile.tempat_lahir}, ` : ""}{formatDate(student.profile.tanggal_lahir)}</td>
                             </tr>
                             <tr>
                                 <td>Jenis Kelamin</td>

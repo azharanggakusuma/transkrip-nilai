@@ -9,6 +9,7 @@ import PrintableBiodata from "@/components/features/mahasiswa/PrintableBiodata";
 import { StudentData } from "@/lib/types";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/utils";
 
 interface BiodataClientProps {
   student: StudentData;
@@ -164,7 +165,7 @@ export default function BiodataClient({ student }: BiodataClientProps) {
                    <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
                         <span className="text-gray-500 font-medium w-[140px] shrink-0">Tempat, Tgl Lahir</span>
                         <span className="text-gray-800 font-medium">
-                            {student.profile.tempat_lahir ? `${student.profile.tempat_lahir}, ` : ""}{student.profile.tanggal_lahir || "-"}
+                            {student.profile.tempat_lahir ? `${student.profile.tempat_lahir}, ` : ""}{formatDate(student.profile.tanggal_lahir)}
                         </span>
                    </div>
                    <div className="flex flex-col sm:flex-row sm:items-baseline border-b border-gray-100 py-3 gap-1 sm:gap-4">
