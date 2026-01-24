@@ -18,18 +18,24 @@ export type UserSession = {
 
 
 
+import { isTurnstileEnabled } from "@/lib/settings";
+
 export async function authenticate(formData: FormData) {
   try {
     // --- Logika Verifikasi Captcha ---
-    const token = formData.get("cf-turnstile-response") as string;
+    const turnstileEnabled = await isTurnstileEnabled();
 
-    if (!token) {
-      return { success: false, error: "CaptchaRequired" };
-    }
+    if (turnstileEnabled) {
+      const token = formData.get("cf-turnstile-response") as string;
 
-    const isHuman = await verifyTurnstile(token);
-    if (!isHuman) {
-      return { success: false, error: "CaptchaFailed" };
+      if (!token) {
+        return { success: false, error: "CaptchaRequired" };
+      }
+
+      const isHuman = await verifyTurnstile(token);
+      if (!isHuman) {
+        return { success: false, error: "CaptchaFailed" };
+      }
     }
     // ----------------------------------------
 

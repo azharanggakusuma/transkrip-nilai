@@ -21,32 +21,36 @@ import {
 } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Shield, AlertTriangle, CheckCircle2, Server } from 'lucide-react';
+import { Shield, AlertTriangle, CheckCircle2, Server, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SystemSettingsClientProps {
   initialSettings: {
     maintenance_mode: boolean;
+    turnstile_enabled: boolean;
   };
 }
 
 export default function SystemSettingsClient({ initialSettings }: SystemSettingsClientProps) {
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
+  const [turnstileLoading, setTurnstileLoading] = useState(false);
 
   const form = useForm({
     defaultValues: {
       maintenance_mode: initialSettings.maintenance_mode || false,
+      turnstile_enabled: initialSettings.turnstile_enabled ?? true,
     },
   });
 
   const handleSwitchChange = async (key: string, value: boolean) => {
     if (key === 'maintenance_mode') setMaintenanceLoading(true);
+    if (key === 'turnstile_enabled') setTurnstileLoading(true);
     
     try {
       const response = await fetch('/api/system-settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ maintenance_mode: value }),
+        body: JSON.stringify({ [key]: value }),
       });
 
       if (!response.ok) {
@@ -55,7 +59,10 @@ export default function SystemSettingsClient({ initialSettings }: SystemSettings
 
       form.setValue(key as any, value);
       
-      toast.success(value ? "Maintenance Mode diaktifkan" : "Maintenance Mode dinonaktifkan", {
+      const label = key === 'maintenance_mode' ? 'Maintenance Mode' : 'Proteksi Turnstile';
+      const status = value ? 'diaktifkan' : 'dinonaktifkan';
+
+      toast.success(`${label} ${status}`, {
         description: "Perubahan pengaturan berhasil disimpan.",
       });
     } catch (error) {
@@ -64,6 +71,7 @@ export default function SystemSettingsClient({ initialSettings }: SystemSettings
       form.setValue(key as any, !value);
     } finally {
       if (key === 'maintenance_mode') setMaintenanceLoading(false);
+      if (key === 'turnstile_enabled') setTurnstileLoading(false);
     }
   };
 
@@ -134,6 +142,45 @@ export default function SystemSettingsClient({ initialSettings }: SystemSettings
                             handleSwitchChange('maintenance_mode', val);
                           }}
                           disabled={maintenanceLoading}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Item 2: Cloudflare Turnstile */}
+                <FormField
+                  control={form.control}
+                  name="turnstile_enabled"
+                  render={({ field }) => (
+                    <FormItem className={cn(
+                        "flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border p-6 transition-all duration-200",
+                        field.value ? "bg-indigo-50/50 border-indigo-200 dark:bg-indigo-950/10 dark:border-indigo-900/50" : "bg-card hover:bg-muted/20"
+                      )}>
+                      <div className="space-y-3 flex-1 mr-6">
+                        <div className="flex items-center gap-2">
+                           <Bot className={cn("w-5 h-5", field.value ? "text-indigo-600 dark:text-indigo-400" : "text-slate-500")} />
+                           <FormLabel className="text-base font-semibold cursor-pointer">Proteksi Cloudflare Turnstile</FormLabel>
+                             {field.value 
+                              ? <Badge className="ml-2 bg-indigo-600 hover:bg-indigo-700 text-white">Aktif</Badge> 
+                              : <Badge variant="outline" className="ml-2 text-slate-500 border-slate-200 bg-slate-100 dark:bg-slate-900 dark:border-slate-800">
+                                  Nonaktif
+                                </Badge>}
+                        </div>
+                        <FormDescription className="text-sm leading-relaxed max-w-2xl">
+                           Mengaktifkan verifikasi CAPTCHA (Turnstile) pada halaman login untuk mencegah serangan bots dan brute force.
+                           Disarankan untuk selalu mengaktifkan fitur ini.
+                        </FormDescription>
+                      </div>
+                      <FormControl className="mt-4 sm:mt-0">
+                        <Switch
+                          className={cn("data-[state=checked]:bg-indigo-600")}
+                          checked={field.value}
+                          onCheckedChange={(val) => {
+                            field.onChange(val);
+                            handleSwitchChange('turnstile_enabled', val);
+                          }}
+                          disabled={turnstileLoading}
                         />
                       </FormControl>
                     </FormItem>

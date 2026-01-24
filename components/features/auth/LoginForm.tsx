@@ -13,7 +13,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
-export function LoginForm() {
+interface LoginFormProps {
+  enableTurnstile?: boolean;
+}
+
+export function LoginForm({ enableTurnstile = true }: LoginFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +37,7 @@ export function LoginForm() {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!turnstileToken) {
+    if (enableTurnstile && !turnstileToken) {
       toast.error("Validasi Diperlukan", {
         description: "Silakan selesaikan CAPTCHA terlebih dahulu.",
       });
@@ -211,22 +215,24 @@ export function LoginForm() {
             </div>
 
             {/* Widget Cloudflare Turnstile */}
-            <div className="flex justify-center w-full pt-1">
-              <Turnstile 
-                ref={turnstileRef} // [PERBAIKAN] Menghubungkan ref ke komponen
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} 
-                onSuccess={(token) => setTurnstileToken(token)}
-                onError={() => {
-                   setTurnstileToken("");
-                   toast.error("Gagal memuat CAPTCHA");
-                }}
-                onExpire={() => setTurnstileToken("")}
-                options={{
-                  theme: 'light',
-                  size: 'flexible'
-                }}
-              />
-            </div>
+            {enableTurnstile && (
+              <div className="flex justify-center w-full pt-1">
+                <Turnstile 
+                  ref={turnstileRef} // [PERBAIKAN] Menghubungkan ref ke komponen
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} 
+                  onSuccess={(token) => setTurnstileToken(token)}
+                  onError={() => {
+                     setTurnstileToken("");
+                     toast.error("Gagal memuat CAPTCHA");
+                  }}
+                  onExpire={() => setTurnstileToken("")}
+                  options={{
+                    theme: 'light',
+                    size: 'flexible'
+                  }}
+                />
+              </div>
+            )}
 
           </CardContent>
 
