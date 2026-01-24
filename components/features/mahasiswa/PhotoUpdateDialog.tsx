@@ -41,7 +41,10 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
 
   useEffect(() => {
     // Muncul jika role mahasiswa dan belum punya foto
-    if (user && user.role === "mahasiswa" && !user.avatar_url) {
+    // Cek apakah user sudah pernah menutup dialog ini di sesi ini
+    const isDismissed = sessionStorage.getItem("photo_update_dismissed");
+    
+    if (user && user.role === "mahasiswa" && !user.avatar_url && !isDismissed) {
         setIsOpen(true);
     }
   }, [user]);
@@ -102,7 +105,7 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
   const handleCropSave = async () => {
     try {
       if (!imageSrc || !croppedAreaPixels) return;
-      setIsUploading(true); // Pakai state loading yang sama
+      setIsUploading(true);
       
       const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
       if (!croppedBlob) throw new Error("Crop failed");
@@ -110,20 +113,8 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
       const file = new File([croppedBlob], "avatar.jpg", { type: "image/jpeg" });
       const finalFile = await processImage(file);
       
-      // Lanjut simulasi upload langsung atau simpan ke state preview dulu?
-      // Sesuai flow sebelumnya: User klik "Gunakan Foto" di crop -> Masuk preview di modal utama -> Klik Simpan untuk Upload
-      // ATAU: Langsung upload setelah crop? 
-      // Flow modal 'PhotoUpdateDialog' sebelumnya adalah: Pilih File -> Preview -> Klik Simpan. 
-      // Jadi kita kembalikan ke Preview dulu.
-      
       const objectUrl = URL.createObjectURL(finalFile);
       setPreview(objectUrl);
-      
-      // Kita perlu simpan file ini untuk diupload nanti saat klik "Simpan Foto"
-      // Tapi karena input file ref sudah direset/diganti strukturnya, kita butuh state untuk menyimpan file siap upload
-      // Hack: Attach file ke fileInputRef atau buat state baru. 
-      // State baru lebih aman.
-      // (Kita akan buat state baru di langkah berikutnya, untuk sementara saya gunakan hack DataTransfer agar kompatibel dengan logic handleUpload lama)
       
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(finalFile);
@@ -181,6 +172,8 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
   };
 
   const handleClose = () => {
+    // Simpan status bahwa user menutup dialog ini di sesi ini
+    sessionStorage.setItem("photo_update_dismissed", "true");
     setIsOpen(false);
   };
 
