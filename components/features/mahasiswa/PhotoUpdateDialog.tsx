@@ -262,7 +262,6 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
             
             {/* Upload Area */}
             <div className="flex flex-row items-center gap-4 sm:gap-8 w-full justify-center px-4">
-                
                 {/* Preview Circle */}
                 <div 
                     className="relative group flex-shrink-0"
@@ -320,14 +319,13 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
                         Format: JPG, PNG. Maks: 20MB.
                     </p>
                 </div>
-
             </div>
 
              <div className="bg-amber-50 rounded-md p-3 border border-amber-100 w-full flex gap-3 text-amber-800 text-sm">
                  <div className="mt-0.5">⚠️</div>
                  <p>
-                    <strong>Catatan:</strong> Foto ini akan digunakan pada dokumen resmi. Wajib menggunakan <strong>Jas Almamater</strong> dan latar belakang warna <strong>Biru Langit</strong>.
-                 </p>
+                    <strong>Catatan:</strong> Foto ini akan digunakan untuk dokumen resmi. Wajib menggunakan latar belakang berwarna <strong>Biru Langit (Hex #99FFFF)</strong>, serta mengenakan jas almamater, dasi hitam, dan kerudung putih (bagi yang mengenakan).
+                </p>
              </div>
             
             <input 
