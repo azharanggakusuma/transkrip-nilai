@@ -268,7 +268,7 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
                     className="relative group flex-shrink-0"
                     onClick={() => !isUploading && fileInputRef.current?.click()}
                 >
-                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-dashed border-slate-300 shadow-sm overflow-hidden bg-slate-50 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors relative">
+                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-2 border-dashed border-slate-300 overflow-hidden bg-slate-50 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors relative">
                         {preview ? (
                             <Image 
                                 src={preview} 
