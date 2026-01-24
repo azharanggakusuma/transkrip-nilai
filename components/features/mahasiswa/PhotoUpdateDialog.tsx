@@ -302,7 +302,7 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
                 <div className="flex flex-col gap-2 sm:gap-3 text-left max-w-xs flex-1">
                     <h4 className="font-semibold text-slate-700 text-sm sm:text-base">Unggah Pas Foto</h4>
                     <p className="text-xs sm:text-sm text-slate-500 leading-snug">
-                       Silakan klik area foto atau tombol dibawah untuk mengunggah.
+                       Silakan klik area foto atau tombol dibawah untuk mengunggah. Sistem akan otomatis mengompresi foto Anda agar optimal.
                     </p>
                     <div className="flex justify-start">
                         <Button 
@@ -317,7 +317,7 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
                         </Button>
                     </div>
                      <p className="text-[10px] sm:text-xs text-slate-400">
-                        Format: JPG, PNG. Maks: 2MB.
+                        Format: JPG, PNG. Maks: 20MB.
                     </p>
                 </div>
 
