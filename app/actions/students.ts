@@ -269,7 +269,6 @@ export async function getStudents(): Promise<StudentData[]> {
         study_program_id: s.study_program_id,
         study_program: s.study_programs,
         is_active: s.is_active ?? true,
-        is_active: s.is_active ?? true,
         avatar_url: userAvatar,
         jenis_kelamin: s.jenis_kelamin,
         tempat_lahir: s.tempat_lahir,
