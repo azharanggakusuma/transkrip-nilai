@@ -3,6 +3,7 @@ import { getSignatureBase64 } from "@/app/actions/getSignature";
 
 export function useSignature(initialType: "basah" | "digital" | "none" = "none") {
   const [signatureType, setSignatureType] = useState<"basah" | "digital" | "none">(initialType);
+  const [signaturePath, setSignaturePath] = useState<string | null>(null);
   const [secureImage, setSecureImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -13,10 +14,11 @@ export function useSignature(initialType: "basah" | "digital" | "none" = "none")
         setIsLoading(false);
         return;
       }
-      
+
       setIsLoading(true);
       try {
-        const base64Data = await getSignatureBase64(signatureType);
+        const target = signaturePath || signatureType;
+        const base64Data = await getSignatureBase64(target);
         setSecureImage(base64Data);
       } catch (error) {
         console.error("Failed to load signature", error);
@@ -26,7 +28,7 @@ export function useSignature(initialType: "basah" | "digital" | "none" = "none")
       }
     };
     fetchSignature();
-  }, [signatureType]);
+  }, [signatureType, signaturePath]);
 
-  return { signatureType, setSignatureType, secureImage, isLoading };
+  return { signatureType, setSignatureType, setSignaturePath, secureImage, isLoading };
 }

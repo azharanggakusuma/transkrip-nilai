@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useToastMessage } from "@/hooks/use-toast-message";
-import { useSignature } from "@/hooks/useSignature"; 
+import { useSignature } from "@/hooks/useSignature";
+import { usePdfPrint } from "@/hooks/use-pdf-print";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -56,7 +57,9 @@ export default function StudentKRSView({
   initialData
 }: StudentKRSViewProps) {
   const { successAction, showError, showLoading, dismiss } = useToastMessage();
-  const { signatureType, setSignatureType, secureImage, isLoading: isSigLoading } = useSignature("none");
+  const { signatureType, setSignatureType, setSignaturePath, secureImage, isLoading: isSigLoading } = useSignature("none");
+  const { isPrinting, printPdf } = usePdfPrint();
+  const printRef = useRef<HTMLDivElement>(null);
 
   const [offerings, setOfferings] = useState<CourseOffering[]>(initialData?.offerings || []);
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>(initialAcademicYears);
@@ -270,9 +273,14 @@ export default function StudentKRSView({
     finally { setIsResetOpen(false); }
   };
   
-  const handlePrintProcess = () => {
+  const handlePrintProcess = async () => {
+    await printPdf({
+      elementRef: printRef,
+      fileName: `KRS_SMT${studentSemester}_${user.name}_${user.username}.pdf`,
+      pdfFormat: "a4",
+      pdfOrientation: "portrait",
+    });
     setIsPrintModalOpen(false);
-    setTimeout(() => { window.print(); }, 300);
   };
 
   const columns: Column<CourseOffering>[] = [
@@ -337,31 +345,24 @@ export default function StudentKRSView({
 
   return (
     <>
-    <style jsx global>{`
-      @media print {
-        @page { margin: 10mm; size: A4 portrait; }
-        body * { visibility: hidden; }
-        #print-area, #print-area * { visibility: visible; }
-        #print-area {
-          position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; background-color: white; z-index: 9999;
-        }
-      }
-    `}</style>
-
-    {/* --- LAYOUT PRINT --- */}
-    <PrintableKRS 
-        studentProfile={studentProfile || { 
-            nama: user?.name || "-", nim: user?.username || "-", 
-            semester: studentSemester, study_program: { nama: "-", jenjang: "-" } 
-        }}
-        studentSemester={studentSemester}
-        selectedAcademicYearName={selectedAcademicYearName}
-        takenCourses={takenCourses}
-        totalSKS={totalSKS}
-        official={official}
-        signatureType={signatureType}
-        signatureBase64={secureImage}
-    />
+    {/* --- LAYOUT PRINT (HIDDEN FOR PDF CAPTURE) --- */}
+    <div className="absolute top-0 left-[-9999px] w-[210mm]">
+      <PrintableKRS 
+          ref={printRef}
+          className="block"
+          studentProfile={studentProfile || { 
+              nama: user?.name || "-", nim: user?.username || "-", 
+              semester: studentSemester, study_program: { nama: "-", jenjang: "-" } 
+          }}
+          studentSemester={studentSemester}
+          selectedAcademicYearName={selectedAcademicYearName}
+          takenCourses={takenCourses}
+          totalSKS={totalSKS}
+          official={official}
+          signatureType={signatureType}
+          signatureBase64={secureImage}
+      />
+    </div>
 
     {/* --- LAYOUT WEB --- */}
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 mt-4 print:hidden">
@@ -569,7 +570,12 @@ export default function StudentKRSView({
             <div className="py-4 space-y-4">
                 <div className="space-y-2">
                     <Label className="text-sm font-medium">Pilih Jenis Tanda Tangan</Label>
-                    <Select value={signatureType} onValueChange={(val: any) => setSignatureType(val)}>
+                    <Select value={signatureType} onValueChange={(val: any) => {
+                        setSignatureType(val);
+                        if (val === 'basah' && official?.ttd_basah_url) setSignaturePath(official.ttd_basah_url);
+                        else if (val === 'digital' && official?.ttd_digital_url) setSignaturePath(official.ttd_digital_url);
+                        else setSignaturePath(null);
+                    }}>
                         <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Tanda Tangan" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="none">Tanpa Tanda Tangan</SelectItem>
@@ -580,9 +586,13 @@ export default function StudentKRSView({
                 </div>
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={() => setIsPrintModalOpen(false)}>Batal</Button>
-                <Button onClick={handlePrintProcess} disabled={isPrintButtonDisabled}>
-                    {isSigLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Memuat...</> : <><Printer className="w-4 h-4 mr-2" /> Cetak PDF</>}
+                <Button variant="outline" onClick={() => setIsPrintModalOpen(false)} disabled={isPrinting}>Batal</Button>
+                <Button onClick={handlePrintProcess} disabled={isPrinting || isSigLoading}>
+                    {isPrinting || isSigLoading ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {isPrinting ? "Memproses..." : "Memuat..."}</>
+                    ) : (
+                        <><Printer className="w-4 h-4 mr-2" /> Cetak PDF</>
+                    )}
                 </Button>
             </DialogFooter>
         </DialogContent>

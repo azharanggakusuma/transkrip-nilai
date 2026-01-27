@@ -1,9 +1,10 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import DocumentHeader from "@/components/features/document/DocumentHeader";
 import StudentInfo from "@/components/features/document/StudentInfo";
 import DocumentFooter from "@/components/features/document/DocumentFooter";
 import { Official } from "@/lib/types";
 import { CourseOffering } from "@/app/actions/krs";
+import { cn } from "@/lib/utils";
 
 interface PrintableKRSProps {
   studentProfile: any;
@@ -14,9 +15,10 @@ interface PrintableKRSProps {
   official: Official | null;
   signatureType: "basah" | "digital" | "none";
   signatureBase64: string | null;
+  className?: string;
 }
 
-export default function PrintableKRS({
+const PrintableKRS = forwardRef<HTMLDivElement, PrintableKRSProps>(({
   studentProfile,
   studentSemester,
   selectedAcademicYearName,
@@ -25,9 +27,17 @@ export default function PrintableKRS({
   official,
   signatureType,
   signatureBase64,
-}: PrintableKRSProps) {
+  className,
+}, ref) => {
   return (
-    <div id="print-area" className="hidden print:block font-sans bg-white text-black p-8">
+    <div 
+      id="print-area" 
+      ref={ref}
+      className={cn(
+        "hidden print:block font-sans bg-white text-black p-8",
+        className
+      )}
+    >
       <DocumentHeader title="KARTU RENCANA STUDI" />
       <div className="mt-1 mb-4 px-2">
         <StudentInfo
@@ -99,4 +109,9 @@ export default function PrintableKRS({
       </div>
     </div>
   );
-}
+
+});
+
+PrintableKRS.displayName = "PrintableKRS";
+
+export default PrintableKRS;
