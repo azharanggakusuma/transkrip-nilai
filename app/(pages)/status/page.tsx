@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { checkSystemHealth } from "@/app/actions/system";
-import { Activity, Database, RefreshCw, Server, Wifi, WifiOff } from "lucide-react";
+import { Activity, Database, HardDrive, RefreshCw, Server, Wifi, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PageHeader from "@/components/layout/PageHeader";
 
@@ -14,6 +14,10 @@ type HealthStatus = {
   latency: number;
   message: string;
   timestamp: string;
+  checks?: {
+    database: boolean;
+    storage: boolean;
+  };
 };
 
 export default function StatusPage() {
@@ -71,10 +75,10 @@ export default function StatusPage() {
         {/* Connection Status Card */}
         <Card className="md:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 mt-4">
-                <CardTitle className="text-base font-medium">Koneksi Database</CardTitle>
+                <CardTitle className="text-base text-lg">Koneksi Layanan</CardTitle>
                 <div className="flex items-center gap-2">
                      <span className="text-xs text-slate-400">
-                        {loading ? "Checking..." : lastChecked ? `Last Check: ${lastChecked.toLocaleTimeString()}` : ""}
+                        {loading ? "Memeriksa..." : lastChecked ? `Cek Terakhir: ${lastChecked.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit", second: "2-digit" })} WIB` : ""}
                      </span>
                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={checkStatus} disabled={loading}>
                         <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
@@ -96,7 +100,7 @@ export default function StatusPage() {
                                 {health?.status === "healthy" ? "Terhubung" : "Masalah Koneksi"}
                             </h3>
                             <Badge variant={health?.status === 'healthy' ? 'default' : 'destructive'} className={cn("capitalize", health?.status === "healthy" && "bg-emerald-600 hover:bg-emerald-700")}>
-                                {health?.status === "healthy" ? "Operational" : "Downtime"}
+                                {health?.status === "healthy" ? "Operasional" : "Gangguan"}
                             </Badge>
                         </div>
                         <p className="text-sm text-slate-500 max-w-md">
@@ -105,14 +109,27 @@ export default function StatusPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-6 border-t pt-6 bg-slate-50/50 rounded-lg p-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 border-t pt-6 bg-slate-50/50 rounded-lg p-4 mb-4">
                     <div className="flex items-center gap-3">
                          <div className="p-2 bg-white rounded-md shadow-sm border border-slate-100 text-slate-500">
                              <Database className="w-4 h-4" />
                          </div>
                          <div>
                              <p className="text-xs font-medium text-slate-500">Database Service</p>
-                             <p className="text-sm font-semibold text-slate-700">PostgreSQL</p>
+                             <div className="flex items-center gap-2">
+                                <p className="text-sm font-semibold text-slate-700">PostgreSQL</p>
+                             </div>
+                         </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                         <div className="p-2 bg-white rounded-md shadow-sm border border-slate-100 text-slate-500">
+                             <HardDrive className="w-4 h-4" />
+                         </div>
+                         <div>
+                             <p className="text-xs font-medium text-slate-500">Storage Service</p>
+                             <div className="flex items-center gap-2">
+                                <p className="text-sm font-semibold text-slate-700">Supabase</p>
+                             </div>
                          </div>
                     </div>
                     <div className="flex items-center gap-3">

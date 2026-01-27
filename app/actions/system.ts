@@ -7,34 +7,47 @@ export async function checkSystemHealth() {
   const start = Date.now();
 
   try {
-    // Jalankan query ringan
-    const { count, error } = await supabase
-      .from("academic_years")
-      .select("*", { count: "exact", head: true });
+    // Parallel checks
+    const [dbResult, storageResult] = await Promise.all([
+      supabase.from("academic_years").select("count", { count: "exact", head: true }),
+      supabase.storage.listBuckets()
+    ]);
 
     const latency = Date.now() - start;
+    const dbHealthy = !dbResult.error;
+    const storageHealthy = !storageResult.error;
 
-    if (error) {
-      return {
-        status: "error",
-        latency: latency,
-        message: error.message,
-        timestamp: new Date().toISOString()
-      };
+    let status = "healthy";
+    let message = "Semua sistem berjalan dengan normal";
+
+    if (!dbHealthy && !storageHealthy) {
+      status = "error";
+      message = "Gangguan total layanan sistem";
+    } else if (!dbHealthy || !storageHealthy) {
+      status = "warning";
+      message = !dbHealthy ? "Kendala pada database terdeteksi" : "Kendala pada storage terdeteksi";
     }
 
     return {
-      status: "healthy",
-      latency: latency,
-      message: "Connected",
-      timestamp: new Date().toISOString()
+      status,
+      latency,
+      message,
+      timestamp: new Date().toISOString(),
+      checks: {
+        database: dbHealthy,
+        storage: storageHealthy
+      }
     };
   } catch (err: any) {
     return {
       status: "error",
       latency: Date.now() - start,
       message: err.message || "Unknown error",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      checks: {
+        database: false,
+        storage: false
+      }
     };
   }
 }
