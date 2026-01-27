@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { checkSystemHealth } from "@/app/actions/system";
@@ -172,7 +173,78 @@ export default function StatusPage() {
                 </div>
              </CardContent>
          </Card>
+
+         {/* Resources Usage Card */}
+         <ResourceUsageCard loading={loading} lastTrigger={lastChecked} />
       </div>
     </div>
   );
+}
+
+import { getSystemResources } from "@/app/actions/system";
+
+function ResourceUsageCard({ loading, lastTrigger }: { loading: boolean, lastTrigger: Date | null }) {
+    const [resources, setResources] = useState<{
+        database: { used: number, limit: number, percentage: number };
+        storage: { used: number, limit: number, percentage: number };
+    } | null>(null);
+
+    useEffect(() => {
+        const fetchResources = async () => {
+            const data = await getSystemResources();
+            setResources(data);
+        };
+        fetchResources();
+    }, [lastTrigger]);
+
+    const formatBytes = (bytes: number) => {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    return (
+        <Card className="md:col-span-3 lg:col-span-3">
+            <CardHeader className="mt-4">
+                <CardTitle className="text-lg">Penggunaan Sumber Daya</CardTitle>
+            </CardHeader>
+            <CardContent className="mb-4">
+                <div className="grid gap-8 md:grid-cols-2">
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-slate-700">Database Size</span>
+                            <span className="text-slate-500">
+                                {resources ? `${formatBytes(resources.database.used)} / ${formatBytes(resources.database.limit)}` : "Memuat..."}
+                            </span>
+                        </div>
+                        <Progress value={resources?.database.percentage || 0} className="h-2" indicatorClassName={cn(
+                            resources && resources.database.percentage > 90 ? "bg-rose-500" :
+                            resources && resources.database.percentage > 75 ? "bg-amber-500" : "bg-emerald-500"
+                        )} />
+                        <div className="flex justify-end">
+                            <span className="text-xs text-slate-400">{resources ? `${resources.database.percentage.toFixed(1)}%` : "0%"}</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-slate-700">Storage Size</span>
+                            <span className="text-slate-500">
+                                {resources ? `${formatBytes(resources.storage.used)} / ${formatBytes(resources.storage.limit)}` : "Memuat..."}
+                            </span>
+                        </div>
+                         <Progress value={resources?.storage.percentage || 0} className="h-2" indicatorClassName={cn(
+                            resources && resources.storage.percentage > 90 ? "bg-rose-500" :
+                            resources && resources.storage.percentage > 75 ? "bg-amber-500" : "bg-emerald-500"
+                        )} />
+                         <div className="flex justify-end">
+                            <span className="text-xs text-slate-400">{resources ? `${resources.storage.percentage.toFixed(1)}%` : "0%"}</span>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
 }
