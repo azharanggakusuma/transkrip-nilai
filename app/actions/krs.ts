@@ -370,3 +370,19 @@ export async function rejectKRS(studentId: string, academicYearId: string) {
     throw new Error(error.message || "Gagal menolak KRS.");
   }
 }
+
+export async function approveAllKRS(academicYearId: string) {
+  const supabase = await createClient();
+  try {
+    const { error } = await supabase
+      .from("krs")
+      .update({ status: "APPROVED" })
+      .eq("academic_year_id", academicYearId)
+      .eq("status", "SUBMITTED");
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error: any) {
+    throw new Error(error.message || "Gagal menyetujui semua KRS.");
+  }
+}

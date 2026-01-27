@@ -19,10 +19,11 @@ import { cn } from "@/lib/utils";
 import { DataTable, type Column } from "@/components/ui/data-table";
 
 import { 
-  getStudentsWithSubmittedKRS, getKRSByStudent, approveKRS, rejectKRS 
+  getStudentsWithSubmittedKRS, getKRSByStudent, approveKRS, rejectKRS, approveAllKRS 
 } from "@/app/actions/krs";
 import { getAcademicYears } from "@/app/actions/academic-years";
 import { AcademicYear, KRS } from "@/lib/types";
+import { ConfirmModal } from "@/components/shared/ConfirmModal";
 
 interface AdminKRSValidationViewProps {
   initialAcademicYears: AcademicYear[];
@@ -67,7 +68,9 @@ export default function AdminKRSValidationView({
   const [studentKRS, setStudentKRS] = useState<KRS[]>([]);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [isApproveAllOpen, setIsApproveAllOpen] = useState(false);
 
   // Filter & Fetch when selectedYear changes from initial
   const isFirstRender = useRef(true);
@@ -134,6 +137,18 @@ export default function AdminKRSValidationView({
         successAction("KRS", "update", toastId);
         setIsDetailOpen(false);
         fetchStudents();
+    } catch (e: any) { showError("Gagal", e.message, toastId); }
+    finally { setIsProcessing(false); }
+  };
+
+  const handleApproveAll = async () => {
+    const toastId = showLoading("Menyetujui semua KRS...");
+    setIsProcessing(true);
+    try {
+        await approveAllKRS(selectedYear);
+        successAction("KRS", "update", toastId);
+        setIsApproveAllOpen(false);
+        await fetchStudents();
     } catch (e: any) { showError("Gagal", e.message, toastId); }
     finally { setIsProcessing(false); }
   };
@@ -303,7 +318,7 @@ export default function AdminKRSValidationView({
                                 <span className="text-4xl font-extrabold tracking-tight text-white">{pendingCount}</span>
                                 <span className="text-sm font-medium text-white">Mahasiswa</span>
                             </div>
-                            <p className="text-slate-200 text-xs mt-2">Menunggu persetujuan KRS untuk TA {currentAcademicYearName}.</p>
+                            <p className="text-slate-200 text-xs mt-2 mb-4">Menunggu persetujuan KRS untuk TA {currentAcademicYearName}.</p>
                         </div>
                     </div>
                  )}
@@ -327,6 +342,9 @@ export default function AdminKRSValidationView({
                 startIndex={startIndex}
                 endIndex={endIndex}
                 totalItems={filteredData.length}
+                onAdd={pendingCount > 0 ? () => setIsApproveAllOpen(true) : undefined}
+                addLabel={`Setujui Semua`}
+                addIcon={<CheckCircle2 className="w-4 h-4 mr-2" />}
             />
         </CardContent>
       </Card>
@@ -509,6 +527,16 @@ export default function AdminKRSValidationView({
             </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmModal 
+        isOpen={isApproveAllOpen} 
+        onClose={setIsApproveAllOpen}
+        onConfirm={handleApproveAll}
+        title="Setujui Semua Ajuan?"
+        description={`Anda akan menyetujui ${pendingCount} pengajuan KRS mahasiswa sekaligus. Tindakan ini tidak dapat dibatalkan.`}
+        confirmLabel={isProcessing ? "Memproses..." : "Ya, Setujui Semua"}
+        variant="default"
+      />
     </div>
   );
 }
