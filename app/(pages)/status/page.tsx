@@ -213,10 +213,10 @@ function ResourceUsageCard({ loading, lastTrigger }: { loading: boolean, lastTri
             <CardContent className="mb-4">
                 <div className="grid gap-6 md:grid-cols-2">
                     {/* Database Usage */}
-                    <div className="group rounded-xl border border-slate-100 bg-white p-4 shadow-sm hover:border-indigo-100 hover:shadow-md transition-all duration-300">
+                    <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
                         <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition-colors">
+                                <div className="p-2 bg-white rounded-md shadow-sm border border-slate-100 text-slate-500">
                                     <Database className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -248,10 +248,10 @@ function ResourceUsageCard({ loading, lastTrigger }: { loading: boolean, lastTri
                     </div>
 
                     {/* Storage Usage */}
-                    <div className="group rounded-xl border border-slate-100 bg-white p-4 shadow-sm hover:border-indigo-100 hover:shadow-md transition-all duration-300">
+                    <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
                         <div className="flex items-start justify-between mb-4">
                              <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition-colors">
+                                <div className="p-2 bg-white rounded-md shadow-sm border border-slate-100 text-slate-500">
                                     <HardDrive className="w-5 h-5" />
                                 </div>
                                 <div>
