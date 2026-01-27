@@ -206,41 +206,79 @@ function ResourceUsageCard({ loading, lastTrigger }: { loading: boolean, lastTri
     };
 
     return (
-        <Card className="md:col-span-3 lg:col-span-3">
+        <Card className="md:col-span-3 lg:col-span-3 overflow-hidden border-slate-200 shadow-sm">
             <CardHeader className="mt-4">
-                <CardTitle className="text-lg">Penggunaan Sumber Daya</CardTitle>
+               <CardTitle className="text-lg">Penggunaan Sumber Daya</CardTitle>
             </CardHeader>
             <CardContent className="mb-4">
-                <div className="grid gap-8 md:grid-cols-2">
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium text-slate-700">Database Size</span>
-                            <span className="text-slate-500">
-                                {resources ? `${formatBytes(resources.database.used)} / ${formatBytes(resources.database.limit)}` : "Memuat..."}
+                <div className="grid gap-6 md:grid-cols-2">
+                    {/* Database Usage */}
+                    <div className="group rounded-xl border border-slate-100 bg-white p-4 shadow-sm hover:border-indigo-100 hover:shadow-md transition-all duration-300">
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition-colors">
+                                    <Database className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-700">Database Size</p>
+                                    <p className="text-xs text-slate-500">PostgreSQL Storage</p>
+                                </div>
+                            </div>
+                            <span className={cn(
+                                "text-xs font-bold px-2 py-1 rounded-full",
+                                resources && resources.database.percentage > 90 ? "bg-rose-100 text-rose-700" :
+                                resources && resources.database.percentage > 75 ? "bg-amber-100 text-amber-700" :
+                                "bg-emerald-100 text-emerald-700"
+                            )}>
+                                {resources ? `${resources.database.percentage.toFixed(1)}%` : "0%"}
                             </span>
                         </div>
-                        <Progress value={resources?.database.percentage || 0} className="h-2" indicatorClassName={cn(
-                            resources && resources.database.percentage > 90 ? "bg-rose-500" :
-                            resources && resources.database.percentage > 75 ? "bg-amber-500" : "bg-emerald-500"
-                        )} />
-                        <div className="flex justify-end">
-                            <span className="text-xs text-slate-400">{resources ? `${resources.database.percentage.toFixed(1)}%` : "0%"}</span>
+                        
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-xs text-slate-500 font-medium font-mono">
+                                <span>{resources ? formatBytes(resources.database.used) : "0 B"}</span>
+                                <span>{resources ? formatBytes(resources.database.limit) : "500 MB"}</span>
+                            </div>
+                             <Progress value={resources?.database.percentage || 0} className="h-2.5 bg-slate-100" indicatorClassName={cn(
+                                "transition-all duration-1000",
+                                resources && resources.database.percentage > 90 ? "bg-rose-500" :
+                                resources && resources.database.percentage > 75 ? "bg-amber-500" : "bg-emerald-500"
+                            )} />
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium text-slate-700">Storage Size</span>
-                            <span className="text-slate-500">
-                                {resources ? `${formatBytes(resources.storage.used)} / ${formatBytes(resources.storage.limit)}` : "Memuat..."}
+                    {/* Storage Usage */}
+                    <div className="group rounded-xl border border-slate-100 bg-white p-4 shadow-sm hover:border-indigo-100 hover:shadow-md transition-all duration-300">
+                        <div className="flex items-start justify-between mb-4">
+                             <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition-colors">
+                                    <HardDrive className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-700">Storage Size</p>
+                                    <p className="text-xs text-slate-500">Supabase Bucket</p>
+                                </div>
+                            </div>
+                            <span className={cn(
+                                "text-xs font-bold px-2 py-1 rounded-full",
+                                resources && resources.storage.percentage > 90 ? "bg-rose-100 text-rose-700" :
+                                resources && resources.storage.percentage > 75 ? "bg-amber-100 text-amber-700" :
+                                "bg-emerald-100 text-emerald-700"
+                            )}>
+                                {resources ? `${resources.storage.percentage.toFixed(1)}%` : "0%"}
                             </span>
                         </div>
-                         <Progress value={resources?.storage.percentage || 0} className="h-2" indicatorClassName={cn(
-                            resources && resources.storage.percentage > 90 ? "bg-rose-500" :
-                            resources && resources.storage.percentage > 75 ? "bg-amber-500" : "bg-emerald-500"
-                        )} />
-                         <div className="flex justify-end">
-                            <span className="text-xs text-slate-400">{resources ? `${resources.storage.percentage.toFixed(1)}%` : "0%"}</span>
+
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-xs text-slate-500 font-medium font-mono">
+                                <span>{resources ? formatBytes(resources.storage.used) : "0 B"}</span>
+                                <span>{resources ? formatBytes(resources.storage.limit) : "1 GB"}</span>
+                            </div>
+                             <Progress value={resources?.storage.percentage || 0} className="h-2.5 bg-slate-100" indicatorClassName={cn(
+                                "transition-all duration-1000",
+                                resources && resources.storage.percentage > 90 ? "bg-rose-500" :
+                                resources && resources.storage.percentage > 75 ? "bg-amber-500" : "bg-emerald-500"
+                            )} />
                         </div>
                     </div>
                 </div>
