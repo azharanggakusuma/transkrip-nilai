@@ -1,15 +1,25 @@
 import Link from "next/link";
 import { PrinterIcon } from "./DashboardIcons";
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  name?: string;
+  role?: string;
+}
+
+export function DashboardHeader({ name = "User", role = "mahasiswa" }: DashboardHeaderProps) {
+  const isMahasiswa = role === "mahasiswa";
+  
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-foreground">
-          Dashboard Akademik
+          Halo, {name}!
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ringkasan performa akademik dan statistik data terkini.
+          {isMahasiswa 
+            ? "Selamat datang kembali. Berikut progres studi Anda terkini."
+            : "Selamat datang kembali. Berikut statistik data akademik terkini."
+          }
         </p>
       </div>
 

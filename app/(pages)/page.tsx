@@ -150,7 +150,8 @@ export default async function DashboardPage() {
         stats={stats} 
         trendData={trendData} 
         gradeDistData={gradeDistData} 
-        role={user.role} 
+        role={user.role}
+        userName={user.name || "User"} 
     />
   );
 }
