@@ -19,41 +19,49 @@ export async function getSignatureBase64(pathOrType: string) {
       // Example: .../storage/v1/object/public/signatures/folder/file.png
       // We need 'folder/file.png' or just 'file.png' depending on how it's stored.
       // Simple heuristic: take everything after the last slash if it looks like a url
+      // 3. Handle URL Parsing (untuk extract path relative terhadap bucket)
       if (filename.startsWith("http")) {
         try {
           const url = new URL(filename);
-          const pathParts = url.pathname.split('/');
-          // Find 'signatures' in path and take the rest?
-          // Or usually just the last part?
-          // Safeguard: take the last segment for now, or match common supabase pattern
-          const lastSegment = pathParts[pathParts.length - 1];
-          filename = lastSegment;
+          // Pola URL Supabase Storage: .../storage/v1/object/public/signatures/FOLDER/FILE.png
+          // Kita butuh "FOLDER/FILE.png" (path setelah bucket "signatures")
+          const splitKey = `/signatures/`;
+          if (url.pathname.includes(splitKey)) {
+            filename = url.pathname.split(splitKey)[1]; // Ambil bagian setelah bucket
+          } else {
+            // Fallback: ambil segmen terakhir (mungkin tidak ada folder)
+            const pathParts = url.pathname.split('/');
+            filename = pathParts[pathParts.length - 1];
+          }
+
+          // Decode URI component (misal spasi jadi %20)
+          filename = decodeURIComponent(filename);
         } catch (e) {
-          // Fallback, keep as is
+          // Fallback jika URL invalid
         }
       }
     }
 
-    // Clean up if full URL is passed? Usually storage download expects just filename inside bucket.
-    // Assuming official.ttd_digital_url stores just the filename or partial path. 
-    // If it stores full URL, we need to extract filename.
-    // For now, assuming it stores filename or relative path.
-
     const bucketName = "signatures";
 
-    // 3. Download file
+    // 4. Download file
     const { data, error } = await supabase.storage
       .from(bucketName)
       .download(filename);
 
     if (error) {
+      // Jangan throw/error keras jika file default tidak ada (misal ttd-basah.png belum diupload)
+      if (filename === "ttd-basah.png" || filename === "ttd-digital.png") {
+        console.warn(`Default signature '${filename}' not found in bucket.`);
+        return null;
+      }
       console.error(`Error downloading ${filename}:`, error.message);
       return null;
     }
 
     if (!data) return null;
 
-    // 4. Konversi Blob ke Base64
+    // 5. Konversi Blob ke Base64
     const arrayBuffer = await data.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const base64String = `data:image/png;base64,${buffer.toString("base64")}`;
