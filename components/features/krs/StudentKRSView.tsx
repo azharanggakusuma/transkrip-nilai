@@ -633,7 +633,7 @@ export default function StudentKRSView({
       </Dialog>
 
       <ConfirmModal isOpen={isSubmitOpen} onClose={setIsSubmitOpen} onConfirm={confirmSubmit}
-        title="Ajukan KRS?" description="Setelah diajukan, KRS akan dikunci dan menunggu persetujuan Dosen Wali." confirmLabel="Ajukan Sekarang" variant="default" />
+        title="Ajukan KRS?" description="Setelah diajukan, KRS akan dikunci dan menunggu persetujuan BAAK atau Dosen Wali." confirmLabel="Ajukan Sekarang" variant="default" />
       
       {/* MODAL RESET (Isi Ulang) */}
       <ConfirmModal isOpen={isResetOpen} onClose={setIsResetOpen} onConfirm={handleReset}
