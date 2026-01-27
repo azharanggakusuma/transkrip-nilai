@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, forwardRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import DocumentHeader from "@/components/features/document/DocumentHeader";
 import StudentInfo from "@/components/features/document/StudentInfo";
@@ -20,7 +20,7 @@ interface PrintableKHSProps {
   setTotalPages?: (pages: number) => void;
 }
 
-export default function PrintableKHS({
+const PrintableKHS = forwardRef<HTMLDivElement, PrintableKHSProps>(({
   loading,
   currentStudent,
   selectedSemester,
@@ -32,19 +32,29 @@ export default function PrintableKHS({
   official,
   isCollapsed,
   setTotalPages,
-}: PrintableKHSProps) {
-  const paperRef = useRef<HTMLDivElement>(null);
+}, ref) => {
+  const localRef = useRef<HTMLDivElement>(null);
+  
+  // Combine refs (forwarded ref + local ref for resizing observer)
+  useEffect(() => {
+    if (!ref) return;
+    if (typeof ref === 'function') {
+      ref(localRef.current);
+    } else {
+      (ref as React.MutableRefObject<HTMLDivElement | null>).current = localRef.current;
+    }
+  }, [ref]);
 
   // Observer Halaman Kertas
   useEffect(() => {
-    if (!paperRef.current || !setTotalPages) return;
+    if (!localRef.current || !setTotalPages) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const pages = Math.ceil((entry.target.scrollHeight - 1) / 1122.5);
         setTotalPages(pages < 1 ? 1 : pages);
       }
     });
-    observer.observe(paperRef.current);
+    observer.observe(localRef.current);
     return () => observer.disconnect();
   }, [currentStudent, selectedSemester, setTotalPages]);
 
@@ -59,7 +69,7 @@ export default function PrintableKHS({
     `}
     >
       <div
-        ref={paperRef}
+        ref={localRef}
         className={`
           bg-white p-8 shadow-2xl border border-gray-300 
           print:shadow-none print:border-none print:m-0 
@@ -106,4 +116,8 @@ export default function PrintableKHS({
       </div>
     </div>
   );
-}
+});
+
+PrintableKHS.displayName = "PrintableKHS";
+
+export default PrintableKHS;

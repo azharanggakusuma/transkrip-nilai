@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { getStudents, getOfficialForDocument } from "@/app/actions/students";
 import { type StudentData, type TranscriptItem, type Official } from "@/lib/types";
 import { useSignature } from "@/hooks/useSignature";
+import { usePdfPrint } from "@/hooks/use-pdf-print";
 import { useLayout } from "@/app/context/LayoutContext";
 import { useToastMessage } from "@/hooks/use-toast-message";
 
@@ -44,7 +45,7 @@ export default function StudentKHSView({ initialStudentData, initialOfficial }: 
   const [selectedSemester, setSelectedSemester] = useState<number>(0);
   const [printSemester, setPrintSemester] = useState<number>(0); // Decoupled state for printing
 
-  const { signatureType, setSignatureType } = useSignature("none");
+  const { signatureType, setSignatureType, isLoading: isSigLoading } = useSignature("none");
   
   // Derive Signature
   const secureImage = useMemo(() => {
@@ -58,12 +59,22 @@ export default function StudentKHSView({ initialStudentData, initialOfficial }: 
   
   const [totalPages, setTotalPages] = useState(1);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const { isPrinting, printPdf } = usePdfPrint();
+  const printRef = useRef<HTMLDivElement>(null);
 
   const toastIdRef = useRef<string | number | null>(null);
 
   useEffect(() => {
     // Optional loading state
-  }, []);
+    if (isSigLoading) {
+        if (!toastIdRef.current) toastIdRef.current = showLoading("Menyiapkan dokumen...");
+    } else {
+        if (toastIdRef.current) {
+            dismiss(toastIdRef.current);
+            toastIdRef.current = null;
+        }
+    }
+  }, [isSigLoading]);
 
   // Auto-select latest semester for printing if "All Semesters" is active
 
@@ -168,19 +179,23 @@ export default function StudentKHSView({ initialStudentData, initialOfficial }: 
     return calculateIPK(printCumulativeData).replace('.', ',');
   }, [printCumulativeData]);
 
-  // Handle Print with delay
-  const handlePrintProcess = () => {
+  // Handle Print with usePdfPrint
+  const handlePrintProcess = async () => {
+    await printPdf({
+      elementRef: printRef,
+      fileName: `KHS_SMT${printSemester}_${user?.name || 'Mahasiswa'}.pdf`,
+      pdfFormat: "a4",
+      pdfOrientation: "portrait",
+    });
     setIsPrintModalOpen(false);
-    setTimeout(() => {
-        window.print();
-    }, 300);
   };
 
   return (
     <>
       {/* --- HIDDEN PRINT COMPONENT --- */}
-      <div className="hidden print:block print:absolute print:top-0 print:left-0 print:w-full print:z-[9999]">
+      <div className="absolute top-0 left-[-9999px] w-[210mm]">
           <PrintableKHS 
+            ref={printRef} 
             loading={loading}
             currentStudent={currentStudent}
             selectedSemester={printSemester} // Use printSemester
@@ -190,7 +205,7 @@ export default function StudentKHSView({ initialStudentData, initialOfficial }: 
             signatureType={signatureType}
             signatureBase64={secureImage}
             official={official}
-            isCollapsed={isCollapsed}
+            isCollapsed={true} // Force full width for print
             setTotalPages={setTotalPages}
           />
       </div>
@@ -354,10 +369,14 @@ export default function StudentKHSView({ initialStudentData, initialOfficial }: 
                       </div>
                   </div>
 
-                   <div className="flex justify-end gap-3">
-                      <Button variant="outline" onClick={() => setIsPrintModalOpen(false)}>Batal</Button>
-                      <Button onClick={handlePrintProcess} className="bg-primary text-white">
-                          <Printer className="mr-2 h-4 w-4" /> Cetak PDF
+                      <div className="flex justify-end gap-3">
+                      <Button variant="outline" onClick={() => setIsPrintModalOpen(false)} disabled={isPrinting}>Batal</Button>
+                      <Button onClick={handlePrintProcess} className="bg-primary text-white" disabled={isPrinting || isSigLoading}>
+                          {isPrinting || isSigLoading ? (
+                              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {isPrinting ? "Memproses..." : "Memuat..."}</>
+                          ) : (
+                              <><Printer className="w-4 h-4 mr-2" /> Cetak PDF</>
+                          )}
                       </Button>
                   </div>
               </DialogContent>
