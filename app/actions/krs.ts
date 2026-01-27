@@ -227,8 +227,18 @@ export async function createKRS(payload: KRSFormValues) {
       throw error;
     }
 
-    revalidatePath("/krs");
-    return { success: true };
+    // revalidatePath("/krs"); // Disabled to prevent client re-rendering/flash
+
+    // Fetch the created record to get the ID
+    const { data: newKrs } = await supabase
+      .from("krs")
+      .select("id")
+      .eq("student_id", payload.student_id)
+      .eq("course_id", payload.course_id)
+      .eq("academic_year_id", payload.academic_year_id)
+      .single();
+
+    return { success: true, data: newKrs };
   } catch (error: any) {
     throw new Error(error.message || "Gagal mengambil mata kuliah.");
   }
@@ -239,7 +249,7 @@ export async function deleteKRS(id: string) {
   try {
     const { error } = await supabase.from("krs").delete().eq("id", id);
     if (error) throw error;
-    revalidatePath("/krs");
+    // revalidatePath("/krs"); // Disabled to prevent client re-rendering/flash
   } catch (error) {
     throw new Error("Gagal membatalkan mata kuliah.");
   }

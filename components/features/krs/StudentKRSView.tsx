@@ -207,49 +207,83 @@ export default function StudentKRSView({
             showError("Batas SKS", `Gagal mengambil mata kuliah. Total SKS akan melebihi batas (${MAX_SKS}).`);
             return;
         }
-        const toastId = showLoading(`Mengambil ${course.matkul}...`);
+        
+        // Optimistic Update: Set taken immediately
+        setOfferings(prev => prev.map(o => o.id === course.id ? { ...o, is_taken: true, krs_status: 'DRAFT' } : o));
+        
         try {
-            await createKRS({ student_id: studentId, academic_year_id: selectedYear, course_id: course.id });
-            successAction("Mata Kuliah", "create", toastId);
-            await fetchData(); 
-        } catch (e: any) { showError("Gagal", e.message, toastId); }
+            const res = await createKRS({ student_id: studentId, academic_year_id: selectedYear, course_id: course.id });
+            // Update with real KRS ID
+            if (res.data?.id) {
+                const newKrsId = res.data.id;
+                setOfferings(prev => prev.map(o => o.id === course.id ? { ...o, krs_id: newKrsId } : o));
+            }
+        } catch (e: any) { 
+            // Revert state on error
+            setOfferings(prev => prev.map(o => o.id === course.id ? { ...o, is_taken: false, krs_status: undefined } : o));
+            showError("Gagal", e.message); 
+        }
     } else {
         if (!course.krs_id) return;
-        const toastId = showLoading(`Membatalkan ${course.matkul}...`);
+        const currentKrsId = course.krs_id;
+
+        // Optimistic Update: Set untaken immediately
+        setOfferings(prev => prev.map(o => o.id === course.id ? { ...o, is_taken: false, krs_status: undefined, krs_id: undefined } : o));
+
         try {
             await deleteKRS(course.krs_id);
-            successAction("Mata Kuliah", "delete", toastId);
-            await fetchData();
-        } catch (e: any) { showError("Gagal", e.message, toastId); }
+        } catch (e: any) { 
+            // Revert state on error
+             setOfferings(prev => prev.map(o => o.id === course.id ? { ...o, is_taken: true, krs_status: 'DRAFT', krs_id: currentKrsId } : o));
+            showError("Gagal", e.message); 
+        }
     }
   };
 
   const handleSelectAll = async () => {
     if (isLoading || editableRows.length === 0) return;
     if (isAllTaken) {
-        const toastId = showLoading("Melepas mata kuliah...");
+        // Optimistic: Remove all
+        const toRemove = editableRows.filter(row => row.krs_id);
+        setOfferings(prev => prev.map(o => toRemove.some(r => r.id === o.id) ? { ...o, is_taken: false, krs_id: undefined, krs_status: undefined } : o));
+
         try {
-            const promises = editableRows.filter(row => row.krs_id).map(row => deleteKRS(row.krs_id!));
+            const promises = toRemove.map(row => deleteKRS(row.krs_id!));
             await Promise.all(promises);
-            successAction("KRS", "delete", toastId);
-            await fetchData();
-        } catch (e: any) { showError("Gagal", e.message, toastId); }
+        } catch (e: any) { 
+            // Revert is hard here, better refresh or show error.
+            fetchData();
+            showError("Gagal", e.message); 
+        }
     } else {
+        // Optimistic: Take all
         const toTake = editableRows.filter(row => !row.is_taken);
         const sKsToAdd = toTake.reduce((sum, row) => sum + row.sks, 0);
         if (totalSKS + sKsToAdd > MAX_SKS) {
             showError("Batas SKS", `Total SKS akan menjadi ${totalSKS + sKsToAdd}. Batas maksimal adalah ${MAX_SKS}.`);
             return;
         }
-        const toastId = showLoading("Mengambil mata kuliah...");
+        
+        setOfferings(prev => prev.map(o => toTake.some(r => r.id === o.id) ? { ...o, is_taken: true, krs_status: 'DRAFT' } : o));
+
         try {
+             // We need to associate new IDs. This is complex for bulk optimistic.
+             // Strategy: Do optimistic visual update, but fetch data silently after to sync IDs.
+             // OR: run sequential creates and update IDs one by one? slightly slower but safer.
+             // OR: Promise.all then fetch data silent.
              const promises = toTake.map(row => 
                 createKRS({ student_id: studentId, academic_year_id: selectedYear, course_id: row.id })
              );
              await Promise.all(promises);
-             successAction("KRS", "create", toastId);
-             await fetchData();
-        } catch(e: any) { showError("Gagal", e.message, toastId); }
+             
+             // For bulk add, we DO need to fetch to get the IDs correctly for next interactions, 
+             // BUT we can do it without triggering global loading
+             const res = await getStudentCourseOfferings(studentId, selectedYear);
+             setOfferings(res.offerings); // Silent sync
+        } catch(e: any) { 
+             fetchData(); // Scan back to original state
+             showError("Gagal", e.message); 
+        }
     }
   };
 
