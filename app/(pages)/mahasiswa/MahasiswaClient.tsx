@@ -5,15 +5,20 @@ import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import { useToastMessage } from "@/hooks/use-toast-message"; 
 import Image from "next/image"; 
-import { Pencil, Trash2, CheckCircle2, XCircle, User, Printer, IdCard, Upload } from "lucide-react"; 
+import { Pencil, Trash2, CheckCircle2, XCircle, User, Printer, IdCard, Upload, MoreHorizontal, X } from "lucide-react"; 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { FormModal } from "@/components/shared/FormModal";
@@ -62,6 +67,7 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
   const [formData, setFormData] = useState<StudentFormValues | undefined>(undefined);
   const [printingStudent, setPrintingStudent] = useState<StudentData | null>(null);
   const [printingKtmStudent, setPrintingKtmStudent] = useState<StudentData | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Sync props if needed (optional)
   React.useEffect(() => {
@@ -207,7 +213,10 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
       render: (row) => (
         <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="relative h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden shrink-0">
+            <div 
+                className="relative h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => row.profile.avatar_url && setSelectedImage(row.profile.avatar_url)}
+            >
                 {row.profile.avatar_url ? (
                     <Image 
                         src={row.profile.avatar_url} 
@@ -319,43 +328,43 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
     },
     {
       header: "Aksi",
-      className: "text-center w-[100px]",
+      className: "text-center w-[50px]",
       render: (row) => (
-        <div className="flex justify-center gap-2">
-          <Button variant="ghost" size="icon" className="text-yellow-600 hover:bg-yellow-50 h-8 w-8" onClick={() => handleOpenEdit(row)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="text-red-600 hover:bg-red-50 h-8 w-8" 
-            onClick={() => { 
-                setSelectedId(row.id); 
-                setDeleteName(row.profile.nama); 
-                setIsDeleteOpen(true); 
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="text-blue-600 hover:bg-blue-50 h-8 w-8" 
-            onClick={() => handlePrint(row)}
-            title="Print Biodata"
-          >
-            <Printer className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="text-purple-600 hover:bg-purple-50 h-8 w-8" 
-            onClick={() => handlePrintKtm(row)}
-            title="Print KTM"
-          >
-            <IdCard className="h-4 w-4" />
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => handleOpenEdit(row)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Data
+            </DropdownMenuItem>
+             <DropdownMenuItem onClick={() => handlePrint(row)}>
+              <Printer className="mr-2 h-4 w-4" />
+              Cetak Biodata
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handlePrintKtm(row)}>
+              <IdCard className="mr-2 h-4 w-4" />
+              Cetak KTM
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+                onClick={() => { 
+                    setSelectedId(row.id); 
+                    setDeleteName(row.profile.nama); 
+                    setIsDeleteOpen(true); 
+                }}
+                className="text-red-600 focus:text-red-600"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Hapus Data
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     }
   ];
@@ -482,10 +491,34 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
         studyPrograms={studyPrograms}
         onSuccess={() => {
             router.refresh();
+            successAction("Import Mahasiswa", "create");
         }}
       />
 
-      <ConfirmModal
+      <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+        <DialogContent className="p-0 overflow-hidden justify-center items-center flex bg-transparent border-none shadow-none max-w-screen-md w-auto h-auto focus:outline-none">
+            <div className="relative bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="absolute -top-12 right-0 text-white hover:bg-white/20 rounded-full h-10 w-10" 
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <X className="h-6 w-6" />
+                </Button>
+                {selectedImage && (
+                    <div className="relative w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] rounded-lg overflow-hidden bg-black shadow-2xl">
+                        <Image
+                            src={selectedImage}
+                            alt="Preview Mahasiswa"
+                            fill
+                            className="object-contain"
+                        />
+                    </div>
+                )}
+            </div>
+        </DialogContent>
+      </Dialog><ConfirmModal
         isOpen={isDeleteOpen}
         onClose={setIsDeleteOpen}
         onConfirm={handleDelete}
