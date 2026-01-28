@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import { useToastMessage } from "@/hooks/use-toast-message"; 
 import Image from "next/image"; 
-import { Pencil, Trash2, CheckCircle2, XCircle, User, Printer, IdCard, Upload, MoreHorizontal, X } from "lucide-react"; 
+import { Pencil, Trash2, CheckCircle2, XCircle, User, Printer, IdCard, Upload, MoreHorizontal, X, Download } from "lucide-react"; 
+import * as XLSX from "xlsx"; 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -199,6 +200,30 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
           imageQuality: 1.0
         });
     }, 100);
+  };
+
+  const handleExport = () => {
+    const exportData = filteredData.map(student => ({
+      "NIM": student.profile.nim,
+      "Nama Lengkap": student.profile.nama,
+      "NIK": student.profile.nik || "-",
+      "Jenis Kelamin": student.profile.jenis_kelamin || "-",
+      "Tempat Lahir": student.profile.tempat_lahir || "-",
+      "Tanggal Lahir": formatDate(student.profile.tanggal_lahir),
+      "Agama": student.profile.agama || "-",
+      "Program Studi": student.profile.study_program?.nama || "-",
+      "Angkatan": student.profile.angkatan,
+      "Semester": student.profile.semester,
+      "Status": student.profile.is_active ? "Aktif" : "Non-Aktif",
+      "No HP": student.profile.no_hp || "-",
+      "Email": student.profile.email || "-",
+      "Alamat": student.profile.alamat || "-"
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Data Mahasiswa");
+    XLSX.writeFile(wb, `Data_Mahasiswa_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   // --- COLUMNS ---
@@ -450,10 +475,16 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
             onAdd={handleOpenAdd}
             addLabel="Tambah Data"
             customActions={
-                <Button variant="outline" onClick={() => setIsImportOpen(true)}>
-                    <Upload className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Import Excel</span>
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleExport}>
+                        <Download className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Export Data</span>
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsImportOpen(true)}>
+                        <Upload className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Import Data</span>
+                    </Button>
+                </div>
             }
             filterContent={filterContent}
             isFilterActive={prodiFilter !== "ALL" || semesterFilter !== "ALL"}
