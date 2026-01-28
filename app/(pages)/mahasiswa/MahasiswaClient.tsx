@@ -442,8 +442,8 @@ export default function MahasiswaClient({ initialStudents, initialPrograms }: Ma
             addLabel="Tambah Data"
             customActions={
                 <Button variant="outline" onClick={() => setIsImportOpen(true)}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Import Excel
+                    <Upload className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Import Excel</span>
                 </Button>
             }
             filterContent={filterContent}
