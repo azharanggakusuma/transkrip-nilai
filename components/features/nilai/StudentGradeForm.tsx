@@ -277,13 +277,13 @@ export function StudentGradeForm({
                                     )}
 
                                     <Select
-                                        value={currentValue}
+                                        value={["A", "B", "C", "D", "E"].includes(currentValue) ? currentValue : undefined}
                                         onValueChange={(val) => handleGradeChange(course.id, val)}
                                         disabled={loading}
                                     >
                                         <SelectTrigger
                                         className={cn(
-                                            "w-[70px] h-9 text-xs font-medium transition-all bg-background",
+                                            "w-[60px] h-9 text-xs font-medium transition-all bg-background",
                                             isModified
                                             ? "border-primary/50 ring-1 ring-primary/10 text-foreground"
                                             : "border-input text-muted-foreground"
