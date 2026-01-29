@@ -109,7 +109,7 @@ export default function AdminMbkmView({ initialData, initialStudents, initialAca
       academic_year_id: item.academic_year_id,
       jenis_mbkm: item.jenis_mbkm,
       mitra: item.mitra,
-      keterangan: item.keterangan || ""
+      lokasi: item.lokasi || ""
     });
     setIsEditing(true);
     setIsDialogOpen(true);
@@ -193,6 +193,11 @@ export default function AdminMbkmView({ initialData, initialStudents, initialAca
       header: "Mitra",
       accessorKey: "mitra",
       className: "min-w-[150px] text-gray-600"
+    },
+    {
+      header: "Lokasi",
+      accessorKey: "lokasi",
+      className: "min-w-[120px] text-gray-600"
     },
     {
       header: "Aksi",

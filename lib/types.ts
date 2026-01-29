@@ -345,7 +345,7 @@ export interface StudentMBKM {
   academic_year_id: string;
   jenis_mbkm: string;
   mitra: string;
-  keterangan?: string;
+  lokasi?: string;
 
   // Relations
   student?: {
@@ -367,5 +367,5 @@ export interface StudentMBKMFormValues {
   academic_year_id: string;
   jenis_mbkm: string;
   mitra: string;
-  keterangan: string;
+  lokasi: string;
 }

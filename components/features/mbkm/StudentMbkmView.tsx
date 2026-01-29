@@ -40,11 +40,11 @@ export default function StudentMbkmView({ initialData }: StudentMbkmViewProps) {
   const filteredData = useMemo(() => {
     return dataList.filter((item) => {
       const query = searchQuery.toLowerCase();
-      // Search by Mitra or Jenis MBKM or Keterangan
+      // Search by Mitra or Jenis MBKM or Lokasi
       const matchSearch =
         item.mitra.toLowerCase().includes(query) ||
         item.jenis_mbkm.toLowerCase().includes(query) ||
-        (item.keterangan || "").toLowerCase().includes(query);
+        (item.lokasi || "").toLowerCase().includes(query);
 
       const matchJenis = jenisFilter === "ALL" || item.jenis_mbkm === jenisFilter;
       const matchPeriode = periodeFilter === "ALL" || item.academic_year?.nama === periodeFilter;
@@ -97,10 +97,10 @@ export default function StudentMbkmView({ initialData }: StudentMbkmViewProps) {
       className: "min-w-[150px] text-gray-600"
     },
     {
-        header: "Keterangan",
-        accessorKey: "keterangan",
-        className: "min-w-[200px] text-gray-500",
-        render: (row) => row.keterangan || "-"
+        header: "Lokasi",
+        accessorKey: "lokasi",
+        className: "min-w-[150px] text-gray-600",
+        render: (row) => row.lokasi || "-"
       },
   ];
 

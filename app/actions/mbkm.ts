@@ -72,7 +72,7 @@ export async function createMbkmStudent(values: StudentMBKMFormValues) {
     academic_year_id: values.academic_year_id,
     jenis_mbkm: values.jenis_mbkm,
     mitra: values.mitra,
-    keterangan: values.keterangan
+    lokasi: values.lokasi
   }]);
 
   if (error) throw new Error("Gagal menambahkan data MBKM.");
@@ -89,7 +89,7 @@ export async function updateMbkmStudent(id: string, values: StudentMBKMFormValue
       academic_year_id: values.academic_year_id,
       jenis_mbkm: values.jenis_mbkm,
       mitra: values.mitra,
-      keterangan: values.keterangan,
+      lokasi: values.lokasi,
       updated_at: new Date().toISOString()
     })
     .eq('id', id);

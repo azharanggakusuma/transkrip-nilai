@@ -44,7 +44,7 @@ const defaultValues: StudentMBKMFormValues = {
   academic_year_id: "",
   jenis_mbkm: "",
   mitra: "",
-  keterangan: ""
+  lokasi: ""
 };
 
 const JENIS_MBKM = [
@@ -103,6 +103,7 @@ export function MbkmForm({
     if (!formData.academic_year_id) errors.push("Periode Akademik wajib dipilih.");
     if (!formData.jenis_mbkm) errors.push("Jenis MBKM wajib dipilih.");
     if (!formData.mitra.trim()) errors.push(`${mitraConfig.label} wajib diisi.`);
+    if (!formData.lokasi.trim()) errors.push("Lokasi wajib diisi.");
 
     if (errors.length > 0) {
       toast.error("Validasi Gagal", {
@@ -226,7 +227,7 @@ export function MbkmForm({
         </div>
       </div>
 
-      {/* SECTION 2: DETAIL MITRA (Label Dinamis) */}
+      {/* SECTION 2: DETAIL PROGRAM */}
       <div className="space-y-4 pt-2 border-t">
         <div className="flex flex-col gap-2">
           {/* LABEL DINAMIS */}
@@ -240,14 +241,14 @@ export function MbkmForm({
           />
         </div>
 
+        {/* LOKASI */}
         <div className="flex flex-col gap-2">
-          <Label>Keterangan Tambahan</Label>
-          <Textarea 
-            value={formData.keterangan}
-            onChange={(e) => setFormData({...formData, keterangan: e.target.value})}
-            placeholder="Tuliskan detail durasi, posisi, atau catatan penting lainnya..."
-            className="min-h-[80px]"
-          />
+            <Label>Lokasi Pelaksanaan <span className="text-red-500">*</span></Label>
+            <Input 
+                value={formData.lokasi}
+                onChange={(e) => setFormData({...formData, lokasi: e.target.value})}
+                placeholder="Contoh: Jakarta / Online / WFH"
+            />
         </div>
       </div>
 

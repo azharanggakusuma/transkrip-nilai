@@ -53,7 +53,7 @@ export function RiwayatMbkmDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[90vw] sm:max-w-[700px] w-full h-[70vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-[90vw] sm:max-w-[700px] w-full h-[65vh] flex flex-col p-0 gap-0">
         <div className="p-6 pb-2">
             <DialogHeader>
             <DialogTitle className="text-xl">
@@ -74,6 +74,7 @@ export function RiwayatMbkmDialog({
                                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                                     <div className="space-y-2 w-full max-w-[70%]">
                                         <Skeleton className="h-6 w-3/4 sm:w-1/2" />
+                                        <Skeleton className="h-4 w-1/2" />
                                         <Skeleton className="h-4 w-1/3" />
                                     </div>
                                     <Skeleton className="h-6 w-24 rounded-full" />
@@ -93,8 +94,11 @@ export function RiwayatMbkmDialog({
                                                 {item.jenis_mbkm}
                                             </h4>
                                         </div>
-                                        <div className="flex items-center gap-2 text-sm text-foreground/80 mt-1">
+                                        <div className="text-sm text-foreground/80 mt-1">
                                             <span className="font-medium">{item.mitra}</span>
+                                        </div>
+                                        <div className="text-sm text-muted-foreground mt-0.5">
+                                            {item.lokasi || "-"}
                                         </div>
                                     </div>
                                     <Badge variant="secondary" className="w-fit flex items-center gap-1.5 px-3 py-1">
