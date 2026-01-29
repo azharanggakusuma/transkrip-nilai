@@ -99,8 +99,17 @@ export function ImportNilaiDialog({
         // Assuming hm === "-" means taken in KRS but not graded.
         // Generate rows from all transcript data (including existing grades)
         // Use student's transcript which comes from the database join
+        // Use student's transcript which comes from the database join
         const activeCourses = student.transcript || [];
         
+        // Sort: Semester Asc, then Matkul Name Asc
+        activeCourses.sort((a, b) => {
+            const smtA = parseInt(String(a.smt)) || 0;
+            const smtB = parseInt(String(b.smt)) || 0;
+            if (smtA !== smtB) return smtA - smtB;
+            return (a.matkul || '').localeCompare(b.matkul || '');
+        });
+
         activeCourses.forEach(course => {
             // If grade exists and is not "-", pre-fill it. Otherwise empty string.
             const existingGrade = (course.hm && course.hm !== "-") ? course.hm : "";
@@ -139,7 +148,10 @@ export function ImportNilaiDialog({
 
     // 2. Sheet Referensi Mata Kuliah
     const courseHeaders = ["Kode", "Mata Kuliah", "SKS", "Semester Default"];
-    const courseRows = courses.map(c => [
+    // Sort courses A-Z by matkul
+    const sortedCourses = [...courses].sort((a, b) => a.matkul.localeCompare(b.matkul));
+    
+    const courseRows = sortedCourses.map(c => [
         c.kode, 
         c.matkul, 
         c.sks, 
