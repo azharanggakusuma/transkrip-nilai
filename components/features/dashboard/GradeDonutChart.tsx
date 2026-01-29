@@ -118,10 +118,8 @@ export function GradeDonutChart({ counts, total }: { counts: Counts; total: numb
             {/* --- SVG DONUT CHART --- */}
             <div className="relative group my-4">
               <svg 
-                width={size} 
-                height={size} 
                 viewBox={`0 0 ${size} ${size}`} 
-                className="overflow-visible transform transition-transform duration-300"
+                className="overflow-visible transform transition-transform duration-300 w-full h-auto max-w-[220px]"
               >
                 {/* Track Background (Lingkaran abu-abu tipis di belakang) */}
                 <circle

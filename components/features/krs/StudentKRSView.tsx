@@ -431,17 +431,17 @@ export default function StudentKRSView({
                     </div>
                 ) : (
                     <>
-                    <div className="flex justify-between items-start">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                         <div>
                             <p className="text-white/80 font-medium text-sm mb-1">Status Pengisian KRS</p>
-                            <h2 className="text-3xl font-bold tracking-tight">
+                            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
                                 {krsGlobalStatus === 'APPROVED' ? "KRS Disetujui" : 
                                  krsGlobalStatus === 'SUBMITTED' ? "Menunggu Validasi" :
                                  krsGlobalStatus === 'REJECTED' ? "KRS Ditolak" :
                                  krsGlobalStatus === 'NOT_TAKEN' ? "Belum Mengisi" : "Belum Diajukan"}
                             </h2>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full sm:w-auto">
                             {krsGlobalStatus === 'REJECTED' && (
                                 <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-white hover:opacity-25 hover:text-white"
                                     onClick={() => setIsResetOpen(true)}>
@@ -453,9 +453,9 @@ export default function StudentKRSView({
                             )}
                         </div>
                     </div>
-                    <div className="mt-6 flex flex-wrap items-center gap-4">
+                    <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-4">
                         <Select value={selectedYear} onValueChange={setSelectedYear}>
-                            <SelectTrigger className="w-[240px] h-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:ring-0 [&_svg]:text-white [&_svg]:stroke-white [&_svg]:opacity-100">
+                            <SelectTrigger className="w-full sm:w-[240px] h-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:ring-0 [&_svg]:text-white [&_svg]:stroke-white [&_svg]:opacity-100">
                                 <SelectValue placeholder="Pilih Tahun Akademik" />
                             </SelectTrigger>
                             <SelectContent>
@@ -501,7 +501,7 @@ export default function StudentKRSView({
                     <div>
                         <div className="flex items-center gap-2 text-cyan-50 mb-1"><span className="text-sm font-medium">Total SKS Diambil</span></div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-4xl font-extrabold tracking-tight">{totalSKS}</span>
+                            <span className="text-3xl sm:text-4xl font-extrabold tracking-tight">{totalSKS}</span>
                             <span className="text-lg text-cyan-100 font-medium">/ {MAX_SKS} SKS</span>
                         </div>
                     </div>
@@ -572,7 +572,7 @@ export default function StudentKRSView({
 
       {/* TABLE */}
       <Card className="border-none shadow-sm ring-1 ring-slate-200">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
             <DataTable
                 data={currentData}
                 columns={columns}

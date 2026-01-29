@@ -57,10 +57,10 @@ export default function KtmClient({ student }: KtmClientProps) {
           breadcrumb={["Beranda", "KTM"]} 
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 items-stretch">
              
              {/* SIDEBAR - Profil Ringkas */}
-             <Card className="border-slate-200 shadow-sm overflow-hidden min-h-[500px] md:sticky md:top-4">
+             <Card className="border-slate-200 shadow-sm overflow-hidden h-full flex flex-col">
                 <CardContent className="p-6 flex flex-col items-center text-center gap-4">
                     <div className="w-32 h-40 bg-slate-100 rounded-lg border border-slate-200 relative overflow-hidden shadow-inner">
                         {student.profile.avatar_url ? (
@@ -124,7 +124,7 @@ export default function KtmClient({ student }: KtmClientProps) {
              </Card>
 
              {/* MAIN CONTENT - Card Preview */}
-             <Card className="border-slate-200 shadow-sm min-h-[500px] flex flex-col overflow-hidden">
+             <Card className="border-slate-200 shadow-sm h-full flex flex-col overflow-hidden">
                 <CardContent className="flex-1 p-0 flex flex-col bg-slate-50/50">
                     
                     {/* Header Section */}
@@ -141,7 +141,7 @@ export default function KtmClient({ student }: KtmClientProps) {
                     </div>
 
                     {/* Canvas Area */}
-                    <div className="flex-1 flex flex-col items-center justify-center p-12 bg-slate-50 opacity-100 overflow-hidden">
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50 opacity-100 overflow-hidden">
                          {/* Card Container - Screen Only */}
                          <div className="relative shadow-md rounded-xl overflow-hidden bg-white mobile-card-wrapper transform scale-105 md:scale-125 origin-center">
                              <KtmCard student={student} />
@@ -149,12 +149,7 @@ export default function KtmClient({ student }: KtmClientProps) {
                     </div>
 
                     {/* Footer Info */}
-                    <div className="px-8 py-4 bg-white border-t border-slate-200 text-center md:text-left md:flex justify-between items-center gap-4">
-                        <p className="text-xs text-slate-500 max-w-lg">
-                            Dokumen ini adalah identitas resmi yang diterbitkan oleh STMIK IKMI Cirebon. 
-                            Segala bentuk penyalahgunaan kartu ini dapat dikenakan sanksi akademik.
-                        </p>
-                    </div>
+
 
                 </CardContent>
              </Card>

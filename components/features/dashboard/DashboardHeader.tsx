@@ -20,7 +20,7 @@ export function DashboardHeader({ name = "User", role = "mahasiswa", studentId }
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Halo, {name}!
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -31,7 +31,7 @@ export function DashboardHeader({ name = "User", role = "mahasiswa", studentId }
           </p>
         </div>
 
-        <div className="flex items-center gap-2 sm:mt-6 md:mt-0">
+        <div className="flex items-center gap-2 sm:mt-6 md:mt-0 w-full sm:w-auto">
           {isAdmin ? (
             <Link
               href="/krs"
@@ -46,10 +46,10 @@ export function DashboardHeader({ name = "User", role = "mahasiswa", studentId }
           ) : isMahasiswa ? (
              <button
               onClick={() => setIsRiwayatMbkmOpen(true)}
-              className="inline-flex h-10 items-center gap-2 rounded-lg
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg
                          bg-primary px-4 text-sm font-medium text-primary-foreground
                          hover:opacity-90 shadow-sm transition
-                         focus:outline-none focus:ring-2 focus:ring-ring"
+                         focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-auto"
             >
               <History className="h-4 w-4" />
               Riwayat MBKM

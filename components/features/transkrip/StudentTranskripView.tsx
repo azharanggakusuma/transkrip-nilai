@@ -157,7 +157,7 @@ export default function StudentTranskripView({ initialStudentData, initialOffici
                 <div className="absolute top-0 right-0 p-8 opacity-10">
                     <Trophy size={120} />
                 </div>
-                <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
+                <CardContent className="p-4 sm:p-6 relative z-10 flex flex-col justify-between h-full">
                      {loading ? (
                          <div className="flex flex-col justify-between h-full gap-6">
                             <div className="flex justify-between items-start">
@@ -175,7 +175,7 @@ export default function StudentTranskripView({ initialStudentData, initialOffici
                             <div>
                                 <p className="text-blue-100 font-medium text-sm mb-1">Indeks Prestasi Kumulatif</p>
                                 <div className="flex items-baseline gap-2">
-                                    <h2 className="text-4xl font-extrabold tracking-tight">{summaryData.ipk}</h2>
+                                    <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{summaryData.ipk}</h2>
                                     <span className="text-lg text-blue-200 font-medium">/ 4.00</span>
                                 </div>
                             </div>
@@ -200,7 +200,7 @@ export default function StudentTranskripView({ initialStudentData, initialOffici
                 <div className="absolute -bottom-6 -right-6 opacity-20 rotate-12">
                     <BookOpen size={140} />
                 </div>
-                <CardContent className="p-6 relative z-10 flex flex-col justify-between h-full">
+                <CardContent className="p-4 sm:p-6 relative z-10 flex flex-col justify-between h-full">
                     {loading ? (
                          <div className="space-y-6">
                            <div className="space-y-3">
@@ -222,7 +222,7 @@ export default function StudentTranskripView({ initialStudentData, initialOffici
                                     <span className="text-sm font-medium">Total SKS Lulus</span>
                                 </div>
                                 <div className="flex items-baseline gap-2">
-                                    <h2 className="text-4xl font-extrabold tracking-tight">{summaryData.totalSKS}</h2>
+                                    <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{summaryData.totalSKS}</h2>
                                     <span className="text-lg text-cyan-100 font-medium">/ 144 SKS</span>
                                 </div>
                             </div>
@@ -246,7 +246,7 @@ export default function StudentTranskripView({ initialStudentData, initialOffici
 
          {/* TABLE SECTION */}
          <Card className="border-none shadow-sm ring-1 ring-slate-200">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
                 <div className="space-y-4">
                     <TranskripTable 
                         data={tableData}

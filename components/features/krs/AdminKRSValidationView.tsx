@@ -265,14 +265,14 @@ export default function AdminKRSValidationView({
                     </div>
                 ) : (
                     <>
-                    <div className="flex justify-between items-start">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                         <div>
                             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Validasi KRS Mahasiswa</h2>
                             <p className="text-slate-400 text-sm mt-1">Kelola persetujuan rencana studi mahasiswa untuk semester aktif.</p>
                         </div>
                         <Button 
                             variant="secondary" 
-                            className="hidden md:flex bg-white/10 hover:bg-white/20 text-white border border-white/10"
+                            className="w-full sm:w-auto flex bg-white/10 hover:bg-white/20 text-white border border-white/10"
                             onClick={() => setIsBulkInputOpen(true)}
                         >
                             <Users className="w-4 h-4 mr-2" />
@@ -281,7 +281,7 @@ export default function AdminKRSValidationView({
                     </div>
                     <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setCurrentPage(1); }}>
-                            <SelectTrigger className="w-[240px] h-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:ring-0 [&_svg]:text-white [&_svg]:stroke-white [&_svg]:opacity-100">
+                            <SelectTrigger className="w-full sm:w-[240px] h-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:ring-0 [&_svg]:text-white [&_svg]:stroke-white [&_svg]:opacity-100">
                                 <SelectValue placeholder="Pilih Tahun Akademik" />
                             </SelectTrigger>
                             <SelectContent>
@@ -325,7 +325,7 @@ export default function AdminKRSValidationView({
                         </div>
                         <div>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-4xl font-extrabold tracking-tight text-white">{pendingCount}</span>
+                                <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">{pendingCount}</span>
                                 <span className="text-sm font-medium text-white">Mahasiswa</span>
                             </div>
                             <p className="text-slate-200 text-xs mt-2 mb-4">Menunggu persetujuan KRS untuk TA {currentAcademicYearName}.</p>
@@ -338,7 +338,7 @@ export default function AdminKRSValidationView({
 
       {/* --- Section Table --- */}
       <Card id="krs-table" className="border-none shadow-sm ring-1 ring-gray-200 bg-white">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
             <DataTable
                 data={currentData}
                 columns={columns}

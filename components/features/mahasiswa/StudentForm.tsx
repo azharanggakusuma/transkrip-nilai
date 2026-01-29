@@ -438,9 +438,9 @@ export function StudentForm({ initialData, studyPrograms, isEditing, onSubmit, o
       </div>
 
 
-      <div className="flex justify-end gap-2 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel}>Batal</Button>
-        <Button type="submit">{isEditing ? "Simpan Perubahan" : "Tambah Mahasiswa"}</Button>
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">Batal</Button>
+        <Button type="submit" className="w-full sm:w-auto">{isEditing ? "Simpan Perubahan" : "Tambah Mahasiswa"}</Button>
       </div>
     </form>
   );

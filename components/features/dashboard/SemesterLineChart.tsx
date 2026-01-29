@@ -56,14 +56,14 @@ export function SemesterLineChart({ data, title }: { data: TrendData[]; title: s
         </h3>
         
         {data.length > 0 && (
-           <div className="text-xs text-muted-foreground font-semibold bg-muted/30 px-3 py-1 rounded-full border border-border/50">
+           <div className="text-xs text-muted-foreground font-semibold bg-muted/30 px-3 py-1 rounded-full border border-border/50 whitespace-nowrap">
              Skala Indeks 4.00
            </div>
         )}
       </header>
 
       {/* Chart Area */}
-      <div className="p-4 flex-1 flex items-center justify-center min-h-[350px]">
+      <div className="p-4 flex-1 flex items-center justify-center w-full">
         {data.length === 0 ? (
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
              <div className="bg-muted p-4 rounded-full">
@@ -75,8 +75,7 @@ export function SemesterLineChart({ data, title }: { data: TrendData[]; title: s
           <div className="w-full h-full relative">
             <svg
               viewBox={`0 0 ${width} ${height}`}
-              className="w-full h-auto max-h-[350px] overflow-visible"
-              preserveAspectRatio="none"
+              className="w-full h-auto"
             >
               <defs>
                 <linearGradient id="largeGradient" x1="0" y1="0" x2="0" y2="1">
@@ -96,14 +95,13 @@ export function SemesterLineChart({ data, title }: { data: TrendData[]; title: s
                       x2={width - paddingX}
                       y2={y}
                       stroke="currentColor"
-                      strokeWidth="1.5"
                       strokeOpacity={0.1}
-                      className="text-muted-foreground"
+                      className="text-muted-foreground stroke-[2px] md:stroke-[1.5px]"
                     />
                     <text
                       x={paddingX - 12}
                       y={y + 5}
-                      className="fill-muted-foreground text-[13px] font-bold"
+                      className="fill-muted-foreground text-[20px] md:text-[13px] font-bold"
                       textAnchor="end"
                     >
                       {gridVal}
@@ -126,10 +124,9 @@ export function SemesterLineChart({ data, title }: { data: TrendData[]; title: s
                 d={linePath}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="4" 
                 strokeLinecap="square"
                 strokeLinejoin="round"
-                className="text-primary drop-shadow-sm"
+                className="text-primary drop-shadow-sm stroke-[5px] md:stroke-[4px]"
               />
 
               {/* Points */}
@@ -139,21 +136,20 @@ export function SemesterLineChart({ data, title }: { data: TrendData[]; title: s
                 
                 return (
                   <g key={idx} className="group cursor-pointer">
-                    <circle cx={x} cy={y} r="30" fill="transparent" />
+                    <circle cx={x} cy={y} r="40" fill="transparent" />
                     
                     <line 
                       x1={x} y1={y} 
                       x2={x} y2={height - paddingBottom} 
                       stroke="currentColor" 
-                      strokeWidth="2.5"
-                      className="text-primary opacity-0 group-hover:opacity-30 transition-opacity duration-200"
+                      className="text-primary opacity-0 group-hover:opacity-30 transition-opacity duration-200 stroke-[3px] md:stroke-[2px]"
                     />
 
                     <circle
                       cx={x}
                       cy={y}
-                      r="6" 
-                      className="fill-background stroke-primary stroke-[3.5px] transition-all duration-200 group-hover:r-8 group-hover:stroke-[5px] shadow-sm"
+                      r="8" 
+                      className="fill-background stroke-primary transition-all duration-200 shadow-sm stroke-[4px] md:stroke-[3.5px] group-hover:stroke-[6px] md:group-hover:stroke-[5px]"
                     />
 
                     <g className="opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-y-1 group-hover:-translate-y-2 pointer-events-none">
@@ -184,7 +180,7 @@ export function SemesterLineChart({ data, title }: { data: TrendData[]; title: s
                     x={pos[0]}
                     y={height - 5}
                     textAnchor="middle"
-                    className="fill-muted-foreground text-[13px] font-semibold uppercase tracking-wide"
+                    className="fill-muted-foreground text-[22px] md:text-[13px] font-semibold uppercase tracking-wide"
                   >
                      {data[idx].label.replace("Smt ", "S")}
                   </text>
