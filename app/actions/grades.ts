@@ -199,8 +199,11 @@ export async function createBulkGrades(data: { nim: string, kode: string, hm: st
     const courseMap = new Map(courses.map((c: any) => [c.kode, c.id]));
 
     // 3. Prepare Upsert Data
+    // 3. Prepare Data & Logic
     const errorList: string[] = [];
-    const upsertData: { student_id: string, course_id: string, hm: string }[] = [];
+    const validItems: { student_id: string, course_id: string, hm: string }[] = [];
+
+    const involvedStudentIds = new Set<string>();
 
     for (const item of data) {
       const studentId = studentMap.get(item.nim);
@@ -214,34 +217,67 @@ export async function createBulkGrades(data: { nim: string, kode: string, hm: st
         errorList.push(`Kode Matkul ${item.kode} tidak ditemukan`);
         continue;
       }
-
-      upsertData.push({
-        student_id: studentId,
-        course_id: courseId,
-        hm: item.hm
-      });
+      validItems.push({ student_id: studentId, course_id: courseId, hm: item.hm });
+      involvedStudentIds.add(studentId);
     }
 
     if (errorList.length > 0) {
       return { success: false, message: `Terdapat ${errorList.length} error. Contoh: ${errorList[0]}` };
     }
 
-    // 4. Perform Upsert (Delete + Insert or smarter conflict handling)
-    // Since Supabase doesn't support complex ON CONFLICT across joined tables easily without constraint keys,
-    // and unique constraint on grades is likely (student_id, course_id).
-    // Let's assume unique constraint exists.
+    // 4. Manual "Upsert" Strategy (Fetch -> Split -> Act)
+    // Fetch all existing grades for these students to determine if we update or insert
+    const studentIdsArray = Array.from(involvedStudentIds);
+    // Batched fetch if too many students
+    let existingGrades: any[] = [];
 
-    const { error: upsertError } = await supabase.from('grades').upsert(upsertData, {
-      onConflict: 'student_id, course_id', // Assuming valid unique constraint on DB
-      ignoreDuplicates: false,
+    // Chunk student IDs for fetching existing grades
+    const fetchBatchSize = 100;
+    for (let i = 0; i < studentIdsArray.length; i += fetchBatchSize) {
+      const chunk = studentIdsArray.slice(i, i + fetchBatchSize);
+      const { data: gradesChunk, error: fetchError } = await supabase
+        .from('grades')
+        .select('id, student_id, course_id')
+        .in('student_id', chunk);
+
+      if (fetchError) throw new Error("Gagal memeriksa data nilai yang ada.");
+      if (gradesChunk) existingGrades = existingGrades.concat(gradesChunk);
+    }
+
+    // Map existing: "studentId-courseId" -> gradeId
+    const existingMap = new Map<string, string>();
+    existingGrades.forEach((g: any) => {
+      existingMap.set(`${g.student_id}-${g.course_id}`, g.id);
     });
 
-    if (upsertError) {
-      // Fallback if no unique constraint or other error
-      if (upsertError.code === '23505') { // Unique violation
-        throw new Error("Data duplikat terdeteksi.");
+    const toInsert: any[] = [];
+    const toUpdate: { id: string, hm: string }[] = [];
+
+    for (const item of validItems) {
+      const key = `${item.student_id}-${item.course_id}`;
+      if (existingMap.has(key)) {
+        toUpdate.push({ id: existingMap.get(key)!, hm: item.hm });
+      } else {
+        toInsert.push(item);
       }
-      throw upsertError;
+    }
+
+    // A. Bulk Insert
+    if (toInsert.length > 0) {
+      const { error: insertError } = await supabase.from('grades').insert(toInsert);
+      if (insertError) throw new Error("Gagal menyimpan data nilai baru: " + insertError.message);
+    }
+
+    // B. Parallel Updates
+    if (toUpdate.length > 0) {
+      // Process updates in chunks to avoid connection pool exhaustion
+      const updateBatchSize = 20;
+      for (let i = 0; i < toUpdate.length; i += updateBatchSize) {
+        const batch = toUpdate.slice(i, i + updateBatchSize);
+        await Promise.all(
+          batch.map(u => supabase.from('grades').update({ hm: u.hm }).eq('id', u.id))
+        );
+      }
     }
 
     revalidatePath("/nilai");
