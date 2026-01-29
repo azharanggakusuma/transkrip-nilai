@@ -253,19 +253,19 @@ export default function BulkKRSInputModal({
         header: () => (
             <Checkbox 
                 checked={
-                    currentStudents.length > 0 && 
-                    currentStudents.filter(s => !(hasMbkmCourseSelected && !s.is_mbkm)).every(s => selectedStudentIds.has(s.id))
+                    filteredStudents.length > 0 && 
+                    filteredStudents.filter(s => !(hasMbkmCourseSelected && !s.is_mbkm)).every(s => selectedStudentIds.has(s.id))
                 }
                 onCheckedChange={(checked) => {
                     const newSet = new Set(selectedStudentIds);
-                    currentStudents.forEach(s => {
+                    filteredStudents.forEach(s => {
                          if (hasMbkmCourseSelected && !s.is_mbkm) return;
                         if (checked) newSet.add(s.id);
                         else newSet.delete(s.id);
                     });
                     setSelectedStudentIds(newSet);
                 }}
-                disabled={hasMbkmCourseSelected && currentStudents.every(s => !s.is_mbkm)}
+                disabled={hasMbkmCourseSelected && filteredStudents.every(s => !s.is_mbkm)}
             />
         ),
         className: "w-[40px] text-center",
@@ -308,17 +308,17 @@ export default function BulkKRSInputModal({
     {
         header: () => (
             <Checkbox 
-                checked={currentCourses.length > 0 && currentCourses.filter(c => !(hasRegularStudentSelected && c.kategori === 'MBKM')).every(c => selectedCourseIds.has(c.id))}
+                checked={filteredCourses.length > 0 && filteredCourses.filter(c => !(hasRegularStudentSelected && c.kategori === 'MBKM')).every(c => selectedCourseIds.has(c.id))}
                 onCheckedChange={(checked) => {
                     const newSet = new Set(selectedCourseIds);
-                    currentCourses.forEach(c => {
+                    filteredCourses.forEach(c => {
                         if (hasRegularStudentSelected && c.kategori === 'MBKM') return;
                         if (checked) newSet.add(c.id);
                         else newSet.delete(c.id);
                     });
                     setSelectedCourseIds(newSet);
                 }}
-                disabled={hasRegularStudentSelected && currentCourses.every(c => c.kategori === 'MBKM')}
+                disabled={hasRegularStudentSelected && filteredCourses.every(c => c.kategori === 'MBKM')}
             />
         ),
         className: "w-[40px] text-center",
