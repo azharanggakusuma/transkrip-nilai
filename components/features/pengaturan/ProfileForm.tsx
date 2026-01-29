@@ -222,7 +222,7 @@ export default function ProfileForm({
       });
 
       toast.success("Profil Diperbarui", {
-        description: "Data teks berhasil disimpan.",
+        description: "Perubahan pada profil Anda telah berhasil disimpan.",
       });
       
       onUpdateSuccess({
