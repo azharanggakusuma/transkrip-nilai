@@ -8,13 +8,24 @@ import { useToastMessage } from '@/hooks/use-toast-message';
 import { getStudentsWithoutKRS, createBulkKRS, getCoursesForAcademicYear } from '@/app/actions/krs-bulk';
 import { getCourses } from '@/app/actions/courses';
 import { Course } from '@/lib/types';
-import { Loader2, UserPlus, User, CalendarDays, ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, CalendarDays, CheckCircle2, User, Loader2, ListFilter } from "lucide-react";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface BulkKRSInputModalProps {
   isOpen: boolean;
@@ -49,11 +60,19 @@ export default function BulkKRSInputModal({
   
   // Filter & Pagination State (Students)
   const [studentSearch, setStudentSearch] = useState('');
+  const [studentProdiFilter, setStudentProdiFilter] = useState<string[]>([]);
+  const [studentMbkmFilter, setStudentMbkmFilter] = useState<boolean>(false); // false: Show All, true: Only MBKM? No, maybe simpler:
+  // Let's use specific logic: null = all. But for UI simplicity, let's just toggle "Show Only MBKM" or have list of filters?
+  // User asked for "filter button". Dropdown with checkboxes is good.
+  // state for "MBKM Only"
+  const [studentShowMbkmOnly, setStudentShowMbkmOnly] = useState(false);
   const [studentPage, setStudentPage] = useState(1);
   const itemsPerPage = 8; 
 
   // Filter & Pagination State (Courses)
   const [courseSearch, setCourseSearch] = useState('');
+  const [courseProdiFilter, setCourseProdiFilter] = useState<string[]>([]);
+  const [courseShowMbkmOnly, setCourseShowMbkmOnly] = useState(false);
   const [coursePage, setCoursePage] = useState(1);
 
   // Initial Sync
@@ -112,17 +131,49 @@ export default function BulkKRSInputModal({
   }, [availableSemesters, targetSemester]);
 
   // --- DATA FILTERING LOGIC (Applied only in Step 2 & 3) ---
+  const uniqueStudentProdis = useMemo(() => {
+    const prodis = new Set<string>();
+    students.forEach(s => {
+        if(s.study_program?.nama) prodis.add(s.study_program.nama);
+    });
+    return Array.from(prodis).sort();
+  }, [students]);
+
+  const uniqueCourseProdis = useMemo(() => {
+    const prodis = new Set<string>();
+    courses.forEach(c => {
+         c.study_programs?.forEach((sp: any) => {
+             if(sp.nama) prodis.add(sp.nama);
+         })
+    });
+    return Array.from(prodis).sort();
+  }, [courses]);
+
   const filteredStudents = useMemo(() => {
     // Client-side filter: Match Student Semester to Target Semester
     let base = students;
     if (targetSemester) {
         base = base.filter(s => s.semester === targetSemester);
     }
-    return base.filter(s => 
+    
+    // Search
+    base = base.filter(s => 
       s.nama.toLowerCase().includes(studentSearch.toLowerCase()) || 
       s.nim.toLowerCase().includes(studentSearch.toLowerCase())
     );
-  }, [students, studentSearch, targetSemester]);
+
+    // Filter Prodi
+    if (studentProdiFilter.length > 0) {
+        base = base.filter(s => s.study_program?.nama && studentProdiFilter.includes(s.study_program.nama));
+    }
+
+    // Filter MBKM
+    if (studentShowMbkmOnly) {
+        base = base.filter(s => s.is_mbkm);
+    }
+
+    return base;
+  }, [students, studentSearch, targetSemester, studentProdiFilter, studentShowMbkmOnly]);
 
   const filteredCourses = useMemo(() => {
     // Client-side filter: Match Course Default Semester to Target Semester
@@ -130,11 +181,25 @@ export default function BulkKRSInputModal({
     if (targetSemester) {
         base = base.filter(c => c.smt_default === targetSemester);
     }
-    return base.filter(c => 
+
+    // Search
+    base = base.filter(c => 
       c.matkul.toLowerCase().includes(courseSearch.toLowerCase()) || 
       c.kode.toLowerCase().includes(courseSearch.toLowerCase())
     );
-  }, [courses, courseSearch, targetSemester]);
+
+    // Filter Prodi
+    if (courseProdiFilter.length > 0) {
+         base = base.filter(c => c.study_programs?.some((sp: any) => courseProdiFilter.includes(sp.nama)));
+    }
+
+    // Filter MBKM
+    if (courseShowMbkmOnly) {
+        base = base.filter(c => c.kategori === 'MBKM');
+    }
+
+    return base;
+  }, [courses, courseSearch, targetSemester, courseProdiFilter, courseShowMbkmOnly]);
 
 
   // --- CROSS FILTERING (Reuse existing logic) ---
@@ -211,26 +276,32 @@ export default function BulkKRSInputModal({
                     checked={selectedStudentIds.has(row.id)}
                     onCheckedChange={() => toggleStudent(row.id)}
                     disabled={isDisabled}
-                    className={isDisabled ? "opacity-50 cursor-not-allowed" : ""}
+                    className={isDisabled ? "opacity-30 cursor-not-allowed" : ""}
                 />
             );
         }
     },
-    { header: "Mahasiswa", render: (row) => (
-        <div className="flex items-center gap-3">
-            <div className="relative h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden shrink-0">
-                {row.avatar_url ? <Image src={row.avatar_url} alt={row.nama} fill className="object-cover" /> : <User className="h-4 w-4 text-slate-400" />}
-            </div>
-            <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                     <span className="font-semibold text-slate-800 text-sm">{row.nama}</span>
-                     {row.is_mbkm && <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-emerald-500 text-emerald-600">MBKM</Badge>}
+    { header: "Mahasiswa", render: (row) => {
+        const isDisabled = hasMbkmCourseSelected && !row.is_mbkm;
+        return (
+            <div className={cn("flex items-center gap-3", isDisabled && "opacity-40 grayscale")}>
+                <div className="relative h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden shrink-0">
+                    {row.avatar_url ? <Image src={row.avatar_url} alt={row.nama} fill className="object-cover" /> : <User className="h-4 w-4 text-slate-400" />}
                 </div>
-                <span className="text-xs text-muted-foreground font-mono">{row.nim}</span>
+                <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-800 text-sm">{row.nama}</span>
+                        {row.is_mbkm && <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 bg-slate-100 text-slate-600 border border-slate-200 font-medium">MBKM</Badge>}
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono">{row.nim}</span>
+                </div>
             </div>
-        </div>
-    )},
-    { header: "Prodi", render: (row) => <span className="text-xs text-slate-500">{row.study_program?.nama}</span> }
+        );
+    }},
+    { header: "Prodi", render: (row) => {
+        const isDisabled = hasMbkmCourseSelected && !row.is_mbkm;
+        return <span className={cn("text-xs text-slate-500", isDisabled && "opacity-40 grayscale")}>{row.study_program?.nama} ({row.study_program?.jenjang})</span>
+    }}
   ];
 
   const courseColumns: Column<Course>[] = [
@@ -254,20 +325,26 @@ export default function BulkKRSInputModal({
         render: (row) => {
             const isDisabled = hasRegularStudentSelected && row.kategori === 'MBKM';
             return (
-                <Checkbox checked={selectedCourseIds.has(row.id)} onCheckedChange={() => toggleCourse(row.id)} disabled={isDisabled} className={isDisabled ? "opacity-50" : ""}/>
+                <Checkbox checked={selectedCourseIds.has(row.id)} onCheckedChange={() => toggleCourse(row.id)} disabled={isDisabled} className={isDisabled ? "opacity-30" : ""}/>
             )
         }
     },
-    { header: "Mata Kuliah", render: (row) => (
-        <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-                <span className="font-medium text-slate-900 text-sm">{row.matkul}</span>
-                {row.kategori === 'MBKM' && <Badge className="text-[9px] h-4 bg-emerald-100 text-emerald-700">MBKM</Badge>}
+    { header: "Mata Kuliah", render: (row) => {
+        const isDisabled = hasRegularStudentSelected && row.kategori === 'MBKM';
+        return (
+            <div className={cn("flex flex-col", isDisabled && "opacity-40 grayscale")}>
+                <div className="flex items-center gap-2">
+                    <span className="font-medium text-slate-900 text-sm">{row.matkul}</span>
+                    {row.kategori === 'MBKM' && <Badge variant="secondary" className="text-[9px] h-4 bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0 font-medium">MBKM</Badge>}
+                </div>
+                <span className="text-xs text-slate-500 font-mono">{row.kode}</span>
             </div>
-            <span className="text-xs text-slate-500 font-mono">{row.kode}</span>
-        </div>
-    )},
-    { header: "SKS", className: "text-center w-[60px]", render: (row) => <Badge variant="secondary" className="font-mono text-[10px]">{row.sks}</Badge> }
+        );
+    }},
+    { header: "SKS", className: "text-center w-[60px]", render: (row) => {
+        const isDisabled = hasRegularStudentSelected && row.kategori === 'MBKM';
+        return <Badge variant="secondary" className={cn("font-mono text-[10px]", isDisabled && "opacity-40")}>{row.sks}</Badge>;
+    }}
   ];
 
 
@@ -289,6 +366,116 @@ export default function BulkKRSInputModal({
   };
 
   const totalSKS = Array.from(selectedCourseIds).reduce((acc, cId) => acc + (courses.find(c => c.id === cId)?.sks || 0), 0);
+  
+  // --- LOADING SKELETON ---
+  const renderLoading = () => {
+    // Render Step 1 Skeleton usually, or generic
+    if (step === 1) {
+        return (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50/50">
+                <div className="w-full max-w-lg space-y-8">
+                     <div className="flex flex-col items-center space-y-4">
+                        <Skeleton className="w-12 h-12 rounded-full" />
+                        <Skeleton className="h-8 w-64" />
+                        <Skeleton className="h-4 w-96" />
+                     </div>
+                     <div className="bg-white p-6 rounded-xl border shadow-sm space-y-6">
+                        <Skeleton className="h-6 w-32" />
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-6 w-32" />
+                        <div className="grid grid-cols-4 gap-3">
+                             {[1,2,3,4].map(i => <Skeleton key={i} className="h-20 w-full rounded-lg" />)}
+                        </div>
+                     </div>
+                </div>
+            </div>
+        )
+    }
+    // Generic table skeleton for Step 2
+    return (
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+             <div className="flex-1 border-r border-slate-200 bg-white p-4 space-y-4">
+                 <div className="flex justify-between"><Skeleton className="h-6 w-32" /><Skeleton className="h-6 w-10" /></div>
+                 <div className="space-y-3">
+                    {[1,2,3,4,5].map(i => <div key={i} className="flex items-center gap-3"><Skeleton className="h-8 w-8 rounded-full" /><div className="space-y-1 flex-1"><Skeleton className="h-4 w-full" /><Skeleton className="h-3 w-20" /></div></div>)}
+                 </div>
+             </div>
+             <div className="flex-[1.2] bg-slate-50/50 p-4 space-y-4">
+                 <div className="flex justify-between"><Skeleton className="h-6 w-32" /><Skeleton className="h-6 w-20" /></div>
+                  <div className="space-y-3">
+                    {[1,2,3,4,5].map(i => <div key={i} className="flex items-center gap-3"><Skeleton className="h-4 w-4" /><div className="space-y-1 flex-1"><Skeleton className="h-4 w-full" /><Skeleton className="h-3 w-16" /></div><Skeleton className="h-5 w-10" /></div>)}
+                 </div>
+             </div>
+        </div>
+    )
+  }
+
+  // --- FILTER CONTENT ---
+  const studentFilterContent = (
+      <>
+        <DropdownMenuLabel>Filter Mahasiswa</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuCheckboxItem
+            checked={studentShowMbkmOnly}
+            onCheckedChange={setStudentShowMbkmOnly}
+        >
+            MBKM Only
+        </DropdownMenuCheckboxItem>
+        {uniqueStudentProdis.length > 0 && (
+            <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Prodi</DropdownMenuLabel>
+                {uniqueStudentProdis.map(prodi => (
+                    <DropdownMenuCheckboxItem
+                        key={prodi}
+                        checked={studentProdiFilter.includes(prodi)}
+                        onCheckedChange={(checked) => {
+                            setStudentProdiFilter(prev => 
+                                checked ? [...prev, prodi] : prev.filter(p => p !== prodi)
+                            );
+                            setStudentPage(1);
+                        }}
+                    >
+                        {prodi}
+                    </DropdownMenuCheckboxItem>
+                ))}
+            </>
+        )}
+      </>
+  );
+
+  const courseFilterContent = (
+      <>
+        <DropdownMenuLabel>Filter Mata Kuliah</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuCheckboxItem
+            checked={courseShowMbkmOnly}
+            onCheckedChange={setCourseShowMbkmOnly}
+        >
+            MBKM Only
+        </DropdownMenuCheckboxItem>
+        {uniqueCourseProdis.length > 0 && (
+            <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Prodi</DropdownMenuLabel>
+                {uniqueCourseProdis.map(prodi => (
+                    <DropdownMenuCheckboxItem
+                        key={prodi}
+                        checked={courseProdiFilter.includes(prodi)}
+                        onCheckedChange={(checked) => {
+                            setCourseProdiFilter(prev => 
+                                checked ? [...prev, prodi] : prev.filter(p => p !== prodi)
+                            );
+                            setCoursePage(1);
+                        }}
+                    >
+                        {prodi}
+                    </DropdownMenuCheckboxItem>
+                ))}
+            </>
+        )}
+      </>
+  );
 
   // --- RENDER STEPS ---
   
@@ -333,7 +520,7 @@ export default function BulkKRSInputModal({
                                     )}
                                 >
                                     <span className="text-lg">{smt}</span>
-                                    <span className="block text-[10px] uppercase text-muted-foreground font-normal">Smt</span>
+                                    <span className="block text-[10px] uppercase text-muted-foreground font-normal">Semester</span>
                                 </div>
                             ))}
                         </div>
@@ -354,7 +541,7 @@ export default function BulkKRSInputModal({
         <div className="flex-1 border-r border-slate-200 bg-white flex flex-col min-w-0 h-full overflow-hidden">
             <div className="flex-1 p-4 overflow-y-auto">
                 <h3 className="font-semibold text-slate-800 mb-4 flex justify-between items-center">
-                    <span>Mahasiswa Smt {targetSemester}</span>
+                    <span>Mahasiswa Semester {targetSemester}</span>
                     <Badge variant="secondary">{filteredStudents.length}</Badge>
                 </h3>
                 <DataTable
@@ -364,6 +551,15 @@ export default function BulkKRSInputModal({
                     searchQuery={studentSearch}
                     onSearchChange={(e) => { setStudentSearch(e.target.value); setStudentPage(1); }}
                     searchPlaceholder="Cari Nama / NIM..."
+                    customActions={undefined}
+                    filterContent={studentFilterContent}
+                    isFilterActive={studentProdiFilter.length > 0 || studentShowMbkmOnly}
+                    onResetFilter={() => {
+                        setStudentProdiFilter([]);
+                        setStudentShowMbkmOnly(false);
+                        setStudentSearch('');
+                        setStudentPage(1);
+                    }}
                     currentPage={studentPage}
                     totalPages={studentTotalPages}
                     onPageChange={setStudentPage}
@@ -378,10 +574,10 @@ export default function BulkKRSInputModal({
         </div>
 
         {/* Right: Courses */}
-        <div className="flex-[1.2] bg-slate-50/50 flex flex-col min-w-0 h-full overflow-hidden">
+        <div className="flex-1 bg-white flex flex-col min-w-0 h-full overflow-hidden">
             <div className="flex-1 p-4 overflow-y-auto">
                  <h3 className="font-semibold text-slate-800 mb-4 flex justify-between items-center">
-                    <span>Matkul Smt {targetSemester}</span>
+                    <span>Matkul Semester {targetSemester}</span>
                     <div className="flex gap-2 items-center">
                         <span className={totalSKS > 24 ? "text-red-600 font-bold text-sm" : "text-slate-700 text-sm"}>
                             Total: {totalSKS} SKS
@@ -395,6 +591,15 @@ export default function BulkKRSInputModal({
                     searchQuery={courseSearch}
                     onSearchChange={(e) => { setCourseSearch(e.target.value); setCoursePage(1); }}
                     searchPlaceholder="Cari Matkul..."
+                    customActions={undefined}
+                    filterContent={courseFilterContent}
+                    isFilterActive={courseProdiFilter.length > 0 || courseShowMbkmOnly}
+                    onResetFilter={() => {
+                         setCourseProdiFilter([]);
+                         setCourseShowMbkmOnly(false);
+                         setCourseSearch('');
+                         setCoursePage(1);
+                    }}
                     currentPage={coursePage}
                     totalPages={courseTotalPages}
                     onPageChange={setCoursePage}
@@ -403,7 +608,7 @@ export default function BulkKRSInputModal({
                     totalItems={filteredCourses.length}
                 />
             </div>
-             <div className="p-3 border-t bg-white border-l text-xs text-slate-500 text-center">
+             <div className="p-3 border-t bg-slate-50 border-l border-slate-200 text-xs text-slate-500 text-center">
                 {selectedCourseIds.size} mata kuliah dipilih
             </div>
         </div>
@@ -456,20 +661,15 @@ export default function BulkKRSInputModal({
           
           {/* Step Indicator */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center gap-2 text-sm text-slate-500">
-             <span className={cn(step >= 1 ? "text-primary font-bold" : "")}>1. Periode</span>
+             <span className={cn(step === 1 ? "text-primary font-bold" : step > 1 ? "text-slate-900 font-medium" : "")}>1. Periode</span>
              <ChevronRight className="w-4 h-4" />
-             <span className={cn(step >= 2 ? "text-primary font-bold" : "")}>2. Seleksi</span>
+             <span className={cn(step === 2 ? "text-primary font-bold" : step > 2 ? "text-slate-900 font-medium" : "")}>2. Seleksi</span>
              <ChevronRight className="w-4 h-4" />
-             <span className={cn(step >= 3 ? "text-primary font-bold" : "")}>3. Konfirmasi</span>
+             <span className={cn(step === 3 ? "text-primary font-bold" : "")}>3. Konfirmasi</span>
           </div>
         </DialogHeader>
 
-        {loadingMsg ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-12">
-            <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-            <p className="text-slate-500">{loadingMsg}</p>
-          </div>
-        ) : (
+        {loadingMsg ? renderLoading() : (
             <>
                 {step === 1 && renderStep1()}
                 {step === 2 && renderStep2()}
