@@ -102,7 +102,10 @@ export function usePdfPrint() {
       pdf.addImage(compressedDataUrl, formatAlias, 0, 0, width, height);
       pdf.save(fileName);
 
-      toast.success("Berhasil mengunduh Dokumen!", { id: toastId });
+      toast.success("Berhasil mengunduh Dokumen!", {
+        id: toastId,
+        description: "Dokumen telah berhasil dibuat dan diunduh."
+      });
     } catch (error) {
       console.error("PDF Generation Error:", error);
       toast.error("Gagal membuat Dokumen.", {
