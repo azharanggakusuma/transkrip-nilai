@@ -97,16 +97,21 @@ export function ImportNilaiDialog({
         // Filter transcript items that seem to be "active" (e.g. from KRS)
         // Adjust logic based on how your transcript data is structured.
         // Assuming hm === "-" means taken in KRS but not graded.
-        const activeCourses = student.transcript.filter(t => t.hm === "-" || !t.hm);
+        // Generate rows from all transcript data (including existing grades)
+        // Use student's transcript which comes from the database join
+        const activeCourses = student.transcript || [];
         
         activeCourses.forEach(course => {
+            // If grade exists and is not "-", pre-fill it. Otherwise empty string.
+            const existingGrade = (course.hm && course.hm !== "-") ? course.hm : "";
+            
             templateRows.push([
                 student.profile.nim,
                 student.profile.nama,
                 course.kode,
                 course.matkul,
                 course.smt, // Semester
-                "" // Nilai Huruf left empty for manual input
+                existingGrade
             ]);
         });
     });
