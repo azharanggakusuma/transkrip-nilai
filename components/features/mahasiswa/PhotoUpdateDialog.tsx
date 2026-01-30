@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { UserSession, updateUserSettings } from "@/app/actions/auth";
 import { uploadAvatar } from "@/app/actions/upload";
 import {
@@ -38,16 +38,23 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // Muncul jika role mahasiswa dan belum punya foto
     // Cek apakah user sudah pernah menutup dialog ini di sesi ini
-    const isDismissed = sessionStorage.getItem("photo_update_dismissed");
+    if (!user) return;
     
-    if (user && user.role === "mahasiswa" && !user.avatar_url && !isDismissed) {
+    // Cegah popup muncul di halaman admin/users saat proses switch account
+    if (pathname.startsWith("/users")) return;
+
+    const dismissalKey = `photo_update_dismissed_${user.id}`;
+    const isDismissed = sessionStorage.getItem(dismissalKey);
+    
+    if (user.role === "mahasiswa" && !user.avatar_url && !isDismissed) {
         setIsOpen(true);
     }
-  }, [user]);
+  }, [user, pathname]);
 
   // --- LOGIC HELPER ---
   const handleSystemError = (error: any, defaultMsg: string) => {
@@ -173,7 +180,9 @@ export function PhotoUpdateDialog({ user }: PhotoUpdateDialogProps) {
 
   const handleClose = () => {
     // Simpan status bahwa user menutup dialog ini di sesi ini
-    sessionStorage.setItem("photo_update_dismissed", "true");
+    if (user) {
+        sessionStorage.setItem(`photo_update_dismissed_${user.id}`, "true");
+    }
     setIsOpen(false);
   };
 

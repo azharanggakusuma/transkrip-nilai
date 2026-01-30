@@ -37,24 +37,26 @@ function LayoutContent({
       </div>
 
       <div className="flex-1 flex flex-col h-screen overflow-y-auto print:h-auto print:overflow-visible relative min-w-0 transition-all duration-300">
-        <div className="sticky top-0 z-30 print:hidden border-b border-slate-200 bg-white/80 backdrop-blur-md">
-          <Navbar 
-            onOpenSidebar={() => setSidebarOpen(true)}
-            onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-            isCollapsed={isCollapsed}
-            user={user} 
-            academicYearData={academicYear}
-          />
+        <div className="sticky top-0 z-30 print:hidden flex flex-col">
+          <div className="border-b border-slate-200 bg-white/80 backdrop-blur-md">
+            <Navbar 
+              onOpenSidebar={() => setSidebarOpen(true)}
+              onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+              isCollapsed={isCollapsed}
+              user={user} 
+              academicYearData={academicYear}
+            />
+          </div>
+          
+          {/* Switch Account Banner - Inside Sticky to keep it visible */}
+          {user?.isSwitched && (
+            <SwitchAccountBanner 
+              isSwitched={user.isSwitched}
+              currentUserName={user.name || ""}
+              currentUserRole={user.role}
+            />
+          )}
         </div>
-
-        {/* Switch Account Banner */}
-        {user?.isSwitched && (
-          <SwitchAccountBanner 
-            isSwitched={user.isSwitched}
-            currentUserName={user.name || ""}
-            currentUserRole={user.role}
-          />
-        )}
 
         <main className="flex-1 p-4 md:p-8 print:p-0">
           {children}

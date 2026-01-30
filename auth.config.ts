@@ -145,6 +145,24 @@ export const authConfig = {
         };
       }
 
+      // [BARU] Revert Logic: Jika token dalam mode switch TAPI cookie sudah tidak ada
+      // Maka kembalikan token ke user asli (Superuser)
+      const cookieStore = await cookies();
+      const switchCookie = cookieStore.get("switch_account");
+
+      if (token.isSwitched && !switchCookie && token.originalUserId) {
+        // Reset token ke ID asli
+        const revertedToken = {
+          ...token,
+          id: token.originalUserId,
+          isSwitched: false,
+          originalUserId: null,
+          expiresAt: 0 // Paksa refresh
+        };
+        // Refresh data user asli dari DB
+        return await refreshAccessToken(revertedToken);
+      }
+
       // 2. Jika Token Belum Waktunya Cek (Masih dalam 15 menit), kembalikan langsung
       if (Date.now() < (token.expiresAt as number)) {
         return token;

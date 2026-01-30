@@ -31,20 +31,20 @@ export function SwitchAccountButton({ user, currentUserId }: SwitchAccountButton
 
   const handleSwitch = async () => {
     setIsLoading(true);
+    const toastId = toast.loading("Sedang beralih akun...");
     try {
       const result = await switchToAccount(user.id);
-      toast.success(result.message);
-      setIsOpen(false);
+      toast.success(result.message, { id: toastId });
       
-      // Reload page untuk apply perubahan
-      if (result.needsReload) {
-        window.location.reload();
-      } else {
-        router.refresh();
-      }
+      // Jangan tutup modal (setIsOpen(false)) agar user tidak melihat konten page "berubah"
+      // sebelum redirect terjadi. Biarkan loading state tetap aktif sampai browser navigasi.
+      
+      // Redirect ke Dashboard setelah switch
+      window.location.href = "/";
     } catch (error: any) {
       toast.error("Gagal switch account", {
         description: error.message,
+        id: toastId,
       });
       setIsLoading(false);
     }

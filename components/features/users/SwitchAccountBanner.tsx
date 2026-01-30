@@ -25,19 +25,17 @@ export function SwitchAccountBanner({
 
   const handleSwitchBack = async () => {
     setIsLoading(true);
+    const toastId = toast.loading("Mengembalikan ke akun superuser...");
     try {
       const result = await switchBackToSuperuser();
-      toast.success(result.message);
+      toast.success(result.message, { id: toastId });
       
-      // Reload page untuk apply perubahan
-      if (result.needsReload) {
-        window.location.reload();
-      } else {
-        router.refresh();
-      }
+      // Redirect kembali ke halaman Users
+      window.location.href = "/users";
     } catch (error: any) {
       toast.error("Gagal kembali ke akun superuser", {
         description: error.message,
+        id: toastId,
       });
       setIsLoading(false);
     }

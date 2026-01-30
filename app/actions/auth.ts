@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import { verifyTurnstile } from "@/lib/turnstile";
 
 export type UserSession = {
+  id?: string;
   username: string;
   name?: string;
   role: string;
@@ -109,11 +110,12 @@ export async function getSession(): Promise<UserSession | null> {
   // Fetch ulang data user untuk mendapatkan avatar terbaru
   const { data: userData } = await supabase
     .from("users")
-    .select("avatar_url")
+    .select("avatar_url, id")
     .eq("username", session.user.username)
     .single();
 
   return {
+    id: userData?.id || session.user.id,
     username: session.user.username || "",
     name: session.user.name || "",
     role: session.user.role || "mahasiswa",
