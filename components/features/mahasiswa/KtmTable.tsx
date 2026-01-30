@@ -4,9 +4,10 @@ import React, { useState, useMemo } from "react";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Printer, FileArchive, Loader2 } from "lucide-react";
+import { Printer, FileArchive, Loader2, User } from "lucide-react";
 import { StudentData } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
+import Image from "next/image";
 import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -131,17 +132,38 @@ export default function KtmTable({
       ),
     },
     {
-      header: "NIM",
-      accessorKey: "profile", 
-      render: (row) => <span className="font-mono text-sm">{row.profile.nim}</span>,
-    },
-    {
-      header: "Nama Mahasiswa",
-      render: (row) => (<span className="font-medium">{row.profile.nama}</span>),
+      header: "Mahasiswa",
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <div className="relative w-9 h-9 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+             {row.profile.avatar_url ? (
+               <Image 
+                 src={row.profile.avatar_url} 
+                 alt={row.profile.nama} 
+                 fill 
+                 className="object-cover"
+               />
+             ) : (
+               <div className="flex items-center justify-center w-full h-full text-slate-400">
+                  <User className="w-5 h-5" />
+               </div>
+             )}
+          </div>
+          <div className="flex flex-col">
+             <span className="font-medium text-slate-900 leading-tight">{row.profile.nama}</span>
+             <span className="text-xs text-slate-500 font-mono">{row.profile.nim}</span>
+          </div>
+        </div>
+      ),
     },
     {
       header: "Prodi",
-      render: (row) => (<span className="text-sm text-muted-foreground">{row.profile.study_program?.nama || "-"}</span>),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">
+          {row.profile.study_program?.nama || "-"}{" "}
+          {row.profile.study_program?.jenjang ? `(${row.profile.study_program.jenjang})` : ""}
+        </span>
+      ),
     },
     {
         header: "Angkatan",
