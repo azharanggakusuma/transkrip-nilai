@@ -11,6 +11,7 @@ import Image from "next/image";
 import { usePdfPrint } from "@/hooks/use-pdf-print";
 import JSZip from "jszip";
 import KtmTable from "@/components/features/mahasiswa/KtmTable";
+import { toast } from "sonner";
 
 interface KtmClientProps {
   student?: StudentData | null;
@@ -52,15 +53,17 @@ export default function KtmClient({ student, students }: KtmClientProps) {
   const handlePrintBulk = async () => {
     if (!students) return;
     if (selectedStudents.size === 0) {
-      alert("Pilih minimal 1 mahasiswa untuk dicetak");
+      toast.error("Pilih minimal 1 mahasiswa untuk dicetak");
       return;
     }
 
     setIsGeneratingZip(true);
+    const toastId = toast.loading("Memulai pembuatan ZIP...");
 
     try {
       const zip = new JSZip();
       const selectedList = Array.from(selectedStudents);
+      let processedCount = 0;
 
       // Process sequentially
       for (const studentId of selectedList) {
@@ -69,9 +72,14 @@ export default function KtmClient({ student, students }: KtmClientProps) {
         
         if (!s || !ref) continue;
 
+        // Update progress toast
+        toast.loading(`Memproses ${processedCount + 1}/${selectedList.length}: ${s.profile.nama}`, {
+            id: toastId,
+        });
+
         const pdfBlob = await generatePdfBlob({
             elementRef: { current: ref },
-            fileName: "",
+            fileName: "", // Not used for blob
             pdfFormat: [85.6, 53.98],
             pdfOrientation: "landscape",
             pixelRatio: 8,
@@ -83,21 +91,25 @@ export default function KtmClient({ student, students }: KtmClientProps) {
             const fileName = `KTM_${s.profile.nama.replace(/\s+/g, "_")}_${s.profile.nim}.pdf`;
             zip.file(fileName, pdfBlob);
         }
+        processedCount++;
       }
+
+      toast.loading("Mengkornpresi file ZIP...", { id: toastId });
 
       // Generate ZIP
       const zipBlob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(zipBlob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `KTM_${new Date().toISOString().split('T')[0]}.zip`;
+      link.download = `KTM_Mahasiswa_${new Date().toISOString().split('T')[0]}.zip`;
       link.click();
       URL.revokeObjectURL(url);
 
       setSelectedStudents(new Set());
+      toast.success(`Berhasil membuat ZIP berisi ${processedCount} file`, { id: toastId });
     } catch (error) {
       console.error("Error generating ZIP:", error);
-      alert("Gagal membuat file ZIP. Silakan coba lagi.");
+      toast.error("Gagal membuat file ZIP", { id: toastId });
     } finally {
       setIsGeneratingZip(false);
     }

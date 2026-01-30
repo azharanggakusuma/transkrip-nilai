@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useMemo, useEffect } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,32 +11,192 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { usePdfPrint } from "@/hooks/use-pdf-print";
+import BiodataTable from "@/components/features/mahasiswa/BiodataTable";
+import JSZip from "jszip";
+import { toast } from "sonner";
 
 interface BiodataClientProps {
-  student: StudentData;
+  student?: StudentData | null;
+  students?: StudentData[];
 }
 
-export default function BiodataClient({ student }: BiodataClientProps) {
-  const printRef = useRef<HTMLDivElement>(null);
-  const { isPrinting, printPdf } = usePdfPrint();
+export default function BiodataClient({ student, students }: BiodataClientProps) {
+  // === COMMON STATE ===
+  const { isPrinting, printPdf, generatePdfBlob } = usePdfPrint();
+  
+  // === ADMIN VIEW STATE ===
+  const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
+  const [isGeneratingZip, setIsGeneratingZip] = useState(false);
+  
+  // Create a ref for the HIDDEN PRINT AREA used for bulk/admin printing
+  // We use a SINGLE printable component and swap its data to save memory
+  const [printTargetStudent, setPrintTargetStudent] = useState<StudentData | null>(null);
+  const adminPrintRef = useRef<HTMLDivElement>(null);
 
-  const handleDownloadPDF = async () => {
+  // === STUDENT VIEW STATE ===
+  const singlePrintRef = useRef<HTMLDivElement>(null);
+
+  // ==========================================
+  // LOGIC: ADMIN (BULK / INDIVIDUAL)
+  // ==========================================
+  
+  // Helper to wait for react render
+  const waitForRender = () => new Promise(resolve => setTimeout(resolve, 100));
+
+  const handlePrintIndividualAdmin = async (targetStudent: StudentData) => {
+    // 1. Set data to the hidden print component
+    setPrintTargetStudent(targetStudent);
+    
+    // 2. Wait for render
+    await waitForRender();
+
+    // 3. Print
+    if (adminPrintRef.current) {
+        await printPdf({
+            elementRef: adminPrintRef,
+            fileName: `Biodata_${targetStudent.profile.nama.replace(/\s+/g, "_")}_${targetStudent.profile.nim}.pdf`,
+            pdfFormat: "a4",
+            pdfOrientation: "portrait",
+        });
+    }
+    
+    // 4. Cleanup (optional)
+    setPrintTargetStudent(null);
+  };
+
+  const handlePrintBulk = async () => {
+    if (!students) return;
+    if (selectedStudents.size === 0) {
+      toast.error("Pilih minimal 1 mahasiswa untuk dicetak");
+      return;
+    }
+
+    setIsGeneratingZip(true);
+    const toastId = toast.loading("Memulai pembuatan ZIP...");
+
+    try {
+      const zip = new JSZip();
+      const selectedList = Array.from(selectedStudents);
+      let processedCount = 0;
+
+      for (const studentId of selectedList) {
+        const s = students.find(item => item.id === studentId);
+        if (!s) continue;
+
+        // Update progress toast (only every 1 item to avoid flicker or too many updates, though local is fast)
+        toast.loading(`Memproses ${processedCount + 1}/${selectedList.length}: ${s.profile.nama}`, {
+            id: toastId,
+        });
+
+        // 1. Swap Data
+        setPrintTargetStudent(s);
+        await waitForRender();
+
+        // 2. Generate content
+        if (adminPrintRef.current) {
+            const pdfBlob = await generatePdfBlob({
+                elementRef: adminPrintRef,
+                fileName: "", // Not used for blob
+                pdfFormat: "a4",
+                pdfOrientation: "portrait",
+            });
+
+            if (pdfBlob) {
+                const fileName = `Biodata_${s.profile.nama.replace(/\s+/g, "_")}_${s.profile.nim}.pdf`;
+                zip.file(fileName, pdfBlob);
+            }
+        }
+        processedCount++;
+      }
+
+      toast.loading("Mengkornpresi file ZIP...", { id: toastId });
+
+      // 3. Download ZIP
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Biodata_Mahasiswa_${new Date().toISOString().split('T')[0]}.zip`;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      setSelectedStudents(new Set());
+      toast.success(`Berhasil membuat ZIP berisi ${processedCount} file`, { id: toastId });
+    } catch (error) {
+      console.error("Error ZIP:", error);
+      toast.error("Gagal membuat file ZIP", { id: toastId });
+    } finally {
+      setIsGeneratingZip(false);
+      setPrintTargetStudent(null);
+    }
+  };
+
+  // ==========================================
+  // LOGIC: STUDENT (SINGLE VIEW)
+  // ==========================================
+  const handleDownloadPDFSelf = async () => {
+    if (!student) return;
     await printPdf({
-      elementRef: printRef,
+      elementRef: singlePrintRef,
       fileName: `Biodata_${student.profile.nama.replace(/\s+/g, "_")}_${student.profile.nim}.pdf`,
       pdfFormat: "a4",
       pdfOrientation: "portrait",
     });
   };
 
+  // ==========================================
+  // RENDER: ADMIN VIEW
+  // ==========================================
+  if (students && students.length >= 0) {
+    return (
+        <>
+            {/* Hidden Single Print Component for Admin - Dynamic Content */}
+            <div className="absolute top-0 left-[-9999px] w-[210mm]">
+                {printTargetStudent && (
+                    <PrintableBiodata 
+                        ref={adminPrintRef} 
+                        student={printTargetStudent} 
+                        className="block"
+                    />
+                )}
+            </div>
+
+            <div className="flex flex-col gap-6 pb-10 animate-in fade-in duration-500">
+                <PageHeader 
+                    title="Biodata Mahasiswa" 
+                    breadcrumb={["Beranda", "Biodata"]} 
+                />
+
+                <BiodataTable 
+                    data={students}
+                    isLoading={false}
+                    selectedIds={selectedStudents}
+                    onSelectionChange={setSelectedStudents}
+                    onPrint={handlePrintIndividualAdmin}
+                    onPrintBulk={handlePrintBulk}
+                    isGeneratingZip={isGeneratingZip}
+                    isPrinting={isPrinting}
+                />
+            </div>
+        </>
+    );
+  }
+
+  // ==========================================
+  // RENDER: STUDENT VIEW
+  // ==========================================
+  if (!student) {
+     return <div>Data tidak ditemukan</div>
+  }
+
   return (
     <>
       {/* Hidden Print Area but Rendered for Capture */}
       <div className="absolute top-0 left-[-9999px] w-[210mm]">
         <PrintableBiodata 
-            ref={printRef} 
+            ref={singlePrintRef} 
             student={student} 
-            className="block" // Force display:block to override hidden, but position is off-screen
+            className="block" 
         />
       </div>
 
@@ -68,7 +228,7 @@ export default function BiodataClient({ student }: BiodataClientProps) {
                   )}
                 </div>
                 <Button 
-                   onClick={handleDownloadPDF} 
+                   onClick={handleDownloadPDFSelf} 
                    className="w-full" 
                    variant="default"
                    disabled={isPrinting}
@@ -212,7 +372,7 @@ export default function BiodataClient({ student }: BiodataClientProps) {
                 {/* MOBILE BUTTON (Bottom) */}
                 <div className="mt-6 md:hidden">
                     <Button 
-                    onClick={handleDownloadPDF} 
+                    onClick={handleDownloadPDFSelf} 
                     className="w-full" 
                     variant="default"
                     disabled={isPrinting}

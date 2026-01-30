@@ -689,3 +689,71 @@ export async function getAllStudentsForKtm(): Promise<StudentData[]> {
     };
   });
 }
+
+export async function getAllStudentsForBiodata(): Promise<StudentData[]> {
+  const activeYear = await getActiveAcademicYear();
+
+  // Fetch avatar mapping
+  const { data: usersData } = await supabaseAdmin
+    .from('users')
+    .select('student_id, avatar_url')
+    .not('student_id', 'is', null);
+
+  const avatarMap = new Map<string, string>();
+  if (usersData) {
+    usersData.forEach((u) => {
+      if (u.student_id && u.avatar_url) {
+        avatarMap.set(u.student_id, u.avatar_url);
+      }
+    });
+  }
+
+  // Fetch students with FULL data for Biodata
+  const { data, error } = await supabaseAdmin
+    .from('students')
+    .select(`
+      *,
+      study_programs (
+        id, kode, nama, jenjang
+      )
+    `)
+    .order('nama', { ascending: true });
+
+  if (error) {
+    console.error("Error fetching students for Biodata:", error.message);
+    return [];
+  }
+
+  if (!data) return [];
+
+  return data.map((s: any) => {
+    const dynamicSemester = calculateStudentSemester(s.angkatan, activeYear);
+    const userAvatar = avatarMap.get(s.id) || null;
+
+    return {
+      id: s.id,
+      profile: {
+        id: s.id,
+        nim: s.nim,
+        nama: s.nama,
+        alamat: s.alamat,
+        angkatan: s.angkatan || 0,
+        semester: dynamicSemester,
+        study_program_id: s.study_program_id,
+        study_program: s.study_programs,
+        is_active: s.is_active ?? true,
+        avatar_url: userAvatar,
+        jenis_kelamin: s.jenis_kelamin,
+        tempat_lahir: s.tempat_lahir,
+        tanggal_lahir: s.tanggal_lahir,
+        agama: s.agama,
+        nik: s.nik,
+        status: s.status,
+        no_hp: s.no_hp,
+        email: s.email,
+      },
+      transcript: [],
+      total_sks: 0
+    };
+  });
+}

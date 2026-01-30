@@ -1,6 +1,6 @@
 import React from "react";
 import { auth } from "@/auth";
-import { getStudentById } from "@/app/actions/students";
+import { getStudentById, getAllStudentsForBiodata } from "@/app/actions/students";
 import { redirect } from "next/navigation";
 import BiodataClient from "./BiodataClient";
 
@@ -15,24 +15,27 @@ export default async function BiodataPage() {
     redirect("/login");
   }
 
-  // Ensure is student
-  if (session.user.role !== "mahasiswa" || !session.user.student_id) {
-     return (
-        <div className="p-8 text-center text-red-500">
-            Akses Ditolak. Halaman ini khusus untuk Mahasiswa.
-        </div>
-     );
+  // 1. Mahasiswa View
+  if (session.user.role === "mahasiswa") {
+    if (!session.user.student_id) {
+       return (
+          <div className="p-8 text-center text-red-500">
+              Data mahasiswa tidak ditemukan untuk akun ini.
+          </div>
+       );
+    }
+    const student = await getStudentById(session.user.student_id);
+    if (!student) {
+        return (
+            <div className="p-8 text-center text-gray-500">
+                Data mahasiswa tidak ditemukan. Silakan hubungi admin.
+            </div>
+        );
+    }
+    return <BiodataClient student={student} />;
   }
 
-  const student = await getStudentById(session.user.student_id);
-
-  if (!student) {
-    return (
-        <div className="p-8 text-center text-gray-500">
-            Data mahasiswa tidak ditemukan. Silakan hubungi admin.
-        </div>
-    );
-  }
-
-  return <BiodataClient student={student} />;
+  // 2. Admin / Superuser / Staff View
+  const students = await getAllStudentsForBiodata();
+  return <BiodataClient students={students} />;
 }
