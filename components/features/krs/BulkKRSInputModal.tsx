@@ -8,7 +8,7 @@ import { useToastMessage } from '@/hooks/use-toast-message';
 import { getStudentsWithoutKRS, createBulkKRS, getCoursesForAcademicYear } from '@/app/actions/krs-bulk';
 import { getCourses } from '@/app/actions/courses';
 import { Course } from '@/lib/types';
-import { ChevronRight, ChevronLeft, CalendarDays, CheckCircle2, User, Loader2, ListFilter } from "lucide-react";
+import { ChevronRight, ChevronLeft, CalendarDays, CheckCircle2, User, Loader2, ListFilter, UserMinus } from "lucide-react";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +66,7 @@ export default function BulkKRSInputModal({
   // User asked for "filter button". Dropdown with checkboxes is good.
   // state for "MBKM Only"
   const [studentShowMbkmOnly, setStudentShowMbkmOnly] = useState(false);
+  const [excludeMbkmStudents, setExcludeMbkmStudents] = useState(false);
   const [studentPage, setStudentPage] = useState(1);
   const itemsPerPage = 8; 
 
@@ -86,6 +87,7 @@ export default function BulkKRSInputModal({
       setTargetSemester(null);
       setSelectedStudentIds(new Set());
       setSelectedCourseIds(new Set());
+      setExcludeMbkmStudents(false);
     }
   }, [isOpen, initialAcademicYearId]);
 
@@ -254,23 +256,31 @@ export default function BulkKRSInputModal({
             <Checkbox 
                 checked={
                     filteredStudents.length > 0 && 
-                    filteredStudents.filter(s => !(hasMbkmCourseSelected && !s.is_mbkm)).every(s => selectedStudentIds.has(s.id))
+                    filteredStudents.filter(s => {
+                        if (hasMbkmCourseSelected && !s.is_mbkm) return false;
+                        if (excludeMbkmStudents && s.is_mbkm) return false;
+                        return true;
+                    }).every(s => selectedStudentIds.has(s.id))
                 }
                 onCheckedChange={(checked) => {
                     const newSet = new Set(selectedStudentIds);
                     filteredStudents.forEach(s => {
                          if (hasMbkmCourseSelected && !s.is_mbkm) return;
+                         if (excludeMbkmStudents && s.is_mbkm) return;
                         if (checked) newSet.add(s.id);
                         else newSet.delete(s.id);
                     });
                     setSelectedStudentIds(newSet);
                 }}
-                disabled={hasMbkmCourseSelected && filteredStudents.every(s => !s.is_mbkm)}
+                disabled={
+                    (hasMbkmCourseSelected && filteredStudents.every(s => !s.is_mbkm)) ||
+                    (excludeMbkmStudents && filteredStudents.every(s => s.is_mbkm))
+                }
             />
         ),
         className: "w-[40px] text-center",
         render: (row) => {
-            const isDisabled = hasMbkmCourseSelected && !row.is_mbkm;
+            const isDisabled = (hasMbkmCourseSelected && !row.is_mbkm) || (excludeMbkmStudents && row.is_mbkm);
             return (
                  <Checkbox 
                     checked={selectedStudentIds.has(row.id)}
@@ -282,7 +292,7 @@ export default function BulkKRSInputModal({
         }
     },
     { header: "Mahasiswa", render: (row) => {
-        const isDisabled = hasMbkmCourseSelected && !row.is_mbkm;
+        const isDisabled = (hasMbkmCourseSelected && !row.is_mbkm) || (excludeMbkmStudents && row.is_mbkm);
         return (
             <div className={cn("flex items-center gap-3", isDisabled && "opacity-40 grayscale")}>
                 <div className="relative h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden shrink-0">
@@ -299,7 +309,7 @@ export default function BulkKRSInputModal({
         );
     }},
     { header: "Prodi", render: (row) => {
-        const isDisabled = hasMbkmCourseSelected && !row.is_mbkm;
+        const isDisabled = (hasMbkmCourseSelected && !row.is_mbkm) || (excludeMbkmStudents && row.is_mbkm);
         return <span className={cn("text-xs text-slate-500", isDisabled && "opacity-40 grayscale")}>{row.study_program?.nama} ({row.study_program?.jenjang})</span>
     }}
   ];
@@ -551,7 +561,27 @@ export default function BulkKRSInputModal({
                     searchQuery={studentSearch}
                     onSearchChange={(e) => { setStudentSearch(e.target.value); setStudentPage(1); }}
                     searchPlaceholder="Cari Nama / NIM..."
-                    customActions={undefined}
+                    customActions={
+                        <Button
+                            variant={excludeMbkmStudents ? "destructive" : "outline"}
+                            size="icon"
+                            onClick={() => {
+                                const newValue = !excludeMbkmStudents;
+                                setExcludeMbkmStudents(newValue);
+                                if (newValue) {
+                                    const newSet = new Set(selectedStudentIds);
+                                    students.forEach(s => {
+                                        if (s.is_mbkm) newSet.delete(s.id);
+                                    });
+                                    setSelectedStudentIds(newSet);
+                                }
+                            }}
+                            className="h-9 w-9"
+                            title={excludeMbkmStudents ? "Batalkan Pengecualian MBKM" : "Kecualikan Mahasiswa MBKM"}
+                        >
+                            <UserMinus className="h-4 w-4" />
+                        </Button>
+                    }
                     filterContent={studentFilterContent}
                     isFilterActive={studentProdiFilter.length > 0 || studentShowMbkmOnly}
                     onResetFilter={() => {
