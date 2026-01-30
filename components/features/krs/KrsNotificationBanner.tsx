@@ -32,13 +32,13 @@ export function KrsNotificationBanner({ show, academicYearName, semester }: KrsN
   return (
     <div className="bg-amber-50 border-b border-amber-200 text-amber-900 px-4 py-3 shadow-sm animate-in slide-in-from-top-2 relative">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pr-9">
-        <div className="flex items-start gap-3 w-full">
-          <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+        <div className="flex items-center gap-3 w-full">
+          <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-bold">
+            <p className="text-sm font-medium">
               Pemberitahuan KRS
             </p>
-            <p className="text-sm opacity-90 leading-tight mt-0.5">
+            <p className="text-xs opacity-90">
               Anda belum menyelesaikan pengisian KRS untuk <span className="font-semibold">TA {academicYearName || "Aktif"} {semester ? `(${semester})` : ""}</span>. Segera lakukan pengisian.
             </p>
           </div>
