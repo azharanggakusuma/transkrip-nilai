@@ -195,16 +195,23 @@ export function UserForm({ initialData, isEditing, onSubmit, onCancel }: UserFor
                 handleInputChange("role", val);
                 if (val !== 'mahasiswa') handleInputChange("student_id", null);
             }}
+            disabled={isEditing}
             >
-            <SelectTrigger className={`w-full ${errorClass("role")}`}>
+            <SelectTrigger className={`w-full ${errorClass("role")} ${isEditing ? "opacity-60 cursor-not-allowed" : ""}`}>
                 <SelectValue placeholder="Pilih Role" />
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value="mahasiswa">Mahasiswa</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="dosen">Dosen</SelectItem>
+                <SelectItem value="superuser">Superuser</SelectItem>
             </SelectContent>
             </Select>
+            {isEditing && (
+              <p className="text-xs text-muted-foreground">
+                Role tidak dapat diubah setelah user dibuat
+              </p>
+            )}
           </div>
 
            {/* Status: col-span-4 (40%) hanya saat edit */}

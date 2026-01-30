@@ -124,6 +124,19 @@ export async function createUser(values: UserPayload) {
     }
   }
 
+  // Validasi: Hanya boleh ada 1 superuser
+  if (role === "superuser") {
+    const { data: existingSuperuser } = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .eq("role", "superuser")
+      .single();
+
+    if (existingSuperuser) {
+      throw new Error("Hanya boleh ada 1 akun superuser. Akun superuser sudah ada di sistem.");
+    }
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const payload: Partial<UserPayload> = {
@@ -143,9 +156,23 @@ export async function createUser(values: UserPayload) {
   revalidatePath("/users");
 }
 
-// === UPDATE USER ===
 export async function updateUser(id: string, values: UserPayload) {
   const { name, username, password, role, student_id, lecturer_id, is_active } = values;
+
+  // Validasi: Role tidak boleh diubah (anti-bypass)
+  const { data: existingUser, error: fetchError } = await supabaseAdmin
+    .from("users")
+    .select("role")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !existingUser) {
+    throw new Error("User tidak ditemukan.");
+  }
+
+  if (existingUser.role !== role) {
+    throw new Error("Role tidak dapat diubah. Jika perlu mengubah role, silakan buat user baru.");
+  }
 
   const targetStudentId = (role === "mahasiswa" && student_id) ? student_id : null;
   const targetLecturerId = (role === "dosen" && lecturer_id) ? lecturer_id : null;
@@ -173,6 +200,20 @@ export async function updateUser(id: string, values: UserPayload) {
 
     if (existingUser) {
       throw new Error("Dosen ini sudah memiliki akun lain. Silakan pilih dosen yang belum terdaftar.");
+    }
+  }
+
+  // Validasi: Hanya boleh ada 1 superuser
+  if (role === "superuser") {
+    const { data: existingSuperuser } = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .eq("role", "superuser")
+      .neq("id", id) // Exclude user yang sedang di-edit
+      .single();
+
+    if (existingSuperuser) {
+      throw new Error("Hanya boleh ada 1 akun superuser. Akun superuser sudah ada di sistem.");
     }
   }
 

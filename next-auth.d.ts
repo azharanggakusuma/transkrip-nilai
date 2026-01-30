@@ -9,7 +9,9 @@ declare module "next-auth" {
       name: string
       role: string
       student_id?: string | null
-      error?: string 
+      error?: string
+      originalUserId?: string | null
+      isSwitched?: boolean
     } & DefaultSession["user"]
   }
 
@@ -19,7 +21,9 @@ declare module "next-auth" {
     name: string
     role: string
     student_id?: string | null
-    error?: string 
+    error?: string
+    originalUserId?: string | null
+    isSwitched?: boolean
   }
 }
 
@@ -29,7 +33,9 @@ declare module "next-auth/jwt" {
     username: string
     role: string
     student_id?: string | null
-    expiresAt: number 
-    error?: string   
+    expiresAt: number
+    error?: string
+    originalUserId?: string | null
+    isSwitched?: boolean
   }
 }

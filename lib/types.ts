@@ -3,7 +3,7 @@
 // =========================================
 // GLOBAL & SHARED
 // =========================================
-export type Role = "admin" | "dosen" | "mahasiswa";
+export type Role = "admin" | "dosen" | "mahasiswa" | "superuser";
 export type CourseCategory = "Reguler" | "MBKM";
 
 export interface StudyProgram {

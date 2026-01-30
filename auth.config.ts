@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { cookies } from "next/headers";
 
 // Waktu interval pengecekan ke database
 const MAX_AGE = 15 * 60 * 1000;
@@ -95,7 +96,9 @@ export const authConfig = {
             .sort((a, b) => b.href.length - a.href.length)[0];
 
           if (matchedMenu) {
-            const hasAccess = matchedMenu.allowed_roles.includes(userRole);
+            const hasAccess =
+              userRole === "superuser" ||
+              matchedMenu.allowed_roles.includes(userRole);
             if (!hasAccess) {
               return Response.redirect(new URL("/", nextUrl));
             }
@@ -112,7 +115,7 @@ export const authConfig = {
 
       return false;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       // 1. Saat Login Pertama Kali
       if (user) {
         return {
@@ -121,6 +124,23 @@ export const authConfig = {
           username: user.username,
           name: user.name,
           student_id: user.student_id,
+          expiresAt: Date.now() + MAX_AGE,
+          originalUserId: user.originalUserId || null,
+          isSwitched: user.isSwitched || false,
+        };
+      }
+
+      // 1.5. Handle Switch Account (via session update)
+      if (trigger === "update" && session?.switchAccount) {
+        return {
+          ...token,
+          id: session.switchAccount.id,
+          role: session.switchAccount.role,
+          username: session.switchAccount.username,
+          name: session.switchAccount.name,
+          student_id: session.switchAccount.student_id,
+          originalUserId: session.switchAccount.originalUserId,
+          isSwitched: session.switchAccount.isSwitched,
           expiresAt: Date.now() + MAX_AGE,
         };
       }
@@ -135,11 +155,42 @@ export const authConfig = {
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        session.user.username = token.username as string;
-        session.user.name = token.name as string;
-        session.user.student_id = token.student_id as string | null;
+        // Cek apakah ada cookie switch account
+        const cookieStore = await cookies();
+        const switchCookie = cookieStore.get("switch_account");
+
+        if (switchCookie) {
+          try {
+            const switchData = JSON.parse(switchCookie.value);
+
+            // Override session dengan data dari cookie
+            session.user.id = switchData.targetUserId;
+            session.user.role = switchData.targetRole;
+            session.user.username = switchData.targetUsername;
+            session.user.name = switchData.targetName;
+            session.user.student_id = switchData.targetStudentId || null;
+            session.user.originalUserId = switchData.originalUserId;
+            session.user.isSwitched = true;
+          } catch (e) {
+            // Jika parse error, gunakan data token biasa
+            session.user.id = token.id as string;
+            session.user.role = token.role as string;
+            session.user.username = token.username as string;
+            session.user.name = token.name as string;
+            session.user.student_id = token.student_id as string | null;
+            session.user.originalUserId = null;
+            session.user.isSwitched = false;
+          }
+        } else {
+          // Tidak ada cookie switch, gunakan data token biasa
+          session.user.id = token.id as string;
+          session.user.role = token.role as string;
+          session.user.username = token.username as string;
+          session.user.name = token.name as string;
+          session.user.student_id = token.student_id as string | null;
+          session.user.originalUserId = null;
+          session.user.isSwitched = false;
+        }
 
         if (token.error) {
           session.user.error = token.error as string;

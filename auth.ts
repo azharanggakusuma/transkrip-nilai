@@ -2,9 +2,9 @@
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import Credentials from "next-auth/providers/credentials";
-import { createClient } from "@supabase/supabase-js"; 
+import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
-import { User } from "next-auth"; 
+import { User } from "next-auth";
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -30,11 +30,11 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         }
 
         if (user.is_active === false) {
-           throw new Error("InactiveAccount");
+          throw new Error("InactiveAccount");
         }
 
         const passwordsMatch = await bcrypt.compare(
-          password as string, 
+          password as string,
           user.password
         );
 

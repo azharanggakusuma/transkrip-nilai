@@ -14,9 +14,11 @@ import { createUser, updateUser, deleteUser, generateMissingAccounts } from "@/a
 
 interface UsersClientProps {
   initialData: UserData[];
+  currentUserId?: string;
+  currentUserRole?: string;
 }
 
-export default function UsersClient({ initialData }: UsersClientProps) {
+export default function UsersClient({ initialData, currentUserId, currentUserRole }: UsersClientProps) {
   const { successAction, confirmDeleteMessage, showError, showLoading } = useToastMessage();
   const router = useRouter();
 
@@ -125,6 +127,8 @@ export default function UsersClient({ initialData }: UsersClientProps) {
         onDelete={handleOpenDelete}
         onResetPassword={handleOpenReset}
         onGenerate={() => setIsGenerateOpen(true)}
+        currentUserId={currentUserId}
+        currentUserRole={currentUserRole}
       />
 
       {/* MODAL ADD/EDIT */}

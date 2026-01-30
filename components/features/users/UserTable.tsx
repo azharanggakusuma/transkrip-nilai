@@ -6,7 +6,7 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Pencil, Trash2, ShieldCheck, BookOpen, KeyRound, CheckCircle2, XCircle, User, AtSign, GraduationCap, User2, UserPlus } from "lucide-react"; 
+import { Pencil, Trash2, ShieldCheck, BookOpen, KeyRound, CheckCircle2, XCircle, User, AtSign, GraduationCap, User2, UserPlus, Crown } from "lucide-react"; 
 import { UserData } from "@/lib/types"; 
 import {
   DropdownMenuLabel,
@@ -14,6 +14,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
+import { SwitchAccountButton } from "./SwitchAccountButton";
 
 interface UserTableProps {
   data: UserData[];
@@ -23,6 +24,8 @@ interface UserTableProps {
   onResetPassword: (user: UserData) => void;
   onAdd: () => void;
   onGenerate: () => void;
+  currentUserId?: string;
+  currentUserRole?: string;
 }
 
 export default function UserTable({ 
@@ -32,7 +35,9 @@ export default function UserTable({
   onDelete, 
   onResetPassword, 
   onAdd,
-  onGenerate
+  onGenerate,
+  currentUserId,
+  currentUserRole,
 }: UserTableProps) {
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -123,6 +128,10 @@ export default function UserTable({
             variant = "outline";
             icon = null;
             className = "bg-white text-slate-600 border-slate-300";
+        } else if (row.role === 'superuser') {
+            variant = "default";
+            icon = <Crown size={13} className="mr-1.5" />;
+            className = "bg-purple-600 text-white border-transparent";
         }
         
         return (
@@ -167,9 +176,12 @@ export default function UserTable({
     },
     {
       header: "Aksi",
-      className: "text-center w-[120px]",
+      className: "text-center w-[150px]",
       render: (row) => (
         <div className="flex justify-center gap-2">
+          {currentUserRole === "superuser" && currentUserId && (
+            <SwitchAccountButton user={row} currentUserId={currentUserId} />
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -207,6 +219,7 @@ export default function UserTable({
         <DropdownMenuRadioItem value="admin">Admin</DropdownMenuRadioItem>
         <DropdownMenuRadioItem value="dosen">Dosen</DropdownMenuRadioItem>
         <DropdownMenuRadioItem value="mahasiswa">Mahasiswa</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="superuser">Superuser</DropdownMenuRadioItem>
       </DropdownMenuRadioGroup>
     </>
   );

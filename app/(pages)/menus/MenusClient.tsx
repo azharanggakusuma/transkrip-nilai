@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button"; 
-import { ArrowUpDown } from "lucide-react";    
+import { ArrowUpDown, Crown } from "lucide-react";    
 import { FormModal } from "@/components/shared/FormModal";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import MenuTable from "@/components/features/menus/MenuTable";
@@ -12,6 +12,7 @@ import { MenuForm } from "@/components/features/menus/MenuForm";
 import MenuReorderList from "@/components/features/menus/MenuReorderList"; 
 import { Menu, MenuFormValues } from "@/lib/types";
 import { createMenu, updateMenu, deleteMenu } from "@/app/actions/menus";
+import { addSuperuserToAllMenus } from "@/app/actions/add-superuser-to-menus";
 // 1. Import Hook
 import { useToastMessage } from "@/hooks/use-toast-message";
 
@@ -25,7 +26,7 @@ export default function MenusClient({ initialData }: MenusClientProps) {
   const router = useRouter();
 
   // 2. Gunakan Hook
-  const { showLoading, showSuccess, successAction, errorAction, confirmDeleteMessage } = useToastMessage();
+  const { showLoading, showSuccess, showError, successAction, errorAction, confirmDeleteMessage } = useToastMessage();
 
   // Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -98,6 +99,23 @@ export default function MenusClient({ initialData }: MenusClientProps) {
     }
   };
 
+  const handleAddSuperuserToAll = async () => {
+    const toastId = showLoading("Menambahkan superuser ke semua menu...");
+
+    try {
+      const result = await addSuperuserToAllMenus();
+      
+      if (result.updated > 0) {
+        showSuccess("Berhasil!", result.message, toastId);
+        router.refresh();
+      } else {
+        showSuccess("Info", result.message, toastId);
+      }
+    } catch (error: any) {
+      showError("Gagal Menambahkan Superuser", error.message, toastId);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-500">
       
@@ -106,6 +124,14 @@ export default function MenusClient({ initialData }: MenusClientProps) {
           <PageHeader title="Manajemen Menu" breadcrumb={["Beranda", "Menus"]} />
           
           <div className="flex gap-2">
+             <Button 
+               variant="outline" 
+               onClick={handleAddSuperuserToAll}
+               className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+             >
+               <Crown className="w-4 h-4 mr-2" />
+               Tambah Superuser ke Semua Menu
+             </Button>
              <Button variant="outline" onClick={() => setIsReorderOpen(true)}>
                 <ArrowUpDown className="w-4 h-4 mr-2" />
                 Atur Urutan

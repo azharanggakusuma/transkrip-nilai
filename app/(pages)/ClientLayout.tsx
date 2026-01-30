@@ -8,6 +8,7 @@ import { LayoutProvider, useLayout } from "@/app/context/LayoutContext";
 import { UserSession } from "@/app/actions/auth"; 
 import { AcademicYear, Menu } from "@/lib/types";
 import { PhotoUpdateDialog } from "@/components/features/mahasiswa/PhotoUpdateDialog";
+import { SwitchAccountBanner } from "@/components/features/users/SwitchAccountBanner";
 
 function LayoutContent({ 
   children, 
@@ -45,6 +46,15 @@ function LayoutContent({
             academicYearData={academicYear}
           />
         </div>
+
+        {/* Switch Account Banner */}
+        {user?.isSwitched && (
+          <SwitchAccountBanner 
+            isSwitched={user.isSwitched}
+            currentUserName={user.name}
+            currentUserRole={user.role}
+          />
+        )}
 
         <main className="flex-1 p-4 md:p-8 print:p-0">
           {children}

@@ -14,6 +14,8 @@ export type UserSession = {
   student_id?: string | null;
   error?: string;
   avatar_url?: string | null;
+  originalUserId?: string | null;
+  isSwitched?: boolean;
 };
 
 
@@ -118,6 +120,8 @@ export async function getSession(): Promise<UserSession | null> {
     student_id: session.user.student_id || null,
     avatar_url: userData?.avatar_url || null,
     error: session.user.error,
+    originalUserId: session.user.originalUserId || null,
+    isSwitched: session.user.isSwitched || false,
   };
 }
 
